@@ -9005,7 +9005,18 @@ function syncAppHeaderPadding(){
   if(typeof ResizeObserver==='undefined')return;
   var ghead=document.getElementById('g-header');
   if(!ghead)return;
-  var ro=new ResizeObserver(function(){ssApplyTheadOffset();syncAppHeaderPadding();});
+  // ssApplyTheadOffset() bails out immediately (does nothing) whenever
+  // #ss-thead-wrap doesn't exist - i.e. whenever Logboek is in Formulier
+  // (wizard/list) mode rather than Spreadsheet mode, since that element
+  // only exists in the spreadsheet's own markup. That meant the floating
+  // undo/redo/top/bottom pill's position (ssPositionToolbarFloat, which
+  // has no such dependency) never got recalculated when #g-header's real
+  // height changed in Formulier mode - e.g. the year/month/type filter row
+  // above it wrapping to two lines on a narrower desktop window - leaving
+  // the pill pinned to a stale, too-small offset and overlapping the
+  // header instead of sitting cleanly below it. Call it directly here too
+  // so both view modes stay in sync with the header's actual size.
+  var ro=new ResizeObserver(function(){ssApplyTheadOffset();syncAppHeaderPadding();ssPositionToolbarFloat();});
   ro.observe(ghead);
 })();
 // The floating toolbar overlay sits just below the sticky column-header row,
@@ -21311,7 +21322,17 @@ function processImportFile(file){
   if(file.name.toLowerCase().endsWith('.pdf')){processPdfImportFile(file);return;}
   const reader=new FileReader();
   reader.onload=ev=>{
-    const text=ev.target.result.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+    // Read as raw bytes and auto-detect encoding instead of forcing UTF-8:
+    // real-world Excel exports from older Windows machines are often
+    // Windows-1252, not UTF-8, so accented characters and curly quotes
+    // (ë, ü, è, ', in names/themes/descriptions) would otherwise turn into
+    // "�" replacement-character garbage. Try strict UTF-8 first (matches
+    // the app's own JSON exports and most modern CSVs); fall back to
+    // Windows-1252 only if that fails.
+    let text;
+    try{text=new TextDecoder('utf-8',{fatal:true}).decode(ev.target.result);}
+    catch(_e){text=new TextDecoder('windows-1252').decode(ev.target.result);}
+    text=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
     try{
       if(file.name.toLowerCase().endsWith('.json')){
         const data=JSON.parse(text);const count=data.entries?.length||0;
@@ -21413,7 +21434,7 @@ function processImportFile(file){
       }
     }catch(err){showImportResult('Fout: '+err.message,true);}
   };
-  reader.readAsText(file,'UTF-8');
+  reader.readAsArrayBuffer(file);
 }
 // pdf.js is only pulled in the moment someone actually picks a PDF to
 // import - most people never touch this, and the library is a few hundred
