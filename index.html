@@ -21983,22 +21983,44 @@ function parseCursistenRosterCSV(text){
 // can deselect stray/wrong rows before anything is actually added to
 // db.cursisten - nothing from the file is written until they tap "Toevoegen".
 var _pendingRosterImport=null;
+function toggleRosterImportSelectAll(masterCb){
+  var boxes=document.querySelectorAll('.roster-import-chk');
+  for(var i=0;i<boxes.length;i++)boxes[i].checked=masterCb.checked;
+}
+function updateRosterImportSelectAllState(){
+  var boxes=Array.prototype.slice.call(document.querySelectorAll('.roster-import-chk'));
+  var master=document.getElementById('roster-import-select-all');
+  if(!master)return;
+  master.checked=boxes.length>0&&boxes.every(function(b){return b.checked;});
+}
 function openCursistenRosterImportReview(candidates){
   _pendingRosterImport=candidates;
   var existing={};
-  (db.cursisten||[]).forEach(function(c){existing[(c.naam||'').toLowerCase().trim()]=true;});
+  (db.cursisten||[]).forEach(function(c){existing[(c.naam||'').toLowerCase().trim()]=c;});
+  // Tag each candidate with the id of the existing contact it matches (if
+  // any), so confirmCursistenRosterImportReview() can fuse the imported
+  // fields into that contact instead of creating a duplicate.
+  candidates.forEach(function(c){
+    var m=existing[(c.naam||'').toLowerCase().trim()];
+    c.__matchId=m?m.id:null;
+  });
   var titleLbl=tMap({nl:'Contacten gevonden',en:'Contacts found',es:'Contactos encontrados'});
-  var subLbl=tMap({nl:candidates.length+' contact(en) gevonden in dit bestand. Vink aan wat je wilt toevoegen.',en:candidates.length+' contact(s) found in this file. Check what you want to add.',es:'Se encontraron '+candidates.length+' contacto(s) en este archivo. Marca lo que quieras añadir.'});
+  var subLbl=tMap({nl:candidates.length+' contact(en) gevonden in dit bestand. Vink aan wat je wilt toevoegen of samenvoegen.',en:candidates.length+' contact(s) found in this file. Check what you want to add or merge.',es:'Se encontraron '+candidates.length+' contacto(s) en este archivo. Marca lo que quieras añadir o fusionar.'});
   var h='<div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>';
   h+='<div style="font-size:15px;font-weight:700;margin-bottom:4px">'+titleLbl+'</div>';
   h+='<div style="font-size:12px;color:var(--text2);margin-bottom:12px">'+subLbl+'</div>';
+  var selectAllLbl=tMap({nl:'Alles selecteren',en:'Select all',es:'Seleccionar todo'});
+  h+='<label style="display:flex;align-items:center;gap:8px;padding:4px 0 10px;cursor:pointer;font-size:13px;font-weight:600">'
+    +'<input type="checkbox" id="roster-import-select-all" checked onchange="toggleRosterImportSelectAll(this)" style="width:16px;height:16px;flex-shrink:0">'
+    +selectAllLbl+'</label>';
   h+='<div style="max-height:50vh;overflow-y:auto;border:1px solid var(--border);border-radius:10px;padding:4px 10px">';
+  var alreadyLbl=tMap({nl:'al een contact &middot; wordt samengevoegd',en:'already a contact &middot; will be merged',es:'ya es un contacto &middot; se fusionará'});
   candidates.forEach(function(c,i){
-    var already=existing[c.naam.toLowerCase().trim()];
+    var already=!!c.__matchId;
     var addrBits=[c.adres,c.postcode,c.plaats].filter(Boolean).join(' ');
-    h+='<label style="display:flex;align-items:center;gap:8px;padding:6px 0;'+(i>0?'border-top:1px solid var(--border);':'')+'cursor:'+(already?'default':'pointer')+';opacity:'+(already?'.5':'1')+'">'
-      +'<input type="checkbox" class="roster-import-chk" data-idx="'+i+'" '+(already?'disabled':'checked')+' style="width:16px;height:16px;flex-shrink:0;margin-top:2px">'
-      +'<span style="font-size:13px;flex:1"><b>'+c.naam+'</b>'+(already?' &middot; '+tMap({nl:'al een contact',en:'already a contact',es:'ya es un contacto'}):(addrBits?'<br><span style="color:var(--text2)">'+addrBits+'</span>':''))+'</span></label>';
+    h+='<label style="display:flex;align-items:center;gap:8px;padding:6px 0;'+(i>0?'border-top:1px solid var(--border);':'')+'cursor:pointer">'
+      +'<input type="checkbox" class="roster-import-chk" data-idx="'+i+'" checked onchange="updateRosterImportSelectAllState()" style="width:16px;height:16px;flex-shrink:0;margin-top:2px">'
+      +'<span style="font-size:13px;flex:1"><b>'+c.naam+'</b>'+(already?' &middot; '+alreadyLbl:'')+(addrBits?'<br><span style="color:var(--text2)">'+addrBits+'</span>':'')+'</span></label>';
   });
   h+='</div>';
   h+='<div style="display:flex;gap:8px;margin-top:16px">';
@@ -22013,22 +22035,41 @@ function confirmCursistenRosterImportReview(){
   closeModals();
   if(!idxs.length||!_pendingRosterImport)return;
   var toAdd=idxs.map(function(i){return _pendingRosterImport[i];}).filter(Boolean);
+  var addedCount=0,mergedCount=0;
   toAdd.forEach(function(m){
-    db.cursisten.push({
-      id:genUniqueId(db.cursisten),
-      naam:m.naam,voornaam:'',achternaam:'',
-      type:'lid',
-      adres:m.adres||'',postcode:m.postcode||'',plaats:m.plaats||'',land:'',
-      tel:m.tel||'',email:'',
-      contactFrequency:'',extraZorg:false,opmerking:m.opmerking||'',
-      doopkandidaat:false,
-      personTypes:['lid'],personType:'lid'
-    });
+    var existingContact=m.__matchId?db.cursisten.find(function(c){return c.id===m.__matchId;}):null;
+    if(existingContact){
+      // Fuse: fill in only the fields the existing contact is missing, so a
+      // re-import never clobbers info already entered/edited in the app.
+      if(!existingContact.adres&&m.adres)existingContact.adres=m.adres;
+      if(!existingContact.postcode&&m.postcode)existingContact.postcode=m.postcode;
+      if(!existingContact.plaats&&m.plaats)existingContact.plaats=m.plaats;
+      if(!existingContact.tel&&m.tel)existingContact.tel=m.tel;
+      if(!existingContact.opmerking&&m.opmerking)existingContact.opmerking=m.opmerking;
+      mergedCount++;
+    }else{
+      db.cursisten.push({
+        id:genUniqueId(db.cursisten),
+        naam:m.naam,voornaam:'',achternaam:'',
+        type:'lid',
+        adres:m.adres||'',postcode:m.postcode||'',plaats:m.plaats||'',land:'',
+        tel:m.tel||'',email:'',
+        contactFrequency:'',extraZorg:false,opmerking:m.opmerking||'',
+        doopkandidaat:false,
+        personTypes:['lid'],personType:'lid'
+      });
+      addedCount++;
+    }
   });
   _pendingRosterImport=null;
   save();
   if(typeof screen!=='undefined'&&screen==='cursisten')renderCursisten();
-  showImportResult('✓ '+toAdd.length+' '+tMap({nl:'contact(en) toegevoegd!',en:'contact(s) added!',es:'contacto(s) añadidos!'}));
+  var resultMsg='✓ ';
+  var parts=[];
+  if(addedCount)parts.push(addedCount+' '+tMap({nl:'toegevoegd',en:'added',es:'añadidos'}));
+  if(mergedCount)parts.push(mergedCount+' '+tMap({nl:'samengevoegd',en:'merged',es:'fusionados'}));
+  resultMsg+=parts.join(', ');
+  showImportResult(resultMsg);
 }
 function parseAppCSV(text){const lines=text.split('\n').filter(l=>l.trim());if(!lines.length)return{entries:[],cursisten:[]};const headers=parseCSVLine(lines[0]);const col=k=>headers.findIndex(h=>h.toLowerCase().includes(k.toLowerCase()));const iDatum=col('datum'),iCat=col('categorie'),iUren=col('uren'),iKm=col('km'),iKosten=col('kosten'),iOmsch=col('omschrijving'),iCursist=col('cursist'),iThema=col('thema'),iThemacode=col('themacode'),iOpmerking=col('opmerking'),iReminder=col('reminder');const entries=[];lines.slice(1).forEach((line,i)=>{const cols=parseCSVLine(line);const datum=(cols[iDatum]||'').trim(),categorie=(cols[iCat]||'').trim();if(!datum&&!categorie)return;
   // Guard against a semicolon-delimited file slipping past detectDossierCsvType
