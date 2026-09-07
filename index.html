@@ -12905,11 +12905,16 @@ function _renderHomeInner(){
   // unaffected).
   h+='<div class="dash-2col-wrap" style="margin-top:-8px"><div>';
   h+='<div class="settings-section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer" onclick="toggleAccordionByKey(\'home-todo\',this.querySelector(\'.acc-toggle-btn\'));syncTodoPrayerHeightDeferred()">';
+  // Chevron sits right next to the "To do" label itself (not next to
+  // "Geschiedenis" on the far right) - it's the accordion toggle for this
+  // whole section, and grouping it with the History link made it read as
+  // if it belonged to History instead (reported by Gabriel: "the arrow
+  // looks it belongs to geschiedenis, but it's from to do").
+  h+='<div style="display:flex;align-items:center;gap:6px">';
   h+='<span>'+t('todo_title')+'</span>';
-  h+='<div style="display:flex;align-items:center;gap:14px">';
-  h+='<a href="#" onclick="event.stopPropagation();openTodoHistory();return false" style="font-size:12px;color:var(--brand);text-decoration:none;font-weight:500">'+t('todo_history')+'</a>';
   h+='<button type="button" class="acc-toggle-btn" onclick="event.stopPropagation();toggleAccordionByKey(\'home-todo\',this);syncTodoPrayerHeightDeferred()" title="'+t('todo_title')+'" style="background:none;border:none;padding:4px;margin:-4px;cursor:pointer;display:flex;color:var(--text3)"><svg width="14" height="14" style="transition:transform .2s'+(getAccState('home-todo')?';transform:rotate(180deg)':'')+'"><use href="#ico-chevron-down"/></svg></button>';
   h+='</div>';
+  h+='<a href="#" onclick="event.stopPropagation();openTodoHistory();return false" style="font-size:12px;color:var(--brand);text-decoration:none;font-weight:500">'+t('todo_history')+'</a>';
   h+='</div>';
   h+='<div class="card card-acc-plain'+(getAccState('home-todo')?' acc-open':'')+'" data-acc-key="home-todo">';
   h+='<div class="acc-body">';
@@ -12931,11 +12936,13 @@ function _renderHomeInner(){
   // user explicitly deletes it. Also collapsed by default.
   h+='<div>';
   h+='<div class="settings-section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer" onclick="toggleAccordionByKey(\'home-prayer\',this.querySelector(\'.acc-toggle-btn\'));syncTodoPrayerHeightDeferred()">';
+  // Same reasoning as the To-do header above - chevron grouped with the
+  // label it actually toggles, not with the History link.
+  h+='<div style="display:flex;align-items:center;gap:6px">';
   h+='<span>'+t('prayer_title')+'</span>';
-  h+='<div style="display:flex;align-items:center;gap:14px">';
-  h+='<a href="#" onclick="event.stopPropagation();openPrayerHistory();return false" style="font-size:12px;color:var(--brand);text-decoration:none;font-weight:500">'+t('prayer_history')+'</a>';
   h+='<button type="button" class="acc-toggle-btn" onclick="event.stopPropagation();toggleAccordionByKey(\'home-prayer\',this);syncTodoPrayerHeightDeferred()" title="'+t('prayer_title')+'" style="background:none;border:none;padding:4px;margin:-4px;cursor:pointer;display:flex;color:var(--text3)"><svg width="14" height="14" style="transition:transform .2s'+(getAccState('home-prayer')?';transform:rotate(180deg)':'')+'"><use href="#ico-chevron-down"/></svg></button>';
   h+='</div>';
+  h+='<a href="#" onclick="event.stopPropagation();openPrayerHistory();return false" style="font-size:12px;color:var(--brand);text-decoration:none;font-weight:500">'+t('prayer_history')+'</a>';
   h+='</div>';
   h+='<div class="card card-acc-plain'+(getAccState('home-prayer')?' acc-open':'')+'" data-acc-key="home-prayer">';
   h+='<div class="acc-body">';
