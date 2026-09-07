@@ -10268,6 +10268,20 @@ const THEMAS=[
 // scratch every time. Used to extend thema <select> option lists app-wide.
 function getFreeThemaOptions(){
   var seen={},out=[];
+  // Also scan db.planned (not just db.entries) - a custom "Vrij onderwerp"
+  // topic typed while editing a Binnenkort/planned activity (openPlanModal's
+  // plan-vrij field) previously only got picked up once that plan was
+  // actually completed and turned into a logged entry, so it silently didn't
+  // show up as a suggestion anywhere until then. Planned items are checked
+  // first (most recently created ones first) so a topic just typed into an
+  // upcoming plan is immediately offered as a suggestion, same as one typed
+  // via the wizard for something already logged.
+  (db.planned||[]).slice().reverse().forEach(function(p){
+    if(p.themacode==='Vrij onderwerp'){
+      var vp=(p.thema||'').trim();
+      if(vp&&!seen[vp]){seen[vp]=true;out.push(vp);}
+    }
+  });
   (db.entries||[]).slice().reverse().forEach(function(e){
     if(e.themacode==='Vrij onderwerp'){
       var v=(e.thema||'').trim();
