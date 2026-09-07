@@ -28312,9 +28312,17 @@ function renderStudieRow(les, stats) {
   var badge = totalContacts > 0
     ? '<span style="background:var(--brand-light);color:var(--brand);font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px">'+totalContacts+'</span>'
     : '';
+  // Separate amber badge for scheduled-but-not-given sessions (stats.gepland,
+  // from db.planned - see getStudieStats) - kept apart from the given/actueel
+  // count above so a contact who's only booked, not yet studied with, doesn't
+  // silently inflate the main "given" number.
+  var geplandBadgeLbl=tMap({nl:'Gepland',en:'Planned',es:'Planificado',fr:'Planifié',de:'Geplant',ro:'Planificat',hu:'Tervezve',ru:'Запланировано',it:'Pianificato',pt:'Planeado'});
+  var geplandBadge = (stats.gepland&&stats.gepland.length)
+    ? '<span style="background:rgba(217,164,6,.15);color:var(--amber,#b8860b);font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px">'+geplandBadgeLbl+' '+stats.gepland.length+'</span>'
+    : '';
   var h = '<div id="sr-'+safeCode+'" class="studie-row" style="border-bottom:1px solid var(--border)">';
   h += '<div onclick="toggleStudie(\''+les.code+'\')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;cursor:pointer">';
-  h += '<div style="flex:1"><span style="font-size:13px;font-weight:500">'+les.code+' – '+les.titel+'</span>'+badge+'</div>';
+  h += '<div style="flex:1"><span style="font-size:13px;font-weight:500">'+les.code+' – '+les.titel+'</span>'+badge+geplandBadge+'</div>';
   h += '<button onclick="openPresenter(event,\''+les.code+'\')" title="'+t('presenter_btn')+'" style="flex-shrink:0;border:none;background:var(--brand-mid);color:#fff;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:600;cursor:pointer;margin-right:8px;display:flex;align-items:center;gap:4px">&#9654; '+t('presenter_btn')+'</button>';
   h += '<svg width="14" height="14" style="flex-shrink:0;color:var(--text3);transition:transform .2s" class="sr-arrow"><use href="#ico-chevron-down"/></svg>';
   h += '</div>';
@@ -28382,11 +28390,27 @@ function renderStudieRow(les, stats) {
   h += '</div>';
   // Contacts section
   var studieAddContactsLbl = tMap({nl:'+ Contacten toevoegen',en:'+ Add contacts',es:'+ Añadir contactos',fr:'+ Ajouter des contacts',de:'+ Kontakte hinzufügen',ro:'+ Adaugă contacte',hu:'+ Kapcsolatok hozzáadása',ru:'+ Добавить контакты',it:'+ Aggiungi contatti',pt:'+ Adicionar contactos'});
-  if(stats.actueel.length || stats.voltooid.length) {
+  var studiePlannedLbl = tMap({nl:'Gepland',en:'Planned',es:'Planificado',fr:'Planifié',de:'Geplant',ro:'Planificat',hu:'Tervezve',ru:'Запланировано',it:'Pianificato',pt:'Planeado'});
+  if(stats.actueel.length || stats.voltooid.length || (stats.gepland&&stats.gepland.length)) {
     // Small tap target next to the existing lists, so a study that already
     // has contacts can still get more backfilled (e.g. a contact you know
     // received it in a group session that never got individually logged).
     h += '<div style="text-align:left;margin-bottom:4px"><span onclick="openStudieBackfillModal(\''+les.code+'\')" style="font-size:10px;font-weight:600;color:var(--brand);cursor:pointer">'+studieAddContactsLbl+'</span></div>';
+    if(stats.gepland && stats.gepland.length) {
+      // Scheduled but not given yet - taps through to the plan itself
+      // (openPlanModal) rather than a session-history modal, since there's
+      // no session to show history for until it's actually logged.
+      h += '<div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:6px">&#128197; '+studiePlannedLbl+' ('+stats.gepland.length+')</div>';
+      stats.gepland.forEach(function(c) {
+        var sessionBadge = (c.sessionCount>1) ? '<span style="font-size:10px;font-weight:700;color:var(--text3);background:var(--border);padding:0 5px;border-radius:8px;margin-right:6px">'+c.sessionCount+'&times;</span>' : '';
+        h += '<div style="display:flex;align-items:center;padding:5px 8px;background:var(--surface2);border-radius:6px;margin-bottom:4px;cursor:pointer" onclick="openPlanModal('+ssIdArg(c.planId)+')">';
+        h += '<span style="width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block;margin-right:5px;flex-shrink:0"></span>';
+        h += '<span style="font-size:13px;font-weight:500;flex:1">'+c.naam+'</span>';
+        h += sessionBadge;
+        h += '<span style="font-size:11px;color:var(--text3)">'+c.datum+'</span>';
+        h += '</div>';
+      });
+    }
     if(stats.actueel.length) {
       h += '<div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:6px">&#128336; '+t('studie_current')+' ('+stats.actueel.length+')</div>';
       stats.actueel.forEach(function(c) {
@@ -28769,7 +28793,35 @@ function getStudieStats(lesCode) {
       voltooid.push({naam:c.naam, datum:formatDate(datum), datumYear:dYear, approxDate:!!latest.approxDate, entryId:latest.id, cursistKey:cursistKey, sessionCount:sorted.length});
     }
   });
-  return {voltooid:voltooid, actueel:actueel};
+  // Scheduled-but-not-given sessions for this lesson, same matching rule as
+  // above but scanned from db.planned instead of db.entries - without this,
+  // a study that's been booked on the calendar for a contact only showed up
+  // here once it was actually given/logged, so the lesson's contact list
+  // looked empty (or missing that person) the whole time it was still
+  // upcoming. Mirrors the equivalent fix already applied to
+  // getFreeThemaOptions/renderVrijOnderwerpSection for free-subject topics.
+  var plannedRelevant = (db.planned||[]).filter(function(p) {
+    if ((p.themacode||'') === lesCode) return true;
+    var th = p.thema||'';
+    if (th.indexOf(lesCode) !== 0) return false;
+    var nextCh = th.charAt(lesCode.length);
+    return !nextCh || !/[0-9]/.test(nextCh);
+  });
+  var byContactPlanned = {};
+  plannedRelevant.forEach(function(p) {
+    if(!p.cursistNaam) return;
+    var key = p.cursistId||p.cursistNaam;
+    if(!byContactPlanned[key]) byContactPlanned[key] = {naam:p.cursistNaam, items:[]};
+    byContactPlanned[key].items.push(p);
+  });
+  var gepland = [];
+  Object.keys(byContactPlanned).forEach(function(cursistKey) {
+    var c = byContactPlanned[cursistKey];
+    var sorted = c.items.slice().sort(function(a,b){return a.datum<b.datum?-1:(a.datum>b.datum?1:0);});
+    var next = sorted[0];
+    gepland.push({naam:c.naam, datum:formatDate(next.datum), planId:next.id, cursistKey:cursistKey, sessionCount:sorted.length});
+  });
+  return {voltooid:voltooid, actueel:actueel, gepland:gepland};
 }
 
 function toggleSection(id){
