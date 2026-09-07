@@ -9028,10 +9028,19 @@ function ssPositionToolbarFloat(){
   var ghead=document.getElementById('g-header');
   var thead=document.getElementById('ss-thead-wrap');
   if(!overlay||!ghead)return;
-  // Only ghead's offsetHeight needs the zoom correction (it's measured from
-  // outside #screen-main) - thead.offsetHeight and the +8 gap are already
-  // consistent within #screen-main's own zoomed coordinate space.
-  overlay.style.top=((ghead.offsetHeight/screenMainZoomFactor())+(thead?thead.offsetHeight:0)+8)+'px';
+  // Previously this used ghead.offsetHeight/screenMainZoomFactor() to
+  // convert the header's height into #screen-main's zoomed coordinate
+  // space. That correction was wrong: ghead's real on-screen height doesn't
+  // change with the text-size zoom class at all, so dividing by a
+  // zoomFactor>1 (Grote/Extra grote tekst in Settings) undershot the
+  // needed offset and let the header (z-index 60) cover the top slice of
+  // the pill (z-index 55) - reported as the floating undo/redo/Top/Bottom
+  // "island" toolbar sitting hidden behind the header in Logboek. Reading
+  // the header's actual rendered bottom edge via getBoundingClientRect()
+  // instead sidesteps the whole zoom-space conversion and is correct at
+  // every text-size setting, verified against ghead.getBoundingClientRect()
+  // staying identical with and without the zoom classes applied.
+  overlay.style.top=(ghead.getBoundingClientRect().bottom+(thead?thead.offsetHeight:0)+8)+'px';
 }
 // Show the overlay once the real toolbar (in normal flow, above the table)
 // has scrolled up behind the sticky app header; hide it again once scrolling
