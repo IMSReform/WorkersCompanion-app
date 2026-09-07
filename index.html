@@ -1691,6 +1691,7 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
             <div id="backups-list"></div>
           </div>
         </div>
+        <div style="margin-top:14px" id="receipts-section"></div>
         </div>
       </div>
 
@@ -11660,6 +11661,7 @@ function renderDriveStatus(){renderGlobalSyncBadge();const el=document.getElemen
   if(useGoogleDrive){el.innerHTML='<div class="sync-bar ok" style="margin-bottom:0"><div class="dot-pulse" style="background:'+SYNC_DOT_GREEN+'"></div><span>'+connLabel+' · '+(lastSyncTime?lastSyncTime.toLocaleTimeString(getLocale(),{hour:'2-digit',minute:'2-digit'}):'OK')+'</span></div>';document.getElementById('btn-signout').style.display='';}else{el.innerHTML='<div class="sync-bar warn" style="margin-bottom:8px"><span>⚠️</span><span>'+notConnLabel+'</span></div><button class="btn google full" style="margin-top:0" onclick="signIn()">'+signInLabel+'</button>';}
   renderSyncHistoryList();
   renderBackupsList();
+  renderReceiptsSection();
 }
 
 // DAILY BACKUPS — separate dated snapshots in the same Drive appDataFolder,
@@ -11716,6 +11718,158 @@ async function pruneOldSnapshots(){
     try{ await gapi.client.drive.files.delete({fileId:toDelete[i].id}); }catch(e){}
   }
 }
+// ── Receipt photo attachments (expense entries) ─────────────────────────
+// Photos never live in db/localStorage/the synced JSON blob - only a small
+// (~320px) preview thumbnail is kept inline on the entry, for instant
+// offline display and for embedding in the printed PDF report. The
+// full-resolution image is uploaded to this app's private appDataFolder
+// space (the same hidden, per-app Drive area already used for the JSON db
+// + daily snapshots above) and only the Drive file id is kept on the
+// entry. That keeps the app's own sync payload small no matter how many
+// receipts pile up over time - see the Settings > Google Drive > Bonnetjes
+// panel (renderReceiptsSection) for reviewing/downloading/deleting them.
+var RECEIPT_PREFIX='ZDA_Receipt_';
+// Resize+recompress an image file client-side via canvas before it ever
+// leaves the device. Keeps Drive usage and (later) email-attachment size
+// sane without the user having to think about it - a typical 4-8MB phone
+// photo becomes a couple hundred KB.
+function compressImageFile(file,maxDim,quality){
+  return new Promise(function(resolve,reject){
+    var reader=new FileReader();
+    reader.onload=function(){
+      var img=new Image();
+      img.onload=function(){
+        var w=img.width,h=img.height;
+        if(w>=h&&w>maxDim){h=Math.round(h*maxDim/w);w=maxDim;}
+        else if(h>w&&h>maxDim){w=Math.round(w*maxDim/h);h=maxDim;}
+        var canvas=document.createElement('canvas');
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg',quality));
+      };
+      img.onerror=reject;
+      img.src=reader.result;
+    };
+    reader.onerror=reject;
+    reader.readAsDataURL(file);
+  });
+}
+function dataURLToBlob(dataURL){
+  var parts=dataURL.split(',');
+  var mime=parts[0].match(/:(.*?);/)[1];
+  var bin=atob(parts[1]);
+  var arr=new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+  return new Blob([arr],{type:mime});
+}
+// One Drive file per entry, named by entry id - re-attaching/replacing a
+// photo on the same entry just overwrites that same file instead of
+// leaking orphaned uploads behind.
+async function uploadReceiptPhoto(entryId,fullDataUrl){
+  if(!useGoogleDrive||!accessToken)return null;
+  try{
+    var name=RECEIPT_PREFIX+entryId+'.jpg';
+    var l=await gapi.client.drive.files.list({spaces:'appDataFolder',q:"name='"+name+"'",fields:'files(id)'});
+    var existing=l.result.files&&l.result.files[0];
+    var fid=existing?existing.id:null;
+    if(!fid){
+      var m=await gapi.client.drive.files.create({resource:{name:name,parents:['appDataFolder']},fields:'id'});
+      fid=m.result.id;
+    }
+    var blob=dataURLToBlob(fullDataUrl);
+    await fetch('https://www.googleapis.com/upload/drive/v3/files/'+fid+'?uploadType=media',{method:'PATCH',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'image/jpeg'},body:blob});
+    return fid;
+  }catch(e){ return null; }
+}
+async function deleteReceiptPhotoFile(driveFileId){
+  if(!useGoogleDrive||!accessToken||!driveFileId)return;
+  try{ await gapi.client.drive.files.delete({fileId:driveFileId}); }catch(e){}
+}
+// Pulls the full-resolution original back down from Drive - used for "view
+// full size" and for the archive download in the Settings panel. Everyday
+// display (entry rows, PDF) uses the cheap inline thumbnail instead so it
+// never needs a network round-trip.
+async function fetchReceiptPhotoBlob(driveFileId){
+  if(!useGoogleDrive||!accessToken||!driveFileId)return null;
+  try{
+    var res=await fetch('https://www.googleapis.com/drive/v3/files/'+driveFileId+'?alt=media',{headers:{'Authorization':'Bearer '+accessToken}});
+    if(!res.ok)return null;
+    return await res.blob();
+  }catch(e){ return null; }
+}
+// Every entry that currently has a receipt photo attached, newest first -
+// backs the Settings > Bonnetjes review/download/delete panel.
+function entriesWithReceiptPhotos(){
+  return (db.entries||[]).filter(function(e){return e.foto&&e.foto.thumb;}).sort(function(a,b){return (b.datum||'').localeCompare(a.datum||'');});
+}
+function triggerBlobDownload(blob,filename){
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download=filename;document.body.appendChild(a);a.click();
+  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},500);
+}
+// Shared "attach a receipt photo" widget, used by both the wizard's expense
+// step and the edit-entry modal - a freshly-picked replacement
+// (_pendingReceiptPhoto) always takes priority in the preview over whatever
+// the entry already had, and an explicit removal (_pendingReceiptPhotoRemoved)
+// hides an existing photo even before Save is pressed.
+var _pendingReceiptPhoto=null;
+var _pendingReceiptPhotoRemoved=false;
+function receiptPhotoLabel(){return tMap({nl:'Bonnetje / foto',en:'Receipt photo',es:'Foto del recibo',fr:'Photo du reçu',de:'Beleg-Foto',ro:'Foto chitanță',hu:'Nyugta fotó',ru:'Фото чека',it:'Foto della ricevuta',pt:'Foto do recibo'});}
+function receiptPhotoAddLabel(){return tMap({nl:'Foto toevoegen',en:'Add photo',es:'Añadir foto',fr:'Ajouter une photo',de:'Foto hinzufügen',ro:'Adaugă foto',hu:'Fotó hozzáadása',ru:'Добавить фото',it:'Aggiungi foto',pt:'Adicionar foto'});}
+function receiptPhotoReplaceLabel(){return tMap({nl:'Vervangen',en:'Replace',es:'Reemplazar',fr:'Remplacer',de:'Ersetzen',ro:'Înlocuiește',hu:'Csere',ru:'Заменить',it:'Sostituisci',pt:'Substituir'});}
+function receiptPhotoRemoveLabel(){return tMap({nl:'Verwijderen',en:'Remove',es:'Eliminar',fr:'Supprimer',de:'Entfernen',ro:'Elimină',hu:'Eltávolítás',ru:'Удалить',it:'Rimuovi',pt:'Remover'});}
+// existingThumb: the entry's current e.foto.thumb, if editing an entry that
+// already has a photo (pass null from the wizard, which is always a brand
+// new entry). widgetId lets the wizard and the edit modal each have their
+// own container to refresh in place without re-rendering the whole form.
+function receiptPhotoFieldHtml(existingThumb,widgetId){
+  var wid=widgetId||'receipt-photo-widget';
+  var showThumb=_pendingReceiptPhoto?_pendingReceiptPhoto.thumb:(_pendingReceiptPhotoRemoved?null:existingThumb);
+  var pickerInput='<input type="file" accept="image/*" capture="environment" onchange="onReceiptPhotoPicked(this,\''+wid+'\')" style="display:none">';
+  var h='<div id="'+wid+'" data-existing-thumb="'+(existingThumb?encodeURIComponent(existingThumb):'')+'" style="margin-top:10px">';
+  h+='<span class="form-label">'+receiptPhotoLabel()+'</span>';
+  if(showThumb){
+    h+='<div style="display:flex;align-items:center;gap:10px;margin-top:4px">';
+    h+='<img src="'+showThumb+'" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">';
+    h+='<div style="display:flex;flex-direction:column;gap:6px">';
+    h+='<label class="btn sm" style="cursor:pointer;text-align:center;margin:0">'+receiptPhotoReplaceLabel()+pickerInput+'</label>';
+    h+='<button type="button" class="btn sm danger" onclick="onReceiptPhotoRemoveClicked(\''+wid+'\')">'+receiptPhotoRemoveLabel()+'</button>';
+    h+='</div></div>';
+  }else{
+    h+='<label class="btn sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-top:4px"><svg width="14" height="14"><use href="#ico-import"/></svg>'+receiptPhotoAddLabel()+pickerInput+'</label>';
+  }
+  h+='</div>';
+  return h;
+}
+function onReceiptPhotoPicked(inputEl,widgetId){
+  var file=inputEl.files&&inputEl.files[0];
+  if(!file)return;
+  Promise.all([compressImageFile(file,320,0.5),compressImageFile(file,1600,0.7)]).then(function(res){
+    _pendingReceiptPhoto={thumb:res[0],full:res[1]};
+    _pendingReceiptPhotoRemoved=false;
+    receiptPhotoRerender(widgetId);
+  }).catch(function(){});
+}
+function onReceiptPhotoRemoveClicked(widgetId){
+  _pendingReceiptPhoto=null;
+  _pendingReceiptPhotoRemoved=true;
+  receiptPhotoRerender(widgetId);
+}
+// Swaps just this one widget's HTML in place, using the existing-thumb it
+// stashed on itself at render time - avoids re-rendering the entire wizard
+// step or edit-entry form just to update a photo preview.
+function receiptPhotoRerender(widgetId){
+  var wid=widgetId||'receipt-photo-widget';
+  var el=document.getElementById(wid);
+  if(!el)return;
+  var raw=el.getAttribute('data-existing-thumb');
+  var existingThumb=raw?decodeURIComponent(raw):null;
+  var tmp=document.createElement('div');
+  tmp.innerHTML=receiptPhotoFieldHtml(existingThumb,wid);
+  el.parentNode.replaceChild(tmp.firstElementChild,el);
+}
+
 // Shared by both restore paths below (a Drive daily-snapshot, or a
 // manually-downloaded backup file) so the actual "apply this data as my
 // current db" logic only lives in one place.
@@ -11862,6 +12016,113 @@ function renderBackupsList(){
         +'</div>';
     }).join('');
   });
+}
+
+// ── Receipt-photo review/download/delete panel (Settings > Google Drive) ──
+// The app never keeps receipt photos around forever by default - this is
+// where the user reviews what's piled up, downloads any they want to keep
+// for their own records/taxes, and clears them out (either one at a time,
+// or in bulk) so Drive usage doesn't creep up indefinitely.
+function receiptsSectionTitle(){return tMap({nl:'Bonnetjes',en:'Receipts',es:'Recibos',fr:'Reçus',de:'Belege',ro:'Chitanțe',hu:'Nyugták',ru:'Чеки',it:'Ricevute',pt:'Recibos'});}
+function receiptsSectionSub(){return tMap({nl:'Foto\'s van bonnetjes/kosten die je bij een registratie hebt toegevoegd. Download ze voor je eigen archief en/of verwijder ze - ze blijven niet automatisch voor altijd bewaard.',en:'Photos of receipts/expenses you attached to an entry. Download them for your own records and/or delete them - they are not kept forever automatically.',es:'Fotos de recibos/gastos que adjuntaste a un registro. Descárgalas para tu propio archivo y/o elimínalas - no se guardan para siempre automáticamente.',fr:'Photos de reçus/dépenses jointes à une entrée. Téléchargez-les pour vos propres archives et/ou supprimez-les - elles ne sont pas conservées indéfiniment.',de:'Fotos von Belegen/Ausgaben, die du an einen Eintrag angehängt hast. Lade sie für deine eigenen Unterlagen herunter und/oder lösche sie - sie werden nicht automatisch für immer aufbewahrt.',ro:'Fotografii ale chitanțelor/cheltuielilor atașate unei înregistrări. Descarcă-le pentru arhiva ta și/sau șterge-le - nu sunt păstrate automat pentru totdeauna.',hu:'Egy bejegyzéshez csatolt nyugták/kiadások fotói. Töltsd le saját archívumod számára, és/vagy töröld őket - nem maradnak meg automatikusan örökre.',ru:'Фото чеков/расходов, прикреплённых к записи. Скачайте их для своего архива и/или удалите - они не хранятся вечно автоматически.',it:'Foto di ricevute/spese allegate a una voce. Scaricale per il tuo archivio e/o eliminale - non vengono conservate per sempre automaticamente.',pt:'Fotos de recibos/despesas anexadas a um registro. Baixe-as para seu próprio arquivo e/ou exclua-as - elas não são mantidas para sempre automaticamente.'});}
+function receiptsEmptyLbl(){return tMap({nl:'Nog geen bonnetjes toegevoegd.',en:'No receipts added yet.',es:'Aún no se han añadido recibos.',fr:'Aucun reçu ajouté pour le moment.',de:'Noch keine Belege hinzugefügt.',ro:'Încă nu au fost adăugate chitanțe.',hu:'Még nincs hozzáadott nyugta.',ru:'Чеки пока не добавлены.',it:'Nessuna ricevuta ancora aggiunta.',pt:'Nenhum recibo adicionado ainda.'});}
+function receiptsDownloadBtn(){return tMap({nl:'Downloaden',en:'Download',es:'Descargar',fr:'Télécharger',de:'Herunterladen',ro:'Descarcă',hu:'Letöltés',ru:'Скачать',it:'Scarica',pt:'Baixar'});}
+function receiptsDeleteAllBtn(n){return tMap({nl:'Alle '+n+' verwijderen',en:'Delete all '+n,es:'Eliminar los '+n,fr:'Supprimer les '+n,de:'Alle '+n+' löschen',ro:'Șterge toate ('+n+')',hu:'Mind törlése ('+n+')',ru:'Удалить все ('+n+')',it:'Elimina tutte ('+n+')',pt:'Excluir todos ('+n+')'});}
+function receiptsDownloadAllBtn(){return tMap({nl:'Alles downloaden + verwijderen',en:'Download all + clear',es:'Descargar todo + borrar',fr:'Tout télécharger + effacer',de:'Alles herunterladen + löschen',ro:'Descarcă tot + șterge',hu:'Összes letöltése + törlés',ru:'Скачать всё + очистить',it:'Scarica tutto + cancella',pt:'Baixar tudo + limpar'});}
+function receiptsDeleteConfirm(){return tMap({nl:'Dit bonnetje definitief verwijderen?',en:'Permanently delete this receipt?',es:'¿Eliminar este recibo definitivamente?',fr:'Supprimer définitivement ce reçu ?',de:'Diesen Beleg endgültig löschen?',ro:'Ștergi definitiv această chitanță?',hu:'Véglegesen törlöd ezt a nyugtát?',ru:'Удалить этот чек навсегда?',it:'Eliminare definitivamente questa ricevuta?',pt:'Excluir permanentemente este recibo?'});}
+function receiptsDeleteAllConfirm(n){return tMap({nl:n+' bonnetje(s) definitief verwijderen? Download ze eerst als je ze wilt bewaren.',en:'Permanently delete '+n+' receipt(s)? Download them first if you want to keep them.',es:'¿Eliminar definitivamente '+n+' recibo(s)? Descárgalos primero si quieres conservarlos.',fr:'Supprimer définitivement '+n+' reçu(s) ? Téléchargez-les d\'abord si vous voulez les garder.',de:n+' Beleg(e) endgültig löschen? Lade sie zuerst herunter, wenn du sie behalten möchtest.',ro:'Ștergi definitiv '+n+' chitanță(e)? Descarcă-le mai întâi dacă vrei să le păstrezi.',hu:n+' nyugta végleges törlése? Előbb töltsd le, ha meg szeretnéd tartani őket.',ru:'Удалить навсегда '+n+' чек(ов)? Сначала скачайте, если хотите их сохранить.',it:'Eliminare definitivamente '+n+' ricevuta/e? Scaricale prima se vuoi conservarle.',pt:n+' recibo(s) excluídos permanentemente? Baixe-os primeiro se quiser mantê-los.'});}
+function renderReceiptsSection(){
+  var box=document.getElementById('receipts-section');
+  if(!box)return;
+  var list=entriesWithReceiptPhotos();
+  var h='<div onclick="var f=document.getElementById(\'receipts-body\');var a=document.getElementById(\'receipts-arrow\');var wasOpen=f.style.display!==\'none\';f.style.display=wasOpen?\'none\':\'block\';a.textContent=wasOpen?\'▶\':\'▼\';if(!wasOpen)renderReceiptsList();" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;margin-bottom:2px">';
+  h+='<span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)">'+receiptsSectionTitle()+(list.length?' ('+list.length+')':'')+'</span>';
+  h+='<span id="receipts-arrow" style="font-size:11px;color:var(--text3)">▶</span>';
+  h+='</div>';
+  h+='<div id="receipts-body" style="display:none">';
+  h+='<div style="font-size:11px;color:var(--text3);margin-bottom:6px">'+receiptsSectionSub()+'</div>';
+  h+='<div id="receipts-list"></div>';
+  h+='<div id="receipts-bulk-actions" style="margin-top:8px"></div>';
+  h+='</div>';
+  box.innerHTML=h;
+}
+function renderReceiptsList(){
+  var el=document.getElementById('receipts-list');
+  var bulkEl=document.getElementById('receipts-bulk-actions');
+  if(!el)return;
+  var list=entriesWithReceiptPhotos();
+  if(!list.length){
+    el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:6px 0">'+receiptsEmptyLbl()+'</div>';
+    if(bulkEl)bulkEl.innerHTML='';
+    return;
+  }
+  el.innerHTML=list.map(function(e){
+    var dateLbl=formatDate(e.datum);
+    var amtLbl=parseFloat(e.kosten)>0?(currencySymbol()+parseFloat(e.kosten).toFixed(2).replace('.',',')):'';
+    var idArg=ssIdArg(e.id);
+    return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--border);font-size:12px">'
+      +'<img src="'+e.foto.thumb+'" style="width:32px;height:32px;object-fit:cover;border-radius:6px;border:1px solid var(--border);flex-shrink:0">'
+      +'<div style="flex:1;min-width:0"><div style="color:var(--text2)">'+dateLbl+(amtLbl?' &middot; '+amtLbl:'')+'</div><div style="color:var(--text3);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escapeHtml(e.omschrijving||getCatLabel(e.categorie))+'</div></div>'
+      +'<button class="btn sm" onclick="downloadReceiptPhotoRow('+idArg+')" style="flex-shrink:0">'+receiptsDownloadBtn()+'</button>'
+      +'<button class="btn sm danger" onclick="deleteReceiptPhotoRow('+idArg+')" style="flex-shrink:0">'+t('delete_btn')+'</button>'
+      +'</div>';
+  }).join('');
+  if(bulkEl){
+    bulkEl.innerHTML='<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      +'<button class="btn sm" onclick="downloadAllReceiptPhotosAndClear()" style="flex:1">'+receiptsDownloadAllBtn()+'</button>'
+      +'<button class="btn sm danger" onclick="deleteAllReceiptPhotos()" style="flex:1">'+receiptsDeleteAllBtn(list.length)+'</button>'
+      +'</div>';
+  }
+}
+function receiptPhotoDownloadName(e){
+  return 'bonnetje_'+(e.datum||'')+'_'+(e.id)+'.jpg';
+}
+async function downloadReceiptPhotoRow(entryId){
+  var e=db.entries.find(function(x){return x.id==entryId;});
+  if(!e||!e.foto)return;
+  var blob=e.foto.driveFileId?await fetchReceiptPhotoBlob(e.foto.driveFileId):null;
+  if(!blob)blob=dataURLToBlob(e.foto.thumb); // fallback: still uploading, or Drive unavailable - better than nothing
+  triggerBlobDownload(blob,receiptPhotoDownloadName(e));
+}
+function deleteReceiptPhotoRow(entryId){
+  var e=db.entries.find(function(x){return x.id==entryId;});
+  if(!e||!e.foto)return;
+  if(!confirm(receiptsDeleteConfirm()))return;
+  if(e.foto.driveFileId)deleteReceiptPhotoFile(e.foto.driveFileId);
+  e.foto=null;
+  save();
+  renderReceiptsList();
+  renderReceiptsSection();
+}
+async function downloadAllReceiptPhotosAndClear(){
+  var list=entriesWithReceiptPhotos();
+  if(!list.length)return;
+  if(!confirm(receiptsDeleteAllConfirm(list.length)))return;
+  for(var i=0;i<list.length;i++){
+    var e=list[i];
+    try{
+      var blob=e.foto.driveFileId?await fetchReceiptPhotoBlob(e.foto.driveFileId):null;
+      if(!blob)blob=dataURLToBlob(e.foto.thumb);
+      triggerBlobDownload(blob,receiptPhotoDownloadName(e));
+    }catch(err){}
+    if(e.foto.driveFileId)deleteReceiptPhotoFile(e.foto.driveFileId);
+    e.foto=null;
+  }
+  save();
+  renderReceiptsList();
+  renderReceiptsSection();
+}
+function deleteAllReceiptPhotos(){
+  var list=entriesWithReceiptPhotos();
+  if(!list.length)return;
+  if(!confirm(receiptsDeleteAllConfirm(list.length)))return;
+  list.forEach(function(e){
+    if(e.foto.driveFileId)deleteReceiptPhotoFile(e.foto.driveFileId);
+    e.foto=null;
+  });
+  save();
+  renderReceiptsList();
+  renderReceiptsSection();
 }
 
 // REMINDER
@@ -14580,6 +14841,7 @@ function fabAction(){
 // same repeat/new question a second time right after.
 function startWizard(prefillDate,skipGate){
   draft={datum:prefillDate||ymdLocal()};wizStep=0;
+  _pendingReceiptPhoto=null;_pendingReceiptPhotoRemoved=false;
   document.querySelectorAll('#screen-main .screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.bn-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('s-wizard').classList.add('active');
@@ -14800,6 +15062,7 @@ function renderWiz(){
           <span class="form-label">${t('wizard_expense_label')}</span>
           <input type="number" id="w-kosten" min="0" step="0.01" placeholder="0.00 (${currencySymbol()})" value="${draft.kosten||''}">
           <div style="font-size:11px;color:var(--text3);margin-top:3px">${t('wizard_expense_hint')}</div>
+          ${receiptPhotoFieldHtml(null)}
         </div>
       </div>
       <div style="font-size:12px;color:var(--text3);margin-top:8px">${t('wizard_no_travel')}</div>
@@ -14809,6 +15072,7 @@ function renderWiz(){
       <div class="wiz-hint" style="margin-bottom:0">${t('wizard_expense_hint')}</div>
       <div class="travel-box">
         <input type="number" id="w-kosten" min="0" step="0.01" placeholder="0.00 (${currencySymbol()})" value="${draft.kosten||''}">
+        ${receiptPhotoFieldHtml(null)}
       </div>
       <div class="btn-row"><button class="btn" onclick="wBack()">${t('wizard_back')}</button><button class="btn" onclick="wQuickSave()">${t('save_btn')}</button><button class="btn primary" onclick="wSet('kosten','w-kosten');wNext()">${t('wizard_next')}</button></div>`;
     }
@@ -15221,6 +15485,18 @@ function wQuickSave(){
   wSave();
 }
 function wSave(wantsCal){
+  // A photo picked on the expense step lives only in _pendingReceiptPhoto
+  // until now (the wizard's draft has no real entry id yet to upload
+  // against). Stamp the small thumbnail onto draft.foto so it rides along
+  // in the {...draft} spread below for whichever path actually creates the
+  // logged entry, and stash the full-size version to upload in the
+  // background once that entry has a real id.
+  var _wSaveFullPhoto=null;
+  if(_pendingReceiptPhoto){
+    draft.foto={thumb:_pendingReceiptPhoto.thumb,driveFileId:null,uploadedAt:new Date().toISOString()};
+    _wSaveFullPhoto=_pendingReceiptPhoto.full;
+  }
+  _pendingReceiptPhoto=null;_pendingReceiptPhotoRemoved=false;
   if(wizardDraftIsFuture()){
     var plannedEntries=saveDraftAsPlanned();
     draft._savedAsPlan=true;
@@ -15236,15 +15512,23 @@ function wSave(wantsCal){
     var mdCur=parseLocalDate(draft.datum);
     var mdEnd=parseLocalDate(draft.multiDayUntil);
     var mdGroupId='md-'+Date.now();
+    var mdFirstEntry=null;
     while(mdCur<=mdEnd){
       var mdEntry={...draft,id:genEntryId(),datum:ymdLocal(mdCur),multiDayGroupId:mdGroupId};
       delete mdEntry.multiDayUntil;
       delete mdEntry.extraCursistIds; // multi-student fan-out only applies to the single-day path below
+      // A single receipt photo belongs to one day of the trip, not copied
+      // onto every day - keep it only on the first occurrence.
+      if(mdFirstEntry)delete mdEntry.foto;
       touch(mdEntry);
       db.entries.unshift(mdEntry);
+      if(!mdFirstEntry)mdFirstEntry=mdEntry;
       mdCur.setDate(mdCur.getDate()+1);
     }
     save();
+    if(_wSaveFullPhoto&&mdFirstEntry){
+      uploadReceiptPhoto(mdFirstEntry.id,_wSaveFullPhoto).then(function(fid){if(fid&&mdFirstEntry.foto){mdFirstEntry.foto.driveFileId=fid;save();}});
+    }
   }else{
     const entry={...draft,id:genEntryId()};
     delete entry.extraCursistIds; // wizard-only field, not a real entry field
@@ -15276,6 +15560,9 @@ function wSave(wantsCal){
     // real-world activity, matching the single-entry model already used by
     // the "confirm planned activity" flow.
     save();
+    if(_wSaveFullPhoto){
+      uploadReceiptPhoto(entry.id,_wSaveFullPhoto).then(function(fid){if(fid&&entry.foto){entry.foto.driveFileId=fid;save();}});
+    }
   }
   saveFollowupReminder();
   wizStep=WIZ.indexOf('klaar');renderWiz();
@@ -19853,13 +20140,19 @@ ${(function(){
         const rawKosten=parseFloat(e.kosten);
         const displayKosten=!isNaN(rawKosten)&&rawKosten>0?rawKosten:null;
         const kmKostenTxt=[displayKm?displayKm+distUnit():'',displayKosten?currencySymbol()+displayKosten.toFixed(2).replace('.',','):''].filter(Boolean).join(' · ');
+        // A receipt photo attached to an expense entry (parking ticket etc.)
+        // prints as a small inline thumbnail next to the amount, so the
+        // president's PDF copy actually carries proof of the expense -
+        // full-resolution stays in Drive, only this cheap cached preview
+        // ever gets embedded here.
+        const receiptThumb=(e.foto&&e.foto.thumb)?`<img src="${e.foto.thumb}" style="width:11pt;height:11pt;object-fit:cover;border-radius:2pt;vertical-align:middle;margin-left:3pt">`:'';
         const name=entryDisplayName(e);
         const nameAnon=entryDisplayNameAnon(e);
         return`<div class="rp-act-row3 rp-sec-timeline-detail">
               <div class="rp-act-r3-date">${idx===0?dateShort:''}</div>
               <div class="rp-act-r3-cat"><div class="rp-act-group-bar" style="background:${color}"></div><span class="rp-act-r3-cat-txt">${catLabel}</span></div>
               <div class="rp-act-r3-desc"><span class="rp-name-real">${name}</span><span class="rp-name-anon">${nameAnon}</span>${(e.opmerking&&!e.notitiePrive)?' <span class="rp-act-r3-note">— '+escapeHtml(e.opmerking)+'</span>':''}</div>
-              <div class="rp-act-r3-km">${kmKostenTxt}</div>
+              <div class="rp-act-r3-km">${kmKostenTxt}${receiptThumb}</div>
               <div class="rp-act-r3-hrs">${displayU}${t('hours_abbr')}</div>
               <div class="rp-act-r3-total"></div>
             </div>`;
@@ -31120,6 +31413,7 @@ function saveStudyEntry(cursistId){
 function openEditEntryModal(entryId,skipSummary){
   var e=db.entries.find(function(x){return x.id==entryId;});
   if(!e)return;
+  _pendingReceiptPhoto=null;_pendingReceiptPhotoRemoved=false;
   var entryIdArg=ssIdArg(entryId);
   var catOpts=getCATEGORIES().filter(function(c){return !c.isTravel;}).map(function(c){
     return '<option value="'+c.label+'"'+(c.label===e.categorie?' selected':'')+'>'+getCatLabel(c.label)+'</option>';
@@ -31174,6 +31468,7 @@ function openEditEntryModal(entryId,skipSummary){
   if(parseFloat(e.km)>0)eeSumRow('Km', Math.round(parseFloat(e.km))+distUnit());
   if(parseFloat(e.reisUren)>0)eeSumRow(t('wizard_travel_hours'), parseFloat(e.reisUren)+t('hours_abbr'));
   if(parseFloat(e.kosten)>0)eeSumRow(t('col_kosten'), currencySymbol()+parseFloat(e.kosten).toFixed(2).replace('.',','));
+  if(e.foto&&e.foto.thumb)eeSumRow(receiptPhotoLabel(), '<img src="'+e.foto.thumb+'" style="width:32px;height:32px;object-fit:cover;border-radius:6px;border:1px solid var(--border);vertical-align:middle">');
   eeSumRow(t('wizard_cat'), escapeHtml(getCatLabel(e.categorie)));
   if(e.omschrijving)eeSumRow(t('wizard_desc'), escapeHtml(e.omschrijving));
   if(e.cursistNaam)eeSumRow(t('wizard_with_who').replace('?',''), escapeHtml(e.cursistNaam));
@@ -31204,6 +31499,7 @@ function openEditEntryModal(entryId,skipSummary){
   h+='<div><span class="form-label">'+t('wizard_travel_hours')+'</span><input type="number" id="ee-reisuren" min="0" step="0.25" value="'+(e.reisUren||0)+'" style="width:100%"></div>';
   h+='</div>';
   h+='<div style="margin-bottom:8px"><span class="form-label">'+t('col_kosten')+' ('+currencySymbol()+')</span><input type="number" id="ee-kosten" min="0" step="0.01" value="'+(e.kosten||0)+'" style="width:100%"></div>';
+  h+=receiptPhotoFieldHtml(e.foto&&e.foto.thumb?e.foto.thumb:null,'ee-receipt-photo-widget');
   h+='<span class="form-label">'+t('wizard_cat')+'</span>';
   h+='<select id="ee-cat" style="width:100%;margin-bottom:8px" onchange="toggleEeMultiVisibility()">'+catOpts+'</select>';
   h+='<span class="form-label">'+t('wizard_desc')+'</span>';
@@ -31431,6 +31727,19 @@ function saveEditEntry(entryId){
   if(omsch)e.omschrijving=omsch.value;
   if(opm)e.opmerking=opm.value;
   if(opmShare)e.notitiePrive=opmShare.checked;
+  // Commit whatever the receipt-photo widget landed on: a freshly-picked
+  // photo (upload/replace, reusing the same per-entry Drive file so this
+  // never leaks a second orphaned upload) or an explicit removal. Neither
+  // touched at all just leaves e.foto exactly as it was.
+  if(_pendingReceiptPhoto){
+    var _rpFull=_pendingReceiptPhoto.full;
+    e.foto={thumb:_pendingReceiptPhoto.thumb,driveFileId:(e.foto&&e.foto.driveFileId)||null,uploadedAt:new Date().toISOString()};
+    uploadReceiptPhoto(e.id,_rpFull).then(function(fid){if(fid&&e.foto){e.foto.driveFileId=fid;save();}});
+  } else if(_pendingReceiptPhotoRemoved&&e.foto){
+    if(e.foto.driveFileId)deleteReceiptPhotoFile(e.foto.driveFileId);
+    e.foto=null;
+  }
+  _pendingReceiptPhoto=null;_pendingReceiptPhotoRemoved=false;
   // "Meerdere studenten" (see openEditEntryModal comment above) - diff the
   // checked contacts against whichever companion entries already share this
   // entry's groupStudyId, so re-opening the edit modal and changing the
