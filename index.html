@@ -822,7 +822,6 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
   #rp-print-version.hide-prayers .rp-sec-prayers{display:none!important}
   #rp-print-version.hide-doop .rp-sec-doop{display:none!important}
   #rp-print-version.hide-newstats .rp-sec-newstats{display:none!important}
-  #rp-print-version.hide-yearprog .rp-sec-yearprog{display:none!important}
   #rp-print-version.hide-extra-page .rp-page-extra{display:none!important}
   /* Names vs. anonymized ("hours and activities only, no specifics") mode -
      both variants are always rendered, CSS just picks which one shows, so
@@ -15538,6 +15537,13 @@ function wSave(wantsCal){
     if(_wSaveFullPhoto&&mdFirstEntry){
       uploadReceiptPhoto(mdFirstEntry.id,_wSaveFullPhoto).then(function(fid){if(fid&&mdFirstEntry.foto){mdFirstEntry.foto.driveFileId=fid;save();}});
     }
+    // Follow the newly logged date the same way a spreadsheet date-edit does
+    // (see keepDateVisibleInLog) - otherwise a still-active month/year filter
+    // left over from browsing the Logboek before opening the wizard makes the
+    // entry just saved silently invisible until that filter is cleared by
+    // hand. That's indistinguishable from data loss from the user's side -
+    // "I just added an entry... but it doesn't appear in the logboek."
+    if(mdFirstEntry)keepDateVisibleInLog(mdFirstEntry.datum);
   }else{
     const entry={...draft,id:genEntryId()};
     delete entry.extraCursistIds; // wizard-only field, not a real entry field
@@ -15572,6 +15578,10 @@ function wSave(wantsCal){
     if(_wSaveFullPhoto){
       uploadReceiptPhoto(entry.id,_wSaveFullPhoto).then(function(fid){if(fid&&entry.foto){entry.foto.driveFileId=fid;save();}});
     }
+    // See the matching comment in the multi-day branch above - keeps a
+    // leftover Logboek month/year filter from hiding the entry that was just
+    // logged.
+    keepDateVisibleInLog(entry.datum);
   }
   saveFollowupReminder();
   wizStep=WIZ.indexOf('klaar');renderWiz();
@@ -16976,6 +16986,10 @@ function saveQuickRepeat(sourceEntryId){
     });
   }
   save();
+  // Same fix as wSave() (main wizard) - a leftover Logboek month/year filter
+  // from before this popup was opened shouldn't be able to hide the entry
+  // that was just (re)logged.
+  keepDateVisibleInLog(newEntry.datum);
   closeModals();
   if(currentScreen==='cursisten')renderCursisten();
   else if(currentScreen==='log'){
@@ -19830,11 +19844,6 @@ function _buildRapportInner(){
         <div class="rp-cpct">${p}%</div>
       </div>`;
     }).join('')}
-  </div>
-  <div class="rp-cover-body rp-sec-yearprog">
-    <div class="rp-sh" style="margin-top:0">${LANG==='en'?'Year progress':LANG==='es'?'Progreso anual':LANG==='fr'?'Progression annuelle':LANG==='de'?'Jahresfortschritt':LANG==='ro'?'Progres anual':LANG==='hu'?'Éves haladás':LANG==='ru'?'Годовой прогресс':'Jaarvoortgang'}</div>
-    <div class="rp-prog-row"><div class="rp-prog-meta"><span>${t('rp_crit_hours')} (${LANG==='en'?'goal':LANG==='es'?'meta':LANG==='fr'?'objectif':LANG==='de'?'Ziel':LANG==='ro'?'obiectiv':LANG==='hu'?'cél':LANG==='ru'?'цель':'doel'} 2088${t('hours_abbr')})</span><strong>${critUren.toFixed(1)}${t('hours_abbr')} &middot; ${progPct}%</strong></div><div class="rp-prog-track"><div class="rp-prog-fill" style="width:${progPct}%;background:#1A6B47"></div></div></div>
-    <div class="rp-prog-row"><div class="rp-prog-meta"><span>% ${LANG==='en'?'of total hours':LANG==='es'?'del total de horas':LANG==='fr'?'des heures totales':LANG==='de'?'der Gesamtstunden':LANG==='ro'?'din total ore':LANG==='hu'?'az összes óra':LANG==='ru'?'от общего времени':'van totaal uren'}</span><strong>${totalUren>0?Math.round(critUren/totalUren*100):0}%</strong></div><div class="rp-prog-track"><div class="rp-prog-fill" style="width:${totalUren>0?Math.round(critUren/totalUren*100):0}%;background:#1D4ED8"></div></div></div>
   </div>
   <div class="rp-vak-section rp-sec-absence">
     <div class="rp-sh">${t('holiday')} ${_vakRangeMultiYear?(formatDate(rapportRangeFrom)+' – '+formatDate(rapportRangeTo)):_vakStatsYear}</div>
@@ -25208,11 +25217,10 @@ function getPdfExportPrefs(){
       planned: obj.planned!==false,
       prayers: obj.prayers!==false,
       doop: obj.doop!==false,
-      newstats: obj.newstats!==false,
-      yearProgress: obj.yearProgress!==false
+      newstats: obj.newstats!==false
     };
   }catch(e){
-    return {cover:true,catdist:false,yearProgress:true,km:true,kosten:true,bs:true,contactPhone:false,contactAddress:false,timeline:true,timelineDetail:true,absence:true,anonymize:false,planned:true,prayers:true,doop:true,newstats:true};
+    return {cover:true,catdist:false,km:true,kosten:true,bs:true,contactPhone:false,contactAddress:false,timeline:true,timelineDetail:true,absence:true,anonymize:false,planned:true,prayers:true,doop:true,newstats:true};
   }
 }
 function savePdfExportPrefs(p){
@@ -25240,7 +25248,6 @@ function openPdfExportOptions(mode){
     :tMap({nl:'Kies wat er in de PDF/afdruk komt te staan. Handig als je maar een deel wilt delen met je leider.',en:'Choose what goes into the PDF/print. Useful if you only want to share part with your leader.',es:'Elige qué incluir en el PDF/impresión. Útil si solo quieres compartir una parte con tu líder.',fr:'Choisissez ce qui figure dans le PDF/impression. Utile si vous ne voulez partager qu\'une partie avec votre responsable.',de:'Wählen Sie, was in das PDF/den Druck aufgenommen wird. Nützlich, wenn Sie nur einen Teil mit Ihrem Leiter teilen möchten.',ro:'Alege ce apare în PDF/tipărire. Util dacă vrei să distribui doar o parte liderului tău.',hu:'Válaszd ki, mi kerüljön a PDF-be/nyomtatásba. Hasznos, ha csak egy részt szeretnél megosztani a vezetőddel.',ru:'Выберите, что включить в PDF/печать. Полезно, если вы хотите поделиться только частью с руководителем.',it:'Scegli cosa includere nel PDF/stampa. Utile se vuoi condividere solo una parte con il tuo leader.',pt:'Escolha o que vai no PDF/impressão. Útil se quiser partilhar apenas uma parte com o seu líder.'});
   var coverLbl=tMap({nl:'Overzicht (uren, categorieën)',en:'Overview (hours, categories)',es:'Resumen (horas, categorías)',fr:'Aperçu (heures, catégories)',de:'Übersicht (Stunden, Kategorien)',ro:'Prezentare generală (ore, categorii)',hu:'Áttekintés (órák, kategóriák)',ru:'Обзор (часы, категории)',it:'Panoramica (ore, categorie)',pt:'Visão geral (horas, categorias)'});
   var catdistLbl=tMap({nl:'— verdeling per categorie (taartdiagram)',en:'— distribution by category (pie chart)',es:'— distribución por categoría (gráfico circular)',fr:'— répartition par catégorie (camembert)',de:'— Verteilung nach Kategorie (Kreisdiagramm)',ro:'— distribuție pe categorie (grafic circular)',hu:'— megoszlás kategóriánként (kördiagram)',ru:'— распределение по категориям (круговая диаграмма)',it:'— distribuzione per categoria (grafico a torta)',pt:'— distribuição por categoria (gráfico circular)'});
-  var yearProgLbl=tMap({nl:'Jaarvoortgang',en:'Year progress',es:'Progreso anual',fr:'Progression annuelle',de:'Jahresfortschritt',ro:'Progres anual',hu:'Éves haladás',ru:'Годовой прогресс',it:'Progresso annuale',pt:'Progresso anual'});
   var kmLbl=tMap({nl:'Kilometers (voor penningmeester)',en:'Kilometers (for treasurer)',es:'Kilómetros (para tesorero)',fr:'Kilomètres (pour trésorier)',de:'Kilometer (für Kassierer)',ro:'Kilometri (pentru trezorier)',hu:'Kilométer (pénztárosnak)',ru:'Километры (для казначея)',it:'Chilometri (per il tesoriere)',pt:'Quilómetros (para o tesoureiro)'});
   var kostenLbl=tMap({nl:'Onkosten (bus/vliegtuig/trein/benzine)',en:'Expenses (bus/plane/train/fuel)',es:'Gastos (bus/avión/tren/gasolina)',fr:'Frais (bus/avion/train/essence)',de:'Ausgaben (Bus/Flug/Zug/Benzin)',ro:'Cheltuieli (autobuz/avion/tren/combustibil)',hu:'Költségek (busz/repülő/vonat/üzemanyag)',ru:'Расходы (автобус/самолёт/поезд/топливо)',it:'Spese (bus/aereo/treno/carburante)',pt:'Despesas (ônibus/avião/trem/combustível)'});
   var bsLbl=tMap({nl:'Bijbelstudies overzicht (per cursist)',en:'Bible studies overview (per student)',es:'Resumen de estudios bíblicos (por alumno)',fr:'Aperçu des études bibliques (par élève)',de:'Bibelstudien-Übersicht (pro Schüler)',ro:'Prezentare studii biblice (pe elev)',hu:'Bibliatanulmányok áttekintése (tanulónként)',ru:'Обзор библейских уроков (по ученику)',it:'Panoramica studi biblici (per studente)',pt:'Visão geral dos estudos bíblicos (por aluno)'});
@@ -25285,7 +25292,6 @@ function openPdfExportOptions(mode){
   h+='<div>';
   h+=pdfOptRow('pdf-opt-cover',coverLbl,prefs.cover);
   h+=pdfOptRow('pdf-opt-catdist',catdistLbl,prefs.catdist,true);
-  h+=pdfOptRow('pdf-opt-yearprog',yearProgLbl,prefs.yearProgress);
   h+=pdfOptRow('pdf-opt-km',kmLbl,prefs.km);
   h+=pdfOptRow('pdf-opt-kosten',kostenLbl,prefs.kosten);
   h+=pdfOptRow('pdf-opt-bs',bsLbl,prefs.bs);
@@ -25342,7 +25348,6 @@ function confirmPdfExport(mode){
   var prefs={
     cover: !!(document.getElementById('pdf-opt-cover')||{}).checked,
     catdist: !!(document.getElementById('pdf-opt-catdist')||{}).checked,
-    yearProgress: !!(document.getElementById('pdf-opt-yearprog')||{}).checked,
     km: !!(document.getElementById('pdf-opt-km')||{}).checked,
     kosten: !!(document.getElementById('pdf-opt-kosten')||{}).checked,
     bs: !!(document.getElementById('pdf-opt-bs')||{}).checked,
@@ -25383,7 +25388,6 @@ function confirmPdfExport(mode){
   if(pv){
     pv.classList.toggle('hide-cover',!prefs.cover);
     pv.classList.toggle('hide-catdist',!prefs.catdist);
-    pv.classList.toggle('hide-yearprog',!prefs.yearProgress);
     pv.classList.toggle('hide-km',!prefs.km);
     pv.classList.toggle('hide-kosten',!prefs.kosten);
     pv.classList.toggle('hide-bs',!prefs.bs);
