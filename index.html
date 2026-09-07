@@ -17012,15 +17012,22 @@ function saveQuickRepeat(sourceEntryId){
       var tm=THEMAS.find(function(x){return x[0]===themaVal;});
       if(tm)themaName=themaVal+' - '+tm[1];
     }
-    newEntry.omschrijving=themaName||themaVal;
     newEntry.thema=themaName||themaVal;
     newEntry.themacode=themaVal;
+    // Only let the new topic take over the description when the ORIGINAL
+    // entry's description was itself never customized - empty, or exactly
+    // the old topic's own name (i.e. it was auto-generated, not typed by
+    // hand). A hand-written description like "Bijbelstudie met Lerina
+    // Poppen" is a naming convention the person chose on purpose and should
+    // survive a repeat even as the topic advances from one lesson to the
+    // next - it used to get silently overwritten with the new lesson title
+    // the moment the topic dropdown had a value, which is exactly the "why
+    // didn't it keep the description it had" bug being fixed here.
+    if(!origOmschrijving || origOmschrijving===(src.thema||''))newEntry.omschrijving=themaName||themaVal;
   }
-  // Only lets an explicit edit to the description field win over a thema
-  // selection above - if the user picked a different Bible-study topic but
-  // left the (still-showing-the-old-text) description field untouched, the
-  // thema-derived text should stand; if they actually typed something new,
-  // that's a deliberate choice and takes precedence.
+  // Only lets an explicit edit to the description field win over everything
+  // above - if the user typed something new into the description box,
+  // that's a deliberate choice and always takes precedence.
   if(omsch&&omsch.value!==origOmschrijving)newEntry.omschrijving=omsch.value;
   if(themaCompleted)newEntry.themaCompleted=themaCompleted.checked;
   // "Meerdere studenten" fan-out (see the checkbox block in
