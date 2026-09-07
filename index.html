@@ -822,6 +822,7 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
   #rp-print-version.hide-prayers .rp-sec-prayers{display:none!important}
   #rp-print-version.hide-doop .rp-sec-doop{display:none!important}
   #rp-print-version.hide-newstats .rp-sec-newstats{display:none!important}
+  #rp-print-version.hide-attachments .rp-sec-attachments{display:none!important}
   #rp-print-version.hide-extra-page .rp-page-extra{display:none!important}
   /* Names vs. anonymized ("hours and activities only, no specifics") mode -
      both variants are always rendered, CSS just picks which one shows, so
@@ -980,6 +981,18 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
 
   /* Page footer */
   .rp-page-footer{margin-top:10pt;padding-top:4pt;border-top:.5pt solid #bbb!important;border-bottom:none!important;border-left:none!important;border-right:none!important;display:flex;justify-content:space-between;font-size:7pt;color:#888!important}
+
+  /* Bijlagen (attachments) appendix — receipt photos at an actually legible
+     size instead of the tiny inline thumbnail next to each expense row
+     above. Own page-break-safe section so a full row of cards never gets
+     sliced across a page boundary. */
+  .rp-sec-attachments{margin-top:18pt;break-before:page}
+  .rp-attach-grid{display:flex;flex-wrap:wrap;gap:10pt;margin-top:6pt}
+  .rp-attach-card{width:110pt;break-inside:avoid}
+  .rp-attach-img{width:110pt;height:110pt;object-fit:cover;border-radius:3pt;border:.5pt solid #ddd!important;display:block}
+  .rp-attach-meta{margin-top:3pt}
+  .rp-attach-date{font-size:7.5pt;font-weight:700;color:#335781!important}
+  .rp-attach-desc{font-size:7pt;color:#666!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 }
 
 
@@ -1441,6 +1454,9 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
     <div id="rapport-content"></div>
     <button class="btn full no-print" onclick="openPdfExportOptions()" style="margin-top:4px" id="rapport-print-btn">
       <svg width="16" height="16"><use href="#ico-printer"/></svg> <span data-i18n="print_btn">Afdrukken / PDF</span>
+    </button>
+    <button class="btn full no-print" onclick="downloadReceiptsZipForPeriod()" style="margin-top:8px" id="rapport-zip-btn">
+      <svg width="16" height="16"><use href="#ico-import"/></svg> <span id="rapport-zip-btn-label"></span>
     </button>
     <button class="btn full no-print" onclick="openPdfExportOptions('csv')" style="margin-top:8px" id="rapport-export-btn">
       <svg width="16" height="16"><use href="#ico-filecsv"/></svg> <span data-i18n="export_csv2">Exporteren CSV</span>
@@ -8348,6 +8364,7 @@ function applyLanguage(){
   // Update rapport buttons
   var rpb=document.getElementById('rapport-print-btn');if(rpb)rpb.textContent=t('print_pdf');
   var reb=document.getElementById('rapport-export-btn');if(reb)reb.textContent=t('export_csv_btn');
+  var rzbl=document.getElementById('rapport-zip-btn-label');if(rzbl)rzbl.textContent=receiptsZipBtnLbl();
   // Update static UI elements that don't re-render
   var els={
     'nb-home': t('nav_dashboard'),
@@ -11815,6 +11832,72 @@ function triggerBlobDownload(blob,filename){
   var a=document.createElement('a');
   a.href=url;a.download=filename;document.body.appendChild(a);a.click();
   setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},500);
+}
+// Every receipt photo attached to an entry that falls within the Rapport
+// screen's currently selected period (month/year/custom range) - backs the
+// "Download bonnetjes (zip)" button next to the PDF export button. Distinct
+// from entriesWithReceiptPhotos() (all-time, backs the Settings > Bonnetjes
+// panel) - this one is scoped to whatever period the user is looking at, so
+// a zip download matches what they'd expect to attach to an email about
+// that specific report.
+function receiptEntriesForReportPeriod(){
+  var scoped=rapportViewMode==='year'?filterByYear(db.entries,rapportYear):rapportViewMode==='range'?filterByRange(db.entries,rapportRangeFrom,rapportRangeTo):filterByYearMonth(db.entries,rapportYear,rapportMonth);
+  return scoped.filter(function(e){return e.foto&&e.foto.thumb;});
+}
+// JSZip is only pulled in the moment someone actually taps "Download
+// bonnetjes (zip)" - same lazy-load pattern as pdf.js/Chart.js elsewhere in
+// this file, so offline-first users who never touch receipts never pay for
+// it.
+var _jsZipLoadPromise=null;
+function loadJSZip(){
+  if(window.JSZip)return Promise.resolve(window.JSZip);
+  if(_jsZipLoadPromise)return _jsZipLoadPromise;
+  _jsZipLoadPromise=new Promise(function(resolve,reject){
+    var s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+    s.onload=function(){resolve(window.JSZip);};
+    s.onerror=function(){reject(new Error('JSZip kon niet geladen worden - controleer internetverbinding.'));};
+    document.head.appendChild(s);
+  });
+  return _jsZipLoadPromise;
+}
+function receiptsZipBtnLbl(){return tMap({nl:'Bonnetjes downloaden (zip)',en:'Download receipts (zip)',es:'Descargar recibos (zip)',fr:'Télécharger les reçus (zip)',de:'Belege herunterladen (zip)',ro:'Descarcă chitanțele (zip)',hu:'Nyugták letöltése (zip)',ru:'Скачать чеки (zip)',it:'Scarica ricevute (zip)',pt:'Baixar recibos (zip)'});}
+function receiptsZipBuildingLbl(){return tMap({nl:'Bezig...',en:'Working...',es:'Procesando...',fr:'En cours...',de:'Wird bearbeitet...',ro:'Se procesează...',hu:'Folyamatban...',ru:'Обработка...',it:'In corso...',pt:'Processando...'});}
+function receiptsZipEmptyMsg(){return tMap({nl:'Geen bonnetjes met foto in deze periode.',en:'No receipts with a photo in this period.',es:'No hay recibos con foto en este período.',fr:'Aucun reçu avec photo pour cette période.',de:'Keine Belege mit Foto in diesem Zeitraum.',ro:'Nicio chitanță cu fotografie în această perioadă.',hu:'Nincs fotóval ellátott nyugta ebben az időszakban.',ru:'В этот период нет чеков с фото.',it:'Nessuna ricevuta con foto in questo periodo.',pt:'Nenhum recibo com foto neste período.'});}
+function receiptsZipErrorMsg(){return tMap({nl:'Kon de zip niet maken - controleer je internetverbinding en probeer opnieuw.',en:'Could not build the zip - check your internet connection and try again.',es:'No se pudo crear el zip - comprueba tu conexión a internet e inténtalo de nuevo.',fr:'Impossible de créer le zip - vérifiez votre connexion internet et réessayez.',de:'Zip konnte nicht erstellt werden - Internetverbindung prüfen und erneut versuchen.',ro:'Nu s-a putut crea arhiva zip - verifică conexiunea la internet și încearcă din nou.',hu:'Nem sikerült létrehozni a zip fájlt - ellenőrizd az internetkapcsolatot, és próbáld újra.',ru:'Не удалось создать zip-архив - проверьте подключение к интернету и попробуйте снова.',it:'Impossibile creare lo zip - controlla la connessione internet e riprova.',pt:'Não foi possível criar o zip - verifique sua conexão com a internet e tente novamente.'});}
+// Bundles every receipt photo from the currently selected Rapport period
+// into one .zip download - the practical answer to "export the loose
+// photos too, all in one map [folder], to attach to an email": rather than
+// downloading each photo one at a time (the existing per-row/all-time
+// Settings > Bonnetjes buttons), this grabs just this report's photos as a
+// single file. Non-destructive - unlike downloadAllReceiptPhotosAndClear()
+// in the Settings panel, the photos stay attached to their entries
+// afterward; this is a "grab a copy" action, not an archive+clear.
+async function downloadReceiptsZipForPeriod(){
+  var list=receiptEntriesForReportPeriod();
+  if(!list.length){alert(receiptsZipEmptyMsg());return;}
+  var btn=document.getElementById('rapport-zip-btn');
+  var origHtml=btn?btn.innerHTML:null;
+  if(btn){btn.disabled=true;btn.innerHTML=receiptsZipBuildingLbl();}
+  try{
+    var JSZipLib=await loadJSZip();
+    var zip=new JSZipLib();
+    for(var i=0;i<list.length;i++){
+      var e=list[i];
+      try{
+        var blob=e.foto.driveFileId?await fetchReceiptPhotoBlob(e.foto.driveFileId):null;
+        if(!blob)blob=dataURLToBlob(e.foto.thumb);
+        zip.file(receiptPhotoDownloadName(e),blob);
+      }catch(err){}
+    }
+    var content=await zip.generateAsync({type:'blob'});
+    var periodLbl=rapportViewMode==='year'?rapportYear:rapportViewMode==='range'?((rapportRangeFrom||'')+'_tot_'+(rapportRangeTo||'')):(rapportMonth||rapportYear);
+    triggerBlobDownload(content,'bonnetjes_'+periodLbl+'.zip');
+  }catch(err){
+    alert(receiptsZipErrorMsg());
+  }finally{
+    if(btn){btn.disabled=false;btn.innerHTML=origHtml;}
+  }
 }
 // Shared "attach a receipt photo" widget, used by both the wizard's expense
 // step and the edit-entry modal - a freshly-picked replacement
@@ -15490,7 +15573,14 @@ function wQuickSave(){
   else if(s==='travel'){wSet('reisUren','w-reisuren');wSet('km','w-km');wSet('kosten','w-kosten');}
   else if(s==='cursist')wSetCursist();
   else if(s==='thema_details')wSetThema();
-  wSave();
+  // Saving mid-flow (before reaching the final step's own "add to calendar"
+  // checkbox) used to always skip calendar export, even if this ends up
+  // being a future-dated / planned entry - there was simply no way to opt
+  // in from here. Follow the user's remembered preference instead (same
+  // getCalExportPref() pattern the checkbox itself defaults from), so a
+  // quick-saved planned activity still reaches Apple/Google/Windows
+  // Calendar the way a normal full-flow save would.
+  wSave(getCalExportPref());
 }
 function wSave(wantsCal){
   // A photo picked on the expense step lives only in _pendingReceiptPhoto
@@ -18772,6 +18862,7 @@ function rpPickYear(yr){
 }
 function renderRapport(){
   var now=new Date();
+  var _rzbl=document.getElementById('rapport-zip-btn-label');if(_rzbl)_rzbl.textContent=receiptsZipBtnLbl();
   if(!rapportYear){var ys=getYears(db.entries);rapportYear=ys.length?ys[ys.length-1]:now.getFullYear().toString();}
   var yearEntries=filterByYear(db.entries,rapportYear);
   if(rapportViewMode==='month'){
@@ -20199,6 +20290,31 @@ ${(function(){
   </div>
   <div class="rp-page-footer" style="margin-top:12pt"><span>${s.gemeente||'ZDAreformatie'} &middot; ${s.naam||''}</span><span>${maand}</span></div>
 </div>
+
+${(function(){
+  // Bijlagen (attachments) appendix: every entry in this report's period
+  // that has a receipt photo, shown at a real, legible size (see
+  // .rp-attach-img) instead of the tiny 11pt inline thumbnail on the
+  // Dagelijks overzicht row above. Only the already-cached preview
+  // (e.foto.thumb, ~320px) is used here - no live Drive fetch mid-print -
+  // so this works offline and never blocks/slows down generating the PDF.
+  var attachEntries=data.filter(function(e){return e.foto&&e.foto.thumb;});
+  if(!attachEntries.length)return'';
+  var bijlagenLbl=LANG==='en'?'Attachments':LANG==='es'?'Adjuntos':LANG==='fr'?'Pièces jointes':LANG==='de'?'Anhänge':LANG==='ro'?'Anexe':LANG==='hu'?'Mellékletek':LANG==='ru'?'Вложения':LANG==='it'?'Allegati':LANG==='pt'?'Anexos':'Bijlagen';
+  var cards=attachEntries.map(function(e){
+    var dateLbl=parseLocalDate(e.datum).toLocaleDateString(getLocale(),{day:'numeric',month:'short'});
+    var amtLbl=parseFloat(e.kosten)>0?(currencySymbol()+parseFloat(e.kosten).toFixed(2).replace('.',',')):'';
+    var descLbl=escapeHtml(e.omschrijving||getCatLabel(e.categorie));
+    return '<div class="rp-attach-card">'
+      +'<img src="'+e.foto.thumb+'" class="rp-attach-img">'
+      +'<div class="rp-attach-meta"><div class="rp-attach-date">'+dateLbl+(amtLbl?' &middot; '+amtLbl:'')+'</div><div class="rp-attach-desc">'+descLbl+'</div></div>'
+      +'</div>';
+  }).join('');
+  return '<div class="rp-sec-attachments">'
+    +'<div class="rp-timeline-sh">'+bijlagenLbl+'</div>'
+    +'<div class="rp-attach-grid">'+cards+'</div>'
+    +'</div>';
+})()}
 
 </div>`;
 
@@ -25217,10 +25333,11 @@ function getPdfExportPrefs(){
       planned: obj.planned!==false,
       prayers: obj.prayers!==false,
       doop: obj.doop!==false,
-      newstats: obj.newstats!==false
+      newstats: obj.newstats!==false,
+      attachments: obj.attachments!==false
     };
   }catch(e){
-    return {cover:true,catdist:false,km:true,kosten:true,bs:true,contactPhone:false,contactAddress:false,timeline:true,timelineDetail:true,absence:true,anonymize:false,planned:true,prayers:true,doop:true,newstats:true};
+    return {cover:true,catdist:false,km:true,kosten:true,bs:true,contactPhone:false,contactAddress:false,timeline:true,timelineDetail:true,absence:true,anonymize:false,planned:true,prayers:true,doop:true,newstats:true,attachments:true};
   }
 }
 function savePdfExportPrefs(p){
@@ -25261,6 +25378,7 @@ function openPdfExportOptions(mode){
   var prayersLbl=tMap({nl:'Gebedspunten (gemeente/werk)',en:'Prayer requests (church/work)',es:'Peticiones de oración (iglesia/trabajo)',fr:'Sujets de prière (église/travail)',de:'Gebetsanliegen (Gemeinde/Arbeit)',ro:'Cereri de rugăciune (biserică/lucrare)',hu:'Imakérések (gyülekezet/munka)',ru:'Молитвенные нужды (церковь/работа)',it:'Richieste di preghiera (chiesa/lavoro)',pt:'Pedidos de oração (igreja/trabalho)'});
   var doopLbl=tMap({nl:'Doopkandidaten',en:'Baptism candidates',es:'Candidatos al bautismo',fr:'Candidats au baptême',de:'Taufkandidaten',ro:'Candidați la botez',hu:'Keresztelési jelöltek',ru:'Кандидаты на крещение',it:'Candidati al battesimo',pt:'Candidatos ao batismo'});
   var newstatsLbl=tMap({nl:'Contactenoverzicht (nieuwe contacten, leden, geïnteresseerden)',en:'Contacts overview (new contacts, members, interested)',es:'Resumen de contactos (nuevos contactos, miembros, interesados)',fr:'Aperçu des contacts (nouveaux contacts, membres, intéressés)',de:'Kontaktübersicht (neue Kontakte, Mitglieder, Interessierte)',ro:'Prezentare contacte (contacte noi, membri, interesați)',hu:'Kapcsolatok áttekintése (új kapcsolatok, tagok, érdeklődők)',ru:'Обзор контактов (новые контакты, члены, заинтересованные)',it:'Panoramica contatti (nuovi contatti, membri, interessati)',pt:'Visão geral de contactos (novos contactos, membros, interessados)'});
+  var attachmentsLbl=tMap({nl:'Bijlagen (bonnetjes/foto\'s op volledige grootte)',en:'Attachments (receipt photos at full size)',es:'Adjuntos (fotos de recibos a tamaño completo)',fr:'Pièces jointes (photos de reçus en taille réelle)',de:'Anhänge (Beleg-Fotos in voller Größe)',ro:'Anexe (foto chitanțe la dimensiune completă)',hu:'Mellékletek (nyugtafotók teljes méretben)',ru:'Вложения (фото чеков в полном размере)',it:'Allegati (foto delle ricevute a grandezza naturale)',pt:'Anexos (fotos de recibos em tamanho real)'});
   function pdfOptRow(id,label,checked,indent){
     return '<label style="display:flex;align-items:flex-start;gap:10px;padding:'+(indent?'6px 0 6px 28px':'10px 0')+';'+(indent?'':'border-bottom:1px solid var(--border);')+'cursor:pointer">'+
       '<input type="checkbox" id="'+id+'" '+(checked?'checked':'')+' style="width:'+(indent?'15px':'18px')+';height:'+(indent?'15px':'18px')+';flex-shrink:0;margin-top:1px">'+
@@ -25304,6 +25422,7 @@ function openPdfExportOptions(mode){
   h+=pdfOptRow('pdf-opt-prayers',prayersLbl,prefs.prayers);
   h+=pdfOptRow('pdf-opt-doop',doopLbl,prefs.doop);
   h+=pdfOptRow('pdf-opt-newstats',newstatsLbl,prefs.newstats);
+  h+=pdfOptRow('pdf-opt-attachments',attachmentsLbl,prefs.attachments);
   h+=pdfOptRow('pdf-opt-anonymize',anonymizeLbl,prefs.anonymize);
   h+='</div>';
   h+='<div style="display:flex;gap:8px;margin-top:16px">';
@@ -25360,7 +25479,8 @@ function confirmPdfExport(mode){
     planned: !!(document.getElementById('pdf-opt-planned')||{}).checked,
     prayers: !!(document.getElementById('pdf-opt-prayers')||{}).checked,
     doop: !!(document.getElementById('pdf-opt-doop')||{}).checked,
-    newstats: !!(document.getElementById('pdf-opt-newstats')||{}).checked
+    newstats: !!(document.getElementById('pdf-opt-newstats')||{}).checked,
+    attachments: !!(document.getElementById('pdf-opt-attachments')||{}).checked
   };
   savePdfExportPrefs(prefs);
   if(mode==='leader'){
@@ -25401,6 +25521,7 @@ function confirmPdfExport(mode){
     pv.classList.toggle('hide-prayers',!prefs.prayers);
     pv.classList.toggle('hide-doop',!prefs.doop);
     pv.classList.toggle('hide-newstats',!prefs.newstats);
+    pv.classList.toggle('hide-attachments',!prefs.attachments);
     // The "extra page" (planned absences/prayers/baptism/contacts overview)
     // forces its own page break - if none of its 4 sections are checked,
     // hide the whole page instead of printing an almost-blank sheet.
