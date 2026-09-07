@@ -16998,6 +16998,15 @@ function saveQuickRepeat(sourceEntryId){
     tijd:timeVal,
     uren:parseFloat(uren&&uren.value)||0,
     opmerking:opm?opm.value:'',
+    // The note text itself is reset above (this popup's own, normally blank,
+    // note field wins over whatever the source entry had) - but the source's
+    // notitiePrive flag was still coming along for the ride via the
+    // Object.assign(src) spread above, so a repeated entry could show up
+    // with an empty note that was nonetheless marked "private", left over
+    // from a completely different note on the original entry. Reset it here
+    // too so a fresh/blank note always starts shared (the app's default),
+    // same as any other new entry.
+    notitiePrive:false,
     isManual:true
   });
   if(cat&&cat.value){
