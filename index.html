@@ -15061,22 +15061,30 @@ function wSetTravelRelated(){
   var sel=document.getElementById('w-travel-related');
   draft.travelLabel=(sel&&sel.value)||'Reizen - Overig';
 }
-// Whether the wizard's date+time (draft.datum / draft.tijd) is still ahead
-// of right now. A later calendar date is always "future"; on today's date
-// it only counts as future if a specific time was given and that time
-// hasn't passed yet. No date can't happen (the date field always has a
-// value), so this only needs to compare strings, no Date-parsing footguns.
-function wizardDraftIsFuture(){
-  if(!draft.datum)return false;
+// Whether a given date+time (YYYY-MM-DD / HH:MM, either can be blank) is
+// still ahead of right now. A later calendar date is always "future"; on
+// today's date it only counts as future if a specific time was given and
+// that time hasn't passed yet. Shared by the main wizard (wizardDraftIsFuture
+// below) and saveQuickRepeat's own date field - both need the exact same
+// same-day-future-time handling, not just a plain date>today check (see
+// saveQuickRepeat comment: a same-day-but-later-time repeat used to get
+// misclassified as already-happened because it only compared dates).
+function isFutureDateTime(dateStr,timeStr){
+  if(!dateStr)return false;
   var todayStr=ymdLocal();
-  if(draft.datum>todayStr)return true;
-  if(draft.datum<todayStr)return false;
-  if(draft.tijd){
+  if(dateStr>todayStr)return true;
+  if(dateStr<todayStr)return false;
+  if(timeStr){
     var now=new Date();
     var nowStr=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-    return draft.tijd>nowStr;
+    return timeStr>nowStr;
   }
   return false;
+}
+// Whether the wizard's date+time (draft.datum / draft.tijd) is still ahead
+// of right now. See isFutureDateTime above for the actual logic.
+function wizardDraftIsFuture(){
+  return isFutureDateTime(draft.datum,draft.tijd);
 }
 // Per user request: no more manual "register or plan" choice up front —
 // the wizard is always just "log an activity", and whether it ends up as a
@@ -16559,12 +16567,17 @@ function saveQuickRepeat(sourceEntryId){
   if(km)newEntry.km=parseFloat(km.value)||0;
   // A repeated entry dated in the future isn't something that already
   // happened - it's a plan. Same auto-classification the main wizard uses
-  // (wizardDraftIsFuture/saveDraftAsPlanned): route it into db.planned
-  // instead of db.entries so it shows up as an upcoming activity (Binnenkort/
-  // calendar) rather than silently logging hours for a day that hasn't
-  // happened yet. Previously this always pushed to db.entries regardless of
-  // date, so picking a future date here just mis-logged it as already done.
-  if(datum.value>ymdLocal()){
+  // (isFutureDateTime/wizardDraftIsFuture/saveDraftAsPlanned): route it into
+  // db.planned instead of db.entries so it shows up as an upcoming activity
+  // (Binnenkort/calendar) rather than silently logging hours for a day that
+  // hasn't happened yet. Previously this always pushed to db.entries
+  // regardless of date, so picking a future date here just mis-logged it as
+  // already done. Also previously only compared dates (datum.value>ymdLocal()),
+  // so today's date with a later time - e.g. planning something for 3pm when
+  // it's currently 9am - still fell through to "already happened" and never
+  // got offered for Apple/Google/Windows Calendar export either, since that
+  // only happens in this future branch.
+  if(isFutureDateTime(datum.value,timeVal)){
     ensurePlanned();
     // renderTimePicker('qr-time',...) stores the canonical "HH:MM" string in
     // a hidden input with id="qr-time" (kept in sync by _syncTimePicker on
