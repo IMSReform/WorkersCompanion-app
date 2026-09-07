@@ -22046,6 +22046,13 @@ function confirmCursistenRosterImportReview(){
       if(!existingContact.plaats&&m.plaats)existingContact.plaats=m.plaats;
       if(!existingContact.tel&&m.tel)existingContact.tel=m.tel;
       if(!existingContact.opmerking&&m.opmerking)existingContact.opmerking=m.opmerking;
+      // touch() stamps _upd so the Drive sync merge (mergeArraysById) knows
+      // this copy is newer. Without it, a contact enriched here - especially
+      // an untouched stub created by the activities import - loses the
+      // "neither side timestamped" tie-break to the older, blank remote copy
+      // on the very next sync, silently reverting the address (see the same
+      // fix + comment on saveEditCursist above).
+      touch(existingContact);
       mergedCount++;
     }else{
       db.cursisten.push({
