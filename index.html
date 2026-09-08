@@ -17829,7 +17829,7 @@ function gcExportCatLabel(key){
 var GC_REPORT_STR={
   en:{title:'Report for the General Conference',generated_on:'Generated on',overview:'Overview',infra:'Workers & infrastructure',churches:'Churches',note_off:'Church names withheld - only aggregate totals are shared for this export.',note_on:'This export includes church names and locations.',growth5yr:'Growth over the last 5 years',no_data:'No baptism-date data available.',print_pdf:'Print/Export PDF',lang_lbl:'Report language',
     lbl_churches:'Number of churches',lbl_lid:'Members',lbl_doop:'Baptism candidates',lbl_student:'Bible students',lbl_sabbath:'Sabbath school visitors',lbl_jeugd:'Youth',lbl_child:'Children',lbl_interested:'Interested',lbl_contact:'Contacts',lbl_workers:'Number of workers',lbl_pastors:'Number of pastors',lbl_missionhouses:'Main churches/mission houses',lbl_buildings:'Own buildings'},
-  es:{title:'Informe para la Conferencia General',generated_on:'Generado el',overview:'Resumen',infra:'Obreros e infraestructura',churches:'Iglesias',note_off:'Solo se comparten totales — no se comparten nombres ni ubicaciones de las iglesias.',note_on:'Esta exportación incluye nombres y ubicaciones de las iglesias.',growth5yr:'Crecimiento en los últimos 5 años',no_data:'No hay datos de fecha de bautismo disponibles.',print_pdf:'Imprimir/Exportar PDF',lang_lbl:'Idioma del informe',
+  es:{title:'Informe para la Asociación General',generated_on:'Generado el',overview:'Resumen',infra:'Obreros e infraestructura',churches:'Iglesias',note_off:'Solo se comparten totales — no se comparten nombres ni ubicaciones de las iglesias.',note_on:'Esta exportación incluye nombres y ubicaciones de las iglesias.',growth5yr:'Crecimiento en los últimos 5 años',no_data:'No hay datos de fecha de bautismo disponibles.',print_pdf:'Imprimir/Exportar PDF',lang_lbl:'Idioma del informe',
     lbl_churches:'Número de iglesias',lbl_lid:'Miembros',lbl_doop:'Candidatos al bautismo',lbl_student:'Estudiantes bíblicos',lbl_sabbath:'Visitantes de escuela sabática',lbl_jeugd:'Jóvenes',lbl_child:'Niños',lbl_interested:'Interesados',lbl_contact:'Contactos',lbl_workers:'Número de obreros',lbl_pastors:'Número de pastores',lbl_missionhouses:'Iglesias principales/casas de misión',lbl_buildings:'Edificios propios'}
 };
 function gcS(key,lang){
@@ -17843,7 +17843,7 @@ function gcInfraValues(){
 function openGcExportModalWorker(){
   var infra=gcInfraValues();
   var h='<div style="padding:20px">';
-  h+='<div style="font-size:16px;font-weight:700;margin-bottom:4px">'+tMap({nl:'Export voor Delegates / Generale Conferentie',en:'Export for Delegates / General Conference',es:'Exportar para Delegados / Conferencia General',fr:'Export pour Délégués / Conférence Générale',de:'Export für Delegierte / Generalkonferenz',ro:'Export pentru Delegați / Conferința Generală',hu:'Export a küldötteknek / Generálkonferenciának',ru:'Экспорт для делегатов / Генеральной конференции',it:'Export per Delegati / Conferenza Generale',pt:'Exportar para Delegados / Conferência Geral'})+'</div>';
+  h+='<div style="font-size:16px;font-weight:700;margin-bottom:4px">'+tMap({nl:'Export voor Delegates / Generale Conferentie',en:'Export for Delegates / General Conference',es:'Exportar para Delegados / Asociación General',fr:'Export pour Délégués / Conférence Générale',de:'Export für Delegierte / Generalkonferenz',ro:'Export pentru Delegați / Conferința Generală',hu:'Export a küldötteknek / Generálkonferenciának',ru:'Экспорт для делегатов / Генеральной конференции',it:'Export per Delegati / Conferenza Generale',pt:'Exportar para Delegados / Conferência Geral'})+'</div>';
   h+='<div style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.4">'+tMap({nl:'Kies welke cijfers meegaan in de PDF. Individuele namen worden nooit gedeeld — alleen aantallen.',en:'Choose which numbers to include in the PDF. Individual names are never shared — only counts.',es:'Elige qué cifras incluir en el PDF. Nunca se comparten nombres individuales — solo totales.',fr:'Choisissez les chiffres à inclure dans le PDF. Les noms individuels ne sont jamais partagés — seulement les totaux.',de:'Wähle, welche Zahlen in die PDF aufgenommen werden. Einzelne Namen werden nie geteilt — nur Anzahlen.',ro:'Alege ce cifre să fie incluse în PDF. Numele individuale nu sunt niciodată partajate — doar totaluri.',hu:'Válaszd ki, mely számok kerüljenek a PDF-be. Egyéni nevek soha nincsenek megosztva — csak számok.',ru:'Выберите, какие цифры включить в PDF. Имена никогда не передаются — только количества.',it:'Scegli quali numeri includere nel PDF. I nomi individuali non vengono mai condivisi — solo i totali.',pt:'Escolha quais números incluir no PDF. Nomes individuais nunca são partilhados — apenas totais.'})+'</div>';
   h+='<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">';
   GC_EXPORT_CATS_WORKER.forEach(function(key){
@@ -17955,7 +17955,6 @@ function gcExportPdfWorker(selectedKeys,sharePrivate,infra,lang){
   var counts=gcBuildFunnelCountsWorker();
   var churches=gcBuildChurchesWorker();
   var growth=gcBuild5YearGrowthWorker();
-  var orgName=db.settings.gemeente||'';
   var STAT_DEFS={
     churches:{label:gcS('lbl_churches',lang),val:churches.count},
     lid:{label:gcS('lbl_lid',lang),val:counts.lid},
@@ -18025,7 +18024,7 @@ function gcExportPdfWorker(selectedKeys,sharePrivate,infra,lang){
   var w=_printFrame.contentWindow;
   w.document.write('<html><head><title>'+gcS('title',lang)+'</title><style>'+style+'</style></head><body><div class="page-wrap">');
   w.document.write(orgHeaderHtml(11,lang));
-  w.document.write('<div class="title">'+gcS('title',lang)+(orgName?' — '+orgName:'')+'</div>');
+  w.document.write('<div class="title">'+gcS('title',lang)+'</div>');
   w.document.write('<div class="meta">'+gcS('generated_on',lang)+' '+dateStr+'</div>');
   if(funnelKeys.length){w.document.write('<div class="section-title">'+gcS('overview',lang)+'</div>');w.document.write(funnelListHtml);}
   if(churchesHtml)w.document.write(churchesHtml);
