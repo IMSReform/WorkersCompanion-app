@@ -10401,7 +10401,7 @@ const LS_KEY='zda_v4_'+new Date().getFullYear();
 // Not year-scoped like LS_KEY on purpose - which screen the user was last on
 // should keep working across a year rollover too.
 const LAST_SCREEN_KEY='zda_last_screen';
-let db={entries:[],cursisten:[],todos:[],prayers:[],customStudies:[],tombstones:[],approvals:[],settings:{reminderOn:false,interval:60,reminderText:'',naam:'',gemeente:'ZDAreformatie',goalStudies:0,goalEvang:0,goalUrenWeek:40,goalFollowup:0,workRole:'bijbelwerker',approvalCode:''}};
+let db={entries:[],cursisten:[],todos:[],prayers:[],customStudies:[],tombstones:[],approvals:[],settings:{reminderOn:false,interval:60,reminderText:'',naam:'',gemeente:'ZDAreformatie',goalStudies:0,goalEvang:0,goalUrenWeek:40,goalFollowup:0,workRole:'bijbelwerker',approvalCode:'',gcInfra:{workers:0,pastors:0,missionhouses:0,buildings:0}}};
 // Every entry-creation site used to just do id:Date.now(), which can collide
 // when two entries are created within the same millisecond — e.g. the wizard
 // creating a main entry plus its auto-travel entry back-to-back, or a fast
@@ -12711,7 +12711,7 @@ async function confirmClear(){
   });
   var _keepDark=db.settings.darkMode,_keepTheme=db.settings.appTheme,_keepTextSize=db.settings.textSize;
   db.entries=[];db.cursisten=[];db.todos=[];db.prayers=[];db.customStudies=[];db.approvals=[];db.planned=[];db.vacationDays=[];db.churches=[];
-  db.settings={reminderOn:false,interval:60,reminderText:'',naam:'',gemeente:'ZDAreformatie',goalStudies:0,goalEvang:0,goalUrenWeek:40,goalFollowup:0,workRole:'bijbelwerker',approvalCode:''};
+  db.settings={reminderOn:false,interval:60,reminderText:'',naam:'',gemeente:'ZDAreformatie',goalStudies:0,goalEvang:0,goalUrenWeek:40,goalFollowup:0,workRole:'bijbelwerker',approvalCode:'',gcInfra:{workers:0,pastors:0,missionhouses:0,buildings:0}};
   if(_keepDark!==undefined)db.settings.darkMode=_keepDark;
   if(_keepTheme!==undefined)db.settings.appTheme=_keepTheme;
   if(_keepTextSize!==undefined)db.settings.textSize=_keepTextSize;
@@ -17652,10 +17652,289 @@ function renderCursistenSummary(){
   h+='<button class="btn sm" onclick="handleImportClick()" style="font-size:11px;flex-shrink:0;display:flex;align-items:center;gap:5px;cursor:pointer;margin:0"><svg width="12" height="12"><use href="#ico-import"/></svg>'+tMap({nl:'Importeren',en:'Import',es:'Importar',fr:'Importer',de:'Importieren',ro:'Importă',hu:'Importálás',ru:'Импорт',it:'Importa',pt:'Importar'})+'</button>';
   h+='<input type="file" id="cursist-import-file" accept=".csv,.json,.pdf" multiple style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;z-index:-1" onchange="handleImportFile(event);this.value=\'\'">';
   h+='<button class="btn sm" onclick="openBulkSharePicker()" style="font-size:11px;flex-shrink:0;display:flex;align-items:center;gap:5px"><svg width="12" height="12"><use href="#ico-share-ios"/></svg>'+tMap({nl:'Delen',en:'Share',es:'Compartir',fr:'Partager',de:'Teilen',ro:'Distribuie',hu:'Megosztás',ru:'Поделиться',it:'Condividi',pt:'Partilhar'})+'</button>';
+  // Kantoor/secretariaat only: a secretary's Contacts tab doubles as the
+  // church-membership database she maintains directly (addresses/phone
+  // numbers, not field-work entries), so she gets the same "export
+  // aggregate numbers for GC" tool the president app's Database section
+  // has, built from her own db.cursisten instead of imported worker files.
+  if(db.settings.workRole==='kantoor'){
+    h+='<button class="btn sm" onclick="openGcExportModalWorker()" style="font-size:11px;flex-shrink:0;display:flex;align-items:center;gap:5px"><svg width="12" height="12"><use href="#ico-printer"/></svg>'+gcExportBtnLabel()+'</button>';
+  }
   h+='</div>';
   h+='</div></div>';
+  if(db.settings.workRole==='kantoor')h+=renderCursistenChurchesAccordion(db.cursisten);
   el.innerHTML=h;
 }
+// "Toon gemeentes" (show churches) accordion — same funnel/tag breakdown as
+// the pills above, scoped per congregation (cu.gemeente). Kantoor/secretariaat
+// role only (see renderCursistenSummary): a secretary usually manages several
+// congregations' worth of contacts in one list, so a per-church breakdown is
+// the thing she actually needs; a single bijbelwerker's contacts are almost
+// always all the same church, so this stays hidden for that role rather than
+// cluttering their already-familiar Contacts tab. Mirrors the president app's
+// renderDbChurchesAccordion() (PERSON_TYPE_STAGE/PERSON_TYPE_TAGS +
+// getCursistGroupKey are the worker app's own equivalents of that function's
+// funnel logic, so no separate copy of the grouping rules is needed here).
+function renderCursistenChurchesAccordion(list){
+  var byChurch={};
+  list.forEach(function(cu){
+    var g=(cu.gemeente||'').trim()||'__none__';
+    if(!byChurch[g])byChurch[g]=[];
+    byChurch[g].push(cu);
+  });
+  var churchKeys=Object.keys(byChurch).filter(function(k){return k!=='__none__';}).sort(function(a,b){return a.localeCompare(b);});
+  if(byChurch['__none__'])churchKeys.push('__none__');
+  if(!churchKeys.length)return '';
+
+  var accKey='cursisten-churches';
+  var open=getAccState(accKey)===true;
+  var h='<div class="settings-section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer" onclick="toggleAccordionByKey(\''+accKey+'\',this.querySelector(\'.acc-toggle-btn\'))">';
+  h+='<span>'+gcShowChurchesLabel()+'</span>';
+  h+='<button type="button" class="acc-toggle-btn" onclick="event.stopPropagation();toggleAccordionByKey(\''+accKey+'\',this)" title="'+gcShowChurchesLabel()+'" style="background:none;border:none;padding:4px;margin:-4px;cursor:pointer;display:flex;color:var(--text3)"><svg width="14" height="14" style="transition:transform .2s'+(open?';transform:rotate(180deg)':'')+'"><use href="#ico-chevron-down"/></svg></button>';
+  h+='</div>';
+  h+='<div class="card card-acc-plain'+(open?' acc-open':'')+'" data-acc-key="'+accKey+'" style="padding-left:14px;padding-right:14px;margin-bottom:12px">';
+  h+='<div class="acc-body">';
+  churchKeys.forEach(function(gk,idx){
+    var items=byChurch[gk];
+    var label=gk==='__none__'?gcNoChurchLabel():gk;
+    h+='<div style="'+(idx?'border-top:1px solid var(--border);':'')+'padding:'+(idx?'10px':'0 0 10px')+' 0">';
+    h+='<div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px">'+label+' <span style="font-weight:400;color:var(--text3)">('+items.length+')</span></div>';
+    h+='<div style="display:flex;flex-wrap:wrap;gap:5px">';
+    PERSON_TYPE_STAGE.forEach(function(key){
+      var cnt=items.filter(function(cu){return getCursistGroupKey(cu)===key;}).length;
+      if(!cnt)return;
+      h+='<div style="display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:16px;background:var(--surface2);border:1px solid var(--border)">';
+      h+='<strong style="font-size:12px;color:var(--brand)">'+cnt+'</strong><span style="font-size:10px;color:var(--text3)">'+t('ct_'+key)+'</span>';
+      h+='</div>';
+    });
+    PERSON_TYPE_TAGS.forEach(function(key){
+      var cnt=items.filter(function(cu){return (cu.personTypes||[cu.personType||'contact']).indexOf(key)>=0;}).length;
+      if(!cnt)return;
+      h+='<div style="display:flex;align-items:center;gap:4px;padding:2px 7px;border-radius:16px;background:transparent;border:1px dashed var(--border)">';
+      h+='<strong style="font-size:11px;color:var(--text2)">'+cnt+'</strong><span style="font-size:9px;color:var(--text3)">'+t('ct_'+key)+'</span>';
+      h+='</div>';
+    });
+    h+='</div></div>';
+  });
+  h+='</div></div>';
+  return h;
+}
+
+// ── GC / DELEGATES EXPORT (kantoor/secretariaat role) ───────────────────
+// Same idea as the president app's GC export (see the sibling President app
+// file), scaled down to one worker's own contact database instead of an
+// aggregated multi-worker import: a secretary's Contacts tab already *is*
+// her church-membership database (she doesn't do field work, so it's never
+// mixed with study/visit logging noise), so the funnel counts and church
+// breakdown can be built straight from her own db.cursisten via the same
+// getCursistGroupKey()/PERSON_TYPE_STAGE/PERSON_TYPE_TAGS this whole screen
+// already uses. The only numbers she can't derive from her own contact list
+// - total workers/pastors/mission houses/own buildings - are entered by hand
+// in this modal and remembered in db.settings.gcInfra (see resetAllData()
+// and the initial db.settings object for the {workers,pastors,
+// missionhouses,buildings} default shape).
+var GC_EXPORT_CATS_WORKER=['churches','lid','doop','student','sabbath','jeugd','child','interested','contact','workers','pastors','missionhouses','buildings'];
+var GC_EXPORT_INFRA_KEYS_WORKER=['workers','pastors','missionhouses','buildings'];
+function gcExportBtnLabel(){return tMap({nl:'Exporteren voor GC',en:'Export for GC',es:'Exportar para CG',fr:'Exporter pour CG',de:'Für GK exportieren',ro:'Exportă pentru CG',hu:'Exportálás a GK-nak',ru:'Экспорт для ГК',it:'Esporta per CG',pt:'Exportar para CG'});}
+function gcShowChurchesLabel(){return tMap({nl:'Toon gemeentes',en:'Show churches',es:'Mostrar iglesias',fr:'Afficher les églises',de:'Gemeinden anzeigen',ro:'Arată bisericile',hu:'Gyülekezetek megjelenítése',ru:'Показать церкви',it:'Mostra chiese',pt:'Mostrar igrejas'});}
+function gcNoChurchLabel(){return tMap({nl:'Geen gemeente ingesteld',en:'No church set',es:'Sin iglesia asignada',fr:'Aucune église définie',de:'Keine Gemeinde festgelegt',ro:'Nicio biserică setată',hu:'Nincs gyülekezet megadva',ru:'Церковь не указана',it:'Nessuna chiesa impostata',pt:'Nenhuma igreja definida'});}
+function gcExportCatLabel(key){
+  if(key==='churches')return tMap({nl:'Aantal gemeenten',en:'Number of churches',es:'Número de iglesias',fr:'Nombre d’églises',de:'Anzahl Gemeinden',ro:'Număr de biserici',hu:'Gyülekezetek száma',ru:'Количество церквей',it:'Numero di chiese',pt:'Número de igrejas'});
+  if(key==='workers')return tMap({nl:'Aantal werkers',en:'Number of workers',es:'Número de obreros',fr:'Nombre d’ouvriers',de:'Anzahl Mitarbeiter',ro:'Număr de lucrători',hu:'Munkások száma',ru:'Количество работников',it:'Numero di operatori',pt:'Número de obreiros'});
+  if(key==='pastors')return tMap({nl:'Aantal predikanten',en:'Number of pastors',es:'Número de pastores',fr:'Nombre de pasteurs',de:'Anzahl Prediger',ro:'Număr de pastori',hu:'Lelkészek száma',ru:'Количество пасторов',it:'Numero di pastori',pt:'Número de pastores'});
+  if(key==='missionhouses')return tMap({nl:'Hoofdgemeenten/zendingshuizen',en:'Main churches/mission houses',es:'Iglesias principales/casas de misión',fr:'Églises principales/maisons de mission',de:'Hauptgemeinden/Missionshäuser',ro:'Biserici principale/case de misiune',hu:'Főgyülekezetek/missziósházak',ru:'Главные церкви/дома миссии',it:'Chiese principali/case di missione',pt:'Igrejas principais/casas de missão'});
+  if(key==='buildings')return tMap({nl:'Eigen gebouwen',en:'Own buildings',es:'Edificios propios',fr:'Bâtiments propres',de:'Eigene Gebäude',ro:'Clădiri proprii',hu:'Saját épületek',ru:'Собственные здания',it:'Edifici propri',pt:'Edifícios próprios'});
+  return t('ct_'+key);
+}
+function gcInfraValues(){
+  var g=(db.settings.gcInfra)||{};
+  return {workers:g.workers||0,pastors:g.pastors||0,missionhouses:g.missionhouses||0,buildings:g.buildings||0};
+}
+function openGcExportModalWorker(){
+  var infra=gcInfraValues();
+  var h='<div style="padding:20px">';
+  h+='<div style="font-size:16px;font-weight:700;margin-bottom:4px">'+tMap({nl:'Export voor Delegates / Generale Conferentie',en:'Export for Delegates / General Conference',es:'Exportar para Delegados / Conferencia General',fr:'Export pour Délégués / Conférence Générale',de:'Export für Delegierte / Generalkonferenz',ro:'Export pentru Delegați / Conferința Generală',hu:'Export a küldötteknek / Generálkonferenciának',ru:'Экспорт для делегатов / Генеральной конференции',it:'Export per Delegati / Conferenza Generale',pt:'Exportar para Delegados / Conferência Geral'})+'</div>';
+  h+='<div style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.4">'+tMap({nl:'Kies welke cijfers meegaan in de PDF. Individuele namen worden nooit gedeeld — alleen aantallen.',en:'Choose which numbers to include in the PDF. Individual names are never shared — only counts.',es:'Elige qué cifras incluir en el PDF. Nunca se comparten nombres individuales — solo totales.',fr:'Choisissez les chiffres à inclure dans le PDF. Les noms individuels ne sont jamais partagés — seulement les totaux.',de:'Wähle, welche Zahlen in die PDF aufgenommen werden. Einzelne Namen werden nie geteilt — nur Anzahlen.',ro:'Alege ce cifre să fie incluse în PDF. Numele individuale nu sunt niciodată partajate — doar totaluri.',hu:'Válaszd ki, mely számok kerüljenek a PDF-be. Egyéni nevek soha nincsenek megosztva — csak számok.',ru:'Выберите, какие цифры включить в PDF. Имена никогда не передаются — только количества.',it:'Scegli quali numeri includere nel PDF. I nomi individuali non vengono mai condivisi — solo i totali.',pt:'Escolha quais números incluir no PDF. Nomes individuais nunca são partilhados — apenas totais.'})+'</div>';
+  h+='<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">';
+  GC_EXPORT_CATS_WORKER.forEach(function(key){
+    h+='<label style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;background:var(--surface2);cursor:pointer">';
+    h+='<input type="checkbox" class="gc-export-cat-w" value="'+key+'" checked style="width:16px;height:16px;flex-shrink:0;accent-color:var(--brand)">';
+    h+='<span style="font-size:13px;color:var(--text)">'+gcExportCatLabel(key)+'</span>';
+    h+='</label>';
+  });
+  h+='</div>';
+  // Manual infra counts - the one thing this worker-app version can't derive
+  // from db.cursisten (see the comment on GC_EXPORT_CATS_WORKER above).
+  h+='<div class="settings-section-title" style="margin-bottom:6px">'+tMap({nl:'Handmatige gegevens',en:'Manual figures',es:'Cifras manuales',fr:'Chiffres manuels',de:'Manuelle Angaben',ro:'Cifre manuale',hu:'Kézi adatok',ru:'Данные вручную',it:'Cifre manuali',pt:'Números manuais'})+'</div>';
+  h+='<div class="card" style="padding:10px 14px;margin-bottom:16px;display:flex;flex-direction:column;gap:8px">';
+  GC_EXPORT_INFRA_KEYS_WORKER.forEach(function(key){
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">';
+    h+='<span style="font-size:12.5px;color:var(--text2)">'+gcExportCatLabel(key)+'</span>';
+    h+='<input type="number" min="0" id="gc-infra-w-'+key+'" value="'+infra[key]+'" style="width:70px;padding:6px 8px;border:none;border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit;text-align:right">';
+    h+='</div>';
+  });
+  h+='</div>';
+  h+='<label style="display:flex;align-items:flex-start;gap:9px;padding:10px;border-radius:8px;border:1.5px dashed var(--border);margin-bottom:18px;cursor:pointer">';
+  h+='<input type="checkbox" id="gc-export-private-w" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;accent-color:var(--brand)">';
+  h+='<span style="font-size:12px;color:var(--text2);line-height:1.4">'+tMap({nl:'Dit land deelt gedetailleerde informatie (namen en plaatsen van gemeenten). Standaard uit — dan bevat de export alleen totalen.',en:'This country shares detailed information (church names and locations). Off by default — the export then contains totals only.',es:'Este país comparte información detallada (nombres y ubicaciones de las iglesias). Desactivado por defecto — la exportación solo tendrá totales.',fr:'Ce pays partage des informations détaillées (noms et emplacements des églises). Désactivé par défaut — l’export ne contient alors que des totaux.',de:'Dieses Land teilt detaillierte Informationen (Namen und Orte der Gemeinden). Standardmäßig aus — dann enthält der Export nur Summen.',ro:'Această țară partajează informații detaliate (numele și locațiile bisericilor). Dezactivat implicit — exportul conține atunci doar totaluri.',hu:'Ez az ország részletes információkat oszt meg (gyülekezetek nevei és helyszínei). Alapértelmezésben kikapcsolva — az export ekkor csak összesítéseket tartalmaz.',ru:'Эта страна делится подробной информацией (названия и местоположения церквей). По умолчанию выключено — тогда экспорт содержит только итоги.',it:'Questo paese condivide informazioni dettagliate (nomi e sedi delle chiese). Disattivato per impostazione predefinita — l’export conterrà solo i totali.',pt:'Este país partilha informações detalhadas (nomes e localizações das igrejas). Desativado por padrão — a exportação conterá então apenas totais.'})+'</span>';
+  h+='</label>';
+  h+='<button class="btn primary full" onclick="gcExportGenerateWorker()">'+tMap({nl:'Genereer PDF',en:'Generate PDF',es:'Generar PDF',fr:'Générer le PDF',de:'PDF erstellen',ro:'Generează PDF',hu:'PDF létrehozása',ru:'Создать PDF',it:'Genera PDF',pt:'Gerar PDF'})+'</button>';
+  h+='<button class="btn full" style="margin-top:8px" onclick="closeModals()">'+t('cancel')+'</button>';
+  h+='</div>';
+  showModal(h);
+}
+function gcExportGenerateWorker(){
+  var selected=Array.prototype.map.call(document.querySelectorAll('.gc-export-cat-w:checked'),function(el){return el.value;});
+  var sharePrivate=!!(document.getElementById('gc-export-private-w')&&document.getElementById('gc-export-private-w').checked);
+  var infra={};
+  GC_EXPORT_INFRA_KEYS_WORKER.forEach(function(key){
+    var el=document.getElementById('gc-infra-w-'+key);
+    infra[key]=el?Math.max(0,parseInt(el.value,10)||0):0;
+  });
+  db.settings.gcInfra=infra;
+  save();
+  closeModals();
+  gcExportPdfWorker(selected,sharePrivate,infra);
+}
+function gcBuildFunnelCountsWorker(){
+  var counts={contact:0,interested:0,student:0,sabbath:0,doop:0,lid:0,jeugd:0,elderly:0,child:0};
+  db.cursisten.forEach(function(cu){
+    var gk=getCursistGroupKey(cu);
+    if(counts[gk]!==undefined)counts[gk]++;
+    (cu.personTypes||[cu.personType||'contact']).forEach(function(tg){if(counts[tg]!==undefined)counts[tg]++;});
+  });
+  return counts;
+}
+function gcBuildChurchesWorker(){
+  var byChurch={};
+  db.cursisten.forEach(function(cu){
+    var g=(cu.gemeente||'').trim()||'__none__';
+    if(!byChurch[g])byChurch[g]=[];
+    byChurch[g].push(cu);
+  });
+  var keys=Object.keys(byChurch).filter(function(k){return k!=='__none__';}).sort(function(a,b){return a.localeCompare(b);});
+  return {count:keys.length,byChurch:byChurch,keys:keys};
+}
+function gcBuild5YearGrowthWorker(){
+  var curYear=new Date().getFullYear();
+  var years=[];for(var i=4;i>=0;i--)years.push(curYear-i);
+  var dated=db.cursisten.filter(function(cu){return cu.doopDatum&&/^\d{4}/.test(cu.doopDatum);}).map(function(cu){return parseInt(cu.doopDatum.slice(0,4),10);});
+  var baseline=dated.filter(function(y){return y<years[0];}).length;
+  var rows=years.map(function(y){return {year:y,newCount:dated.filter(function(dy){return dy===y;}).length};});
+  var running=baseline;
+  rows.forEach(function(r){running+=r.newCount;r.total=running;});
+  return rows;
+}
+// Same off-screen-iframe print approach as the president app's GC export
+// (see _createPrintFrame there) - avoids window.open(), which hijacks the
+// whole WKWebView inside an installed iOS PWA instead of opening a real tab.
+function _gcCreatePrintFrameWorker(){
+  var iframe=document.createElement('iframe');
+  iframe.style.position='fixed';iframe.style.top='-10000px';iframe.style.left='-10000px';
+  iframe.style.width='1px';iframe.style.height='1px';iframe.style.border='0';
+  document.body.appendChild(iframe);
+  return iframe;
+}
+function _gcArmPrintFrameCleanupWorker(iframe){
+  var removed=false;
+  function cleanup(){if(removed)return;removed=true;if(iframe.parentNode)iframe.parentNode.removeChild(iframe);}
+  try{iframe.contentWindow.addEventListener('afterprint',cleanup);}catch(e){}
+  setTimeout(cleanup,60000);
+}
+// The GC report goes to Delegates / the General Conference, so - same as the
+// president app's version - it always renders in English regardless of the
+// app's own language setting.
+function gcExportPdfWorker(selectedKeys,sharePrivate,infra){
+  var counts=gcBuildFunnelCountsWorker();
+  var churches=gcBuildChurchesWorker();
+  var growth=gcBuild5YearGrowthWorker();
+  var orgName=db.settings.gemeente||'';
+  var STAT_DEFS={
+    churches:{label:'Number of churches',val:churches.count},
+    lid:{label:'Members',val:counts.lid},
+    doop:{label:'Baptism candidates',val:counts.doop},
+    student:{label:'Bible students',val:counts.student},
+    sabbath:{label:'Sabbath school visitors',val:counts.sabbath},
+    jeugd:{label:'Youth',val:counts.jeugd},
+    child:{label:'Children',val:counts.child},
+    interested:{label:'Interested',val:counts.interested},
+    contact:{label:'Contacts',val:counts.contact},
+    workers:{label:'Number of workers',val:infra.workers},
+    pastors:{label:'Number of pastors',val:infra.pastors},
+    missionhouses:{label:'Main churches/mission houses',val:infra.missionhouses},
+    buildings:{label:'Own buildings',val:infra.buildings}
+  };
+  var funnelKeys=selectedKeys.filter(function(k){return GC_EXPORT_INFRA_KEYS_WORKER.indexOf(k)<0;});
+  var infraKeys=selectedKeys.filter(function(k){return GC_EXPORT_INFRA_KEYS_WORKER.indexOf(k)>=0;});
+  function statListHtml(keys){
+    var h='<div class="stat-list">';
+    keys.forEach(function(k,ki){
+      var def=STAT_DEFS[k];if(!def)return;
+      h+='<div class="stat-row"'+(ki===keys.length-1?' style="border-bottom:none"':'')+'><span class="stat-lbl">'+def.label+'</span><span class="stat-val">'+def.val+'</span></div>';
+    });
+    h+='</div>';
+    return h;
+  }
+  var funnelListHtml=statListHtml(funnelKeys);
+  var infraListHtml=statListHtml(infraKeys);
+  if(selectedKeys.indexOf('churches')<0)churches=null;
+  var growthTableRows=growth.map(function(r){return '<tr><td>'+r.year+'</td><td>+'+r.newCount+'</td><td>'+r.total+'</td></tr>';}).join('');
+  var churchesHtml='';
+  if(churches&&churches.keys.length){
+    churchesHtml='<div class="section-title">Churches</div>';
+    if(sharePrivate){
+      churchesHtml+='<table class="tbl"><tbody>';
+      churches.keys.forEach(function(k){churchesHtml+='<tr><td>'+k+'</td><td class="num">'+churches.byChurch[k].length+'</td></tr>';});
+      churchesHtml+='</tbody></table>';
+    } else {
+      churchesHtml+='<div class="private-note">Church names withheld - only aggregate totals are shared for this export.</div>';
+    }
+  }
+  var privateNote='<div class="private-note">'+(sharePrivate?'This export includes church names and locations.':'Church names withheld - only aggregate totals are shared for this export.')+'</div>';
+  var today=new Date();
+  var dateStr=today.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  var style=''
+    +'@page{size:A4;margin:14mm}'
+    +'*{box-sizing:border-box}'
+    +'*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}'
+    +'body{font-family:Arial,Helvetica,sans-serif;color:#1a2733;margin:0;padding:0;font-size:9pt}'
+    +'.page-wrap{max-width:182mm;margin:0 auto;padding:0 4mm;box-sizing:border-box}'
+    +'.title{font-size:13pt;font-weight:700;margin-bottom:2px}'
+    +'.meta{font-size:8pt;color:#667;margin-bottom:6mm}'
+    +'.section-title{font-size:7.5pt;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin:6mm 0 2mm;color:#667;border-bottom:1px solid #EAF0F5;padding-bottom:1.5mm}'
+    +'.section-title:first-of-type{margin-top:4mm}'
+    +'.stat-list{margin-bottom:2mm}'
+    +'.stat-row{display:flex;align-items:baseline;justify-content:space-between;padding:2.5pt 0;border-bottom:1px solid #EAF0F5}'
+    +'.stat-lbl{font-size:8.5pt;color:#445}'
+    +'.stat-val{font-size:8.5pt;font-weight:700;color:#335781}'
+    +'.tbl{width:100%;border-collapse:collapse;font-size:8.5pt;margin-top:1.5mm}'
+    +'.tbl td{border-bottom:1px solid #EAF0F5;padding:3px 2px}'
+    +'.tbl td.num{text-align:right;font-weight:700;color:#335781}'
+    +'.private-note{font-size:7.5pt;color:#889;font-style:italic;margin-top:1.5mm}'
+    +'.print-btn{margin-top:8mm;padding:7px 16px;background:#335781;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:11px}'
+    +'@media print{.print-btn{display:none}}';
+  var _printFrame=_gcCreatePrintFrameWorker();
+  var w=_printFrame.contentWindow;
+  w.document.write('<html><head><title>Report for the General Conference</title><style>'+style+'</style></head><body><div class="page-wrap">');
+  w.document.write('<div class="title">Report for the General Conference'+(orgName?' — '+orgName:'')+'</div>');
+  w.document.write('<div class="meta">Generated on '+dateStr+'</div>');
+  if(funnelKeys.length){w.document.write('<div class="section-title">Overview</div>');w.document.write(funnelListHtml);}
+  if(churchesHtml)w.document.write(churchesHtml);
+  if(infraKeys.length){w.document.write('<div class="section-title">Infrastructure</div>');w.document.write(infraListHtml);}
+  w.document.write('<div class="section-title">5-year baptism/member growth</div>');
+  if(growth.some(function(r){return r.total>0;})){
+    w.document.write('<table class="tbl"><tbody>'+growthTableRows+'</tbody></table>');
+  } else {
+    w.document.write('<div class="private-note">No baptism-date data available.</div>');
+  }
+  w.document.write(privateNote);
+  w.document.write('<br><button class="print-btn" onclick="window.print()">'+t('print_pdf')+'</button>');
+  w.document.write('<script>(function(){setTimeout(function(){try{window.print();}catch(e){}},150);})();<\/script>');
+  w.document.write('</div></body></html>');
+  w.document.close();
+  _gcArmPrintFrameCleanupWorker(_printFrame);
+}
+
 function renderCursisten(){
   renderCursistenSummary();
   const el=document.getElementById('cursisten-list');
