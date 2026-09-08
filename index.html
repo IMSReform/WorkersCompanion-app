@@ -11817,13 +11817,15 @@ function dataURLToBlob(dataURL){
   for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
   return new Blob([arr],{type:mime});
 }
-// One Drive file per entry, named by entry id - re-attaching/replacing a
-// photo on the same entry just overwrites that same file instead of
-// leaking orphaned uploads behind.
-async function uploadReceiptPhoto(entryId,fullDataUrl){
+// One Drive file per entry+photo slot, named by entry id (photo 0 keeps the
+// original "no suffix" name so pre-existing single-photo uploads keep
+// resolving to the same file; photo 1+ gets an index suffix) -
+// re-attaching/replacing a photo in the same slot just overwrites that same
+// file instead of leaking orphaned uploads behind.
+async function uploadReceiptPhoto(entryId,fullDataUrl,photoIdx){
   if(!useGoogleDrive||!accessToken)return null;
   try{
-    var name=RECEIPT_PREFIX+entryId+'.jpg';
+    var name=RECEIPT_PREFIX+entryId+(photoIdx?('_'+photoIdx):'')+'.jpg';
     var l=await gapi.client.drive.files.list({spaces:'appDataFolder',q:"name='"+name+"'",fields:'files(id)'});
     var existing=l.result.files&&l.result.files[0];
     var fid=existing?existing.id:null;
@@ -11852,10 +11854,20 @@ async function fetchReceiptPhotoBlob(driveFileId){
     return await res.blob();
   }catch(e){ return null; }
 }
-// Every entry that currently has a receipt photo attached, newest first -
-// backs the Settings > Bonnetjes review/download/delete panel.
+// A single entry can now carry several receipt photos (e.fotos, an array) -
+// older entries/imports still only have the original single e.foto object.
+// Every read site should go through this helper instead of touching e.foto
+// or e.fotos directly, so both shapes keep working the same way.
+function entryPhotos(e){
+  if(e&&e.fotos&&e.fotos.length)return e.fotos;
+  if(e&&e.foto&&e.foto.thumb)return [e.foto];
+  return [];
+}
+// Every entry that currently has at least one receipt photo attached,
+// newest first - backs the Settings > Bonnetjes review/download/delete
+// panel.
 function entriesWithReceiptPhotos(){
-  return (db.entries||[]).filter(function(e){return e.foto&&e.foto.thumb;}).sort(function(a,b){return (b.datum||'').localeCompare(a.datum||'');});
+  return (db.entries||[]).filter(function(e){return entryPhotos(e).length>0;}).sort(function(a,b){return (b.datum||'').localeCompare(a.datum||'');});
 }
 function triggerBlobDownload(blob,filename){
   var url=URL.createObjectURL(blob);
@@ -11872,7 +11884,7 @@ function triggerBlobDownload(blob,filename){
 // that specific report.
 function receiptEntriesForReportPeriod(){
   var scoped=rapportViewMode==='year'?filterByYear(db.entries,rapportYear):rapportViewMode==='range'?filterByRange(db.entries,rapportRangeFrom,rapportRangeTo):filterByYearMonth(db.entries,rapportYear,rapportMonth);
-  return scoped.filter(function(e){return e.foto&&e.foto.thumb;});
+  return scoped.filter(function(e){return entryPhotos(e).length>0;});
 }
 // JSZip is only pulled in the moment someone actually taps "Download
 // bonnetjes (zip)" - same lazy-load pattern as pdf.js/Chart.js elsewhere in
@@ -11914,11 +11926,15 @@ async function downloadReceiptsZipForPeriod(){
     var zip=new JSZipLib();
     for(var i=0;i<list.length;i++){
       var e=list[i];
-      try{
-        var blob=e.foto.driveFileId?await fetchReceiptPhotoBlob(e.foto.driveFileId):null;
-        if(!blob)blob=dataURLToBlob(e.foto.thumb);
-        zip.file(receiptPhotoDownloadName(e),blob);
-      }catch(err){}
+      var photos=entryPhotos(e);
+      for(var j=0;j<photos.length;j++){
+        var p=photos[j];
+        try{
+          var blob=p.driveFileId?await fetchReceiptPhotoBlob(p.driveFileId):null;
+          if(!blob)blob=dataURLToBlob(p.thumb);
+          zip.file(receiptPhotoDownloadName(e,j),blob);
+        }catch(err){}
+      }
     }
     var content=await zip.generateAsync({type:'blob'});
     var periodLbl=rapportViewMode==='year'?rapportYear:rapportViewMode==='range'?((rapportRangeFrom||'')+'_tot_'+(rapportRangeTo||'')):(rapportMonth||rapportYear);
@@ -11929,34 +11945,39 @@ async function downloadReceiptsZipForPeriod(){
     if(btn){btn.disabled=false;btn.innerHTML=origHtml;}
   }
 }
-// Shared "attach a receipt photo" widget, used by both the wizard's expense
-// step and the edit-entry modal - a freshly-picked replacement
-// (_pendingReceiptPhoto) always takes priority in the preview over whatever
-// the entry already had, and an explicit removal (_pendingReceiptPhotoRemoved)
-// hides an existing photo even before Save is pressed.
-var _pendingReceiptPhoto=null;
-var _pendingReceiptPhotoRemoved=false;
+// Shared "attach receipt photo(s)" widget, used by both the wizard's expense
+// step and the edit-entry modal. All working state lives in this one array -
+// resetReceiptPhotoWidget() seeds it from the entry's existing photos (or
+// empty, for a brand new wizard entry) whenever a step/modal opens; add/
+// remove just mutate the array and re-render. Each item is either an
+// existing photo ({thumb,driveFileId,uploadedAt}) or a freshly-picked one
+// not yet uploaded ({thumb,full,driveFileId:null}).
+var _pendingReceiptPhotos=[];
+function resetReceiptPhotoWidget(existingPhotos){
+  _pendingReceiptPhotos=(existingPhotos||[]).map(function(p){return {thumb:p.thumb,driveFileId:p.driveFileId||null,uploadedAt:p.uploadedAt||null};});
+}
 function receiptPhotoLabel(){return tMap({nl:'Bonnetje / foto',en:'Receipt photo',es:'Foto del recibo',fr:'Photo du reçu',de:'Beleg-Foto',ro:'Foto chitanță',hu:'Nyugta fotó',ru:'Фото чека',it:'Foto della ricevuta',pt:'Foto do recibo'});}
 function receiptPhotoAddLabel(){return tMap({nl:'Foto toevoegen',en:'Add photo',es:'Añadir foto',fr:'Ajouter une photo',de:'Foto hinzufügen',ro:'Adaugă foto',hu:'Fotó hozzáadása',ru:'Добавить фото',it:'Aggiungi foto',pt:'Adicionar foto'});}
-function receiptPhotoReplaceLabel(){return tMap({nl:'Vervangen',en:'Replace',es:'Reemplazar',fr:'Remplacer',de:'Ersetzen',ro:'Înlocuiește',hu:'Csere',ru:'Заменить',it:'Sostituisci',pt:'Substituir'});}
+function receiptPhotoAddAnotherLabel(){return tMap({nl:'Nog een foto toevoegen',en:'Add another photo',es:'Añadir otra foto',fr:'Ajouter une autre photo',de:'Weiteres Foto hinzufügen',ro:'Adaugă încă o foto',hu:'Újabb fotó hozzáadása',ru:'Добавить ещё фото',it:'Aggiungi un\'altra foto',pt:'Adicionar outra foto'});}
 function receiptPhotoRemoveLabel(){return tMap({nl:'Verwijderen',en:'Remove',es:'Eliminar',fr:'Supprimer',de:'Entfernen',ro:'Elimină',hu:'Eltávolítás',ru:'Удалить',it:'Rimuovi',pt:'Remover'});}
-// existingThumb: the entry's current e.foto.thumb, if editing an entry that
-// already has a photo (pass null from the wizard, which is always a brand
-// new entry). widgetId lets the wizard and the edit modal each have their
-// own container to refresh in place without re-rendering the whole form.
-function receiptPhotoFieldHtml(existingThumb,widgetId){
+// widgetId lets the wizard and the edit modal each have their own container
+// to refresh in place without re-rendering the whole form. Reads current
+// state straight from _pendingReceiptPhotos (see resetReceiptPhotoWidget).
+function receiptPhotoFieldHtml(widgetId){
   var wid=widgetId||'receipt-photo-widget';
-  var showThumb=_pendingReceiptPhoto?_pendingReceiptPhoto.thumb:(_pendingReceiptPhotoRemoved?null:existingThumb);
   var pickerInput='<input type="file" accept="image/*" capture="environment" onchange="onReceiptPhotoPicked(this,\''+wid+'\')" style="display:none">';
-  var h='<div id="'+wid+'" data-existing-thumb="'+(existingThumb?encodeURIComponent(existingThumb):'')+'" style="margin-top:10px">';
+  var h='<div id="'+wid+'" style="margin-top:10px">';
   h+='<span class="form-label">'+receiptPhotoLabel()+'</span>';
-  if(showThumb){
-    h+='<div style="display:flex;align-items:center;gap:10px;margin-top:4px">';
-    h+='<img src="'+showThumb+'" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">';
-    h+='<div style="display:flex;flex-direction:column;gap:6px">';
-    h+='<label class="btn sm" style="cursor:pointer;text-align:center;margin:0">'+receiptPhotoReplaceLabel()+pickerInput+'</label>';
-    h+='<button type="button" class="btn sm danger" onclick="onReceiptPhotoRemoveClicked(\''+wid+'\')">'+receiptPhotoRemoveLabel()+'</button>';
-    h+='</div></div>';
+  if(_pendingReceiptPhotos.length){
+    h+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">';
+    h+=_pendingReceiptPhotos.map(function(p,i){
+      return '<div style="position:relative">'
+        +'<img src="'+p.thumb+'" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">'
+        +'<button type="button" onclick="onReceiptPhotoRemoveClicked(\''+wid+'\','+i+')" title="'+receiptPhotoRemoveLabel()+'" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--danger,#d33);color:#fff;border:2px solid var(--surface);font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">&times;</button>'
+        +'</div>';
+    }).join('');
+    h+='</div>';
+    h+='<label class="btn sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-top:8px"><svg width="14" height="14"><use href="#ico-import"/></svg>'+receiptPhotoAddAnotherLabel()+pickerInput+'</label>';
   }else{
     h+='<label class="btn sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-top:4px"><svg width="14" height="14"><use href="#ico-import"/></svg>'+receiptPhotoAddLabel()+pickerInput+'</label>';
   }
@@ -11967,27 +11988,22 @@ function onReceiptPhotoPicked(inputEl,widgetId){
   var file=inputEl.files&&inputEl.files[0];
   if(!file)return;
   Promise.all([compressImageFile(file,320,0.5),compressImageFile(file,1600,0.7)]).then(function(res){
-    _pendingReceiptPhoto={thumb:res[0],full:res[1]};
-    _pendingReceiptPhotoRemoved=false;
+    _pendingReceiptPhotos.push({thumb:res[0],full:res[1],driveFileId:null,uploadedAt:new Date().toISOString()});
     receiptPhotoRerender(widgetId);
   }).catch(function(){});
 }
-function onReceiptPhotoRemoveClicked(widgetId){
-  _pendingReceiptPhoto=null;
-  _pendingReceiptPhotoRemoved=true;
+function onReceiptPhotoRemoveClicked(widgetId,idx){
+  _pendingReceiptPhotos.splice(idx,1);
   receiptPhotoRerender(widgetId);
 }
-// Swaps just this one widget's HTML in place, using the existing-thumb it
-// stashed on itself at render time - avoids re-rendering the entire wizard
-// step or edit-entry form just to update a photo preview.
+// Swaps just this one widget's HTML in place - avoids re-rendering the
+// entire wizard step or edit-entry form just to update the photo strip.
 function receiptPhotoRerender(widgetId){
   var wid=widgetId||'receipt-photo-widget';
   var el=document.getElementById(wid);
   if(!el)return;
-  var raw=el.getAttribute('data-existing-thumb');
-  var existingThumb=raw?decodeURIComponent(raw):null;
   var tmp=document.createElement('div');
-  tmp.innerHTML=receiptPhotoFieldHtml(existingThumb,wid);
+  tmp.innerHTML=receiptPhotoFieldHtml(wid);
   el.parentNode.replaceChild(tmp.firstElementChild,el);
 }
 
@@ -12181,36 +12197,56 @@ function renderReceiptsList(){
     var dateLbl=formatDate(e.datum);
     var amtLbl=parseFloat(e.kosten)>0?(currencySymbol()+parseFloat(e.kosten).toFixed(2).replace('.',',')):'';
     var idArg=ssIdArg(e.id);
+    // Multiple photos on one entry show as a small strip - tapping a single
+    // thumbnail removes just that photo, the row's own Verwijderen button
+    // removes all of them at once (same as the old single-photo behavior).
+    var thumbs=entryPhotos(e).map(function(p,i){return '<img src="'+p.thumb+'" onclick="event.stopPropagation();deleteReceiptPhotoRow('+idArg+','+i+')" title="'+receiptPhotoRemoveLabel()+'" style="width:32px;height:32px;object-fit:cover;border-radius:6px;border:1px solid var(--border);flex-shrink:0;cursor:pointer">';}).join('');
     return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--border);font-size:12px">'
-      +'<img src="'+e.foto.thumb+'" style="width:32px;height:32px;object-fit:cover;border-radius:6px;border:1px solid var(--border);flex-shrink:0">'
+      +'<div style="display:flex;gap:4px;flex-shrink:0">'+thumbs+'</div>'
       +'<div style="flex:1;min-width:0"><div style="color:var(--text2)">'+dateLbl+(amtLbl?' &middot; '+amtLbl:'')+'</div><div style="color:var(--text3);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escapeHtml(e.omschrijving||getCatLabel(e.categorie))+'</div></div>'
       +'<button class="btn sm" onclick="downloadReceiptPhotoRow('+idArg+')" style="flex-shrink:0">'+receiptsDownloadBtn()+'</button>'
       +'<button class="btn sm danger" onclick="deleteReceiptPhotoRow('+idArg+')" style="flex-shrink:0">'+t('delete_btn')+'</button>'
       +'</div>';
   }).join('');
   if(bulkEl){
+    var totalPhotos=list.reduce(function(s,e){return s+entryPhotos(e).length;},0);
     bulkEl.innerHTML='<div style="display:flex;gap:8px;flex-wrap:wrap">'
       +'<button class="btn sm" onclick="downloadAllReceiptPhotosAndClear()" style="flex:1">'+receiptsDownloadAllBtn()+'</button>'
-      +'<button class="btn sm danger" onclick="deleteAllReceiptPhotos()" style="flex:1">'+receiptsDeleteAllBtn(list.length)+'</button>'
+      +'<button class="btn sm danger" onclick="deleteAllReceiptPhotos()" style="flex:1">'+receiptsDeleteAllBtn(totalPhotos)+'</button>'
       +'</div>';
   }
 }
-function receiptPhotoDownloadName(e){
-  return 'bonnetje_'+(e.datum||'')+'_'+(e.id)+'.jpg';
+function receiptPhotoDownloadName(e,idx){
+  return 'bonnetje_'+(e.datum||'')+'_'+(e.id)+(idx?('_'+(idx+1)):'')+'.jpg';
 }
 async function downloadReceiptPhotoRow(entryId){
   var e=db.entries.find(function(x){return x.id==entryId;});
-  if(!e||!e.foto)return;
-  var blob=e.foto.driveFileId?await fetchReceiptPhotoBlob(e.foto.driveFileId):null;
-  if(!blob)blob=dataURLToBlob(e.foto.thumb); // fallback: still uploading, or Drive unavailable - better than nothing
-  triggerBlobDownload(blob,receiptPhotoDownloadName(e));
+  if(!e)return;
+  var photos=entryPhotos(e);
+  for(var i=0;i<photos.length;i++){
+    var p=photos[i];
+    var blob=p.driveFileId?await fetchReceiptPhotoBlob(p.driveFileId):null;
+    if(!blob)blob=dataURLToBlob(p.thumb); // fallback: still uploading, or Drive unavailable - better than nothing
+    triggerBlobDownload(blob,receiptPhotoDownloadName(e,i));
+    if(photos.length>1)await new Promise(function(r){setTimeout(r,300);}); // stagger so the browser doesn't block multiple simultaneous downloads
+  }
 }
-function deleteReceiptPhotoRow(entryId){
+// photoIdx omitted = remove every photo on this entry (row-level Verwijderen
+// button); passed = remove just that one photo (tapping a single thumbnail).
+function deleteReceiptPhotoRow(entryId,photoIdx){
   var e=db.entries.find(function(x){return x.id==entryId;});
-  if(!e||!e.foto)return;
-  if(!confirm(receiptsDeleteConfirm()))return;
-  if(e.foto.driveFileId)deleteReceiptPhotoFile(e.foto.driveFileId);
-  e.foto=null;
+  if(!e)return;
+  var photos=entryPhotos(e);
+  if(!photos.length)return;
+  if(!confirm(photoIdx==null?receiptsDeleteAllConfirm(photos.length):receiptsDeleteConfirm()))return;
+  var toDelete=photoIdx==null?photos:[photos[photoIdx]];
+  toDelete.forEach(function(p){if(p&&p.driveFileId)deleteReceiptPhotoFile(p.driveFileId);});
+  if(photoIdx==null){
+    e.fotos=[];e.foto=null;
+  }else{
+    e.fotos=photos.filter(function(_,i){return i!==photoIdx;});
+    e.foto=e.fotos[0]||null;
+  }
   save();
   renderReceiptsList();
   renderReceiptsSection();
@@ -12218,16 +12254,21 @@ function deleteReceiptPhotoRow(entryId){
 async function downloadAllReceiptPhotosAndClear(){
   var list=entriesWithReceiptPhotos();
   if(!list.length)return;
-  if(!confirm(receiptsDeleteAllConfirm(list.length)))return;
+  var totalPhotos=list.reduce(function(s,e){return s+entryPhotos(e).length;},0);
+  if(!confirm(receiptsDeleteAllConfirm(totalPhotos)))return;
   for(var i=0;i<list.length;i++){
     var e=list[i];
-    try{
-      var blob=e.foto.driveFileId?await fetchReceiptPhotoBlob(e.foto.driveFileId):null;
-      if(!blob)blob=dataURLToBlob(e.foto.thumb);
-      triggerBlobDownload(blob,receiptPhotoDownloadName(e));
-    }catch(err){}
-    if(e.foto.driveFileId)deleteReceiptPhotoFile(e.foto.driveFileId);
-    e.foto=null;
+    var photos=entryPhotos(e);
+    for(var j=0;j<photos.length;j++){
+      var p=photos[j];
+      try{
+        var blob=p.driveFileId?await fetchReceiptPhotoBlob(p.driveFileId):null;
+        if(!blob)blob=dataURLToBlob(p.thumb);
+        triggerBlobDownload(blob,receiptPhotoDownloadName(e,j));
+      }catch(err){}
+      if(p.driveFileId)deleteReceiptPhotoFile(p.driveFileId);
+    }
+    e.fotos=[];e.foto=null;
   }
   save();
   renderReceiptsList();
@@ -12236,10 +12277,11 @@ async function downloadAllReceiptPhotosAndClear(){
 function deleteAllReceiptPhotos(){
   var list=entriesWithReceiptPhotos();
   if(!list.length)return;
-  if(!confirm(receiptsDeleteAllConfirm(list.length)))return;
+  var totalPhotos=list.reduce(function(s,e){return s+entryPhotos(e).length;},0);
+  if(!confirm(receiptsDeleteAllConfirm(totalPhotos)))return;
   list.forEach(function(e){
-    if(e.foto.driveFileId)deleteReceiptPhotoFile(e.foto.driveFileId);
-    e.foto=null;
+    entryPhotos(e).forEach(function(p){if(p.driveFileId)deleteReceiptPhotoFile(p.driveFileId);});
+    e.fotos=[];e.foto=null;
   });
   save();
   renderReceiptsList();
@@ -14988,7 +15030,7 @@ function fabAction(){
 // same repeat/new question a second time right after.
 function startWizard(prefillDate,skipGate){
   draft={datum:prefillDate||ymdLocal()};wizStep=0;
-  _pendingReceiptPhoto=null;_pendingReceiptPhotoRemoved=false;
+  resetReceiptPhotoWidget(null);
   document.querySelectorAll('#screen-main .screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.bn-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('s-wizard').classList.add('active');
@@ -15209,7 +15251,7 @@ function renderWiz(){
           <span class="form-label">${t('wizard_expense_label')}</span>
           <input type="number" id="w-kosten" min="0" step="0.01" placeholder="0.00 (${currencySymbol()})" value="${draft.kosten||''}">
           <div style="font-size:11px;color:var(--text3);margin-top:3px">${t('wizard_expense_hint')}</div>
-          ${receiptPhotoFieldHtml(null)}
+          ${receiptPhotoFieldHtml()}
         </div>
       </div>
       <div style="font-size:12px;color:var(--text3);margin-top:8px">${t('wizard_no_travel')}</div>
@@ -15219,7 +15261,7 @@ function renderWiz(){
       <div class="wiz-hint" style="margin-bottom:0">${t('wizard_expense_hint')}</div>
       <div class="travel-box">
         <input type="number" id="w-kosten" min="0" step="0.01" placeholder="0.00 (${currencySymbol()})" value="${draft.kosten||''}">
-        ${receiptPhotoFieldHtml(null)}
+        ${receiptPhotoFieldHtml()}
       </div>
       <div class="btn-row"><button class="btn" onclick="wBack()">${t('wizard_back')}</button><button class="btn" onclick="wQuickSave()">${t('save_btn')}</button><button class="btn primary" onclick="wSet('kosten','w-kosten');wNext()">${t('wizard_next')}</button></div>`;
     }
@@ -15639,18 +15681,19 @@ function wQuickSave(){
   wSave(getCalExportPref());
 }
 function wSave(wantsCal){
-  // A photo picked on the expense step lives only in _pendingReceiptPhoto
+  // Photos picked on the expense step live only in _pendingReceiptPhotos
   // until now (the wizard's draft has no real entry id yet to upload
-  // against). Stamp the small thumbnail onto draft.foto so it rides along
-  // in the {...draft} spread below for whichever path actually creates the
-  // logged entry, and stash the full-size version to upload in the
-  // background once that entry has a real id.
-  var _wSaveFullPhoto=null;
-  if(_pendingReceiptPhoto){
-    draft.foto={thumb:_pendingReceiptPhoto.thumb,driveFileId:null,uploadedAt:new Date().toISOString()};
-    _wSaveFullPhoto=_pendingReceiptPhoto.full;
+  // against). Stamp them onto draft.fotos so they ride along in the
+  // {...draft} spread below for whichever path actually creates the logged
+  // entry, and stash the full-size versions (keyed by their index) to
+  // upload in the background once that entry has a real id.
+  var _wSaveNewPhotos=[];
+  if(_pendingReceiptPhotos.length){
+    draft.fotos=_pendingReceiptPhotos.map(function(p){return {thumb:p.thumb,driveFileId:p.driveFileId||null,uploadedAt:p.uploadedAt||new Date().toISOString()};});
+    draft.foto=draft.fotos[0]; // legacy single-photo mirror (President app, older readers)
+    _pendingReceiptPhotos.forEach(function(p,i){if(p.full)_wSaveNewPhotos.push({idx:i,full:p.full});});
   }
-  _pendingReceiptPhoto=null;_pendingReceiptPhotoRemoved=false;
+  _pendingReceiptPhotos=[];
   if(wizardDraftIsFuture()){
     var plannedEntries=saveDraftAsPlanned();
     draft._savedAsPlan=true;
@@ -15671,17 +15714,25 @@ function wSave(wantsCal){
       var mdEntry={...draft,id:genEntryId(),datum:ymdLocal(mdCur),multiDayGroupId:mdGroupId};
       delete mdEntry.multiDayUntil;
       delete mdEntry.extraCursistIds; // multi-student fan-out only applies to the single-day path below
-      // A single receipt photo belongs to one day of the trip, not copied
-      // onto every day - keep it only on the first occurrence.
-      if(mdFirstEntry)delete mdEntry.foto;
+      // Receipt photos belong to one day of the trip, not copied onto every
+      // day - keep them only on the first occurrence.
+      if(mdFirstEntry){delete mdEntry.foto;delete mdEntry.fotos;}
       touch(mdEntry);
       db.entries.unshift(mdEntry);
       if(!mdFirstEntry)mdFirstEntry=mdEntry;
       mdCur.setDate(mdCur.getDate()+1);
     }
     save();
-    if(_wSaveFullPhoto&&mdFirstEntry){
-      uploadReceiptPhoto(mdFirstEntry.id,_wSaveFullPhoto).then(function(fid){if(fid&&mdFirstEntry.foto){mdFirstEntry.foto.driveFileId=fid;save();}});
+    if(_wSaveNewPhotos.length&&mdFirstEntry){
+      _wSaveNewPhotos.forEach(function(np){
+        uploadReceiptPhoto(mdFirstEntry.id,np.full,np.idx).then(function(fid){
+          if(fid&&mdFirstEntry.fotos&&mdFirstEntry.fotos[np.idx]){
+            mdFirstEntry.fotos[np.idx].driveFileId=fid;
+            if(np.idx===0)mdFirstEntry.foto=mdFirstEntry.fotos[0];
+            save();
+          }
+        });
+      });
     }
     // Follow the newly logged date the same way a spreadsheet date-edit does
     // (see keepDateVisibleInLog) - otherwise a still-active month/year filter
@@ -15721,8 +15772,16 @@ function wSave(wantsCal){
     // real-world activity, matching the single-entry model already used by
     // the "confirm planned activity" flow.
     save();
-    if(_wSaveFullPhoto){
-      uploadReceiptPhoto(entry.id,_wSaveFullPhoto).then(function(fid){if(fid&&entry.foto){entry.foto.driveFileId=fid;save();}});
+    if(_wSaveNewPhotos.length){
+      _wSaveNewPhotos.forEach(function(np){
+        uploadReceiptPhoto(entry.id,np.full,np.idx).then(function(fid){
+          if(fid&&entry.fotos&&entry.fotos[np.idx]){
+            entry.fotos[np.idx].driveFileId=fid;
+            if(np.idx===0)entry.foto=entry.fotos[0];
+            save();
+          }
+        });
+      });
     }
     // See the matching comment in the multi-day branch above - keeps a
     // leftover Logboek month/year filter from hiding the entry that was just
@@ -18723,6 +18782,7 @@ function logLidBezoek(cursistId){
   closeModals();
   // Pre-fill wizard with Evangeliseren intern + cursistId
   draft={datum:ymdLocal(),categorie:'Evangeliseren intern',needsBS:false,travelLabel:null,cursistId:String(cursistId),cursistNaam:cu.naam};
+  resetReceiptPhotoWidget(null);
   wizStep=WIZ.indexOf('details');
   document.querySelectorAll('#screen-main .screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.bn-btn').forEach(b=>b.classList.remove('active'));
@@ -20321,12 +20381,12 @@ ${(function(){
         const rawKosten=parseFloat(e.kosten);
         const displayKosten=!isNaN(rawKosten)&&rawKosten>0?rawKosten:null;
         const kmKostenTxt=[displayKm?displayKm+distUnit():'',displayKosten?currencySymbol()+displayKosten.toFixed(2).replace('.',','):''].filter(Boolean).join(' · ');
-        // A receipt photo attached to an expense entry (parking ticket etc.)
-        // prints as a small inline thumbnail next to the amount, so the
+        // Receipt photo(s) attached to an expense entry (parking ticket etc.)
+        // print as small inline thumbnails next to the amount, so the
         // president's PDF copy actually carries proof of the expense -
-        // full-resolution stays in Drive, only this cheap cached preview
-        // ever gets embedded here.
-        const receiptThumb=(e.foto&&e.foto.thumb)?`<img src="${e.foto.thumb}" style="width:11pt;height:11pt;object-fit:cover;border-radius:2pt;vertical-align:middle;margin-left:3pt">`:'';
+        // full-resolution stays in Drive, only these cheap cached previews
+        // ever get embedded here.
+        const receiptThumb=entryPhotos(e).map(function(p){return `<img src="${p.thumb}" style="width:11pt;height:11pt;object-fit:cover;border-radius:2pt;vertical-align:middle;margin-left:3pt">`;}).join('');
         const name=entryDisplayName(e);
         const nameAnon=entryDisplayNameAnon(e);
         return`<div class="rp-act-row3 rp-sec-timeline-detail">
@@ -20364,23 +20424,26 @@ ${(function(){
 </div>
 
 ${(function(){
-  // Bijlagen (attachments) appendix: every entry in this report's period
-  // that has a receipt photo, shown at a real, legible size (see
+  // Bijlagen (attachments) appendix: every receipt photo on an entry in
+  // this report's period, shown at a real, legible size (see
   // .rp-attach-img) instead of the tiny 11pt inline thumbnail on the
   // Dagelijks overzicht row above. Only the already-cached preview
-  // (e.foto.thumb, ~320px) is used here - no live Drive fetch mid-print -
-  // so this works offline and never blocks/slows down generating the PDF.
-  var attachEntries=data.filter(function(e){return e.foto&&e.foto.thumb;});
+  // (~320px) is used here - no live Drive fetch mid-print - so this works
+  // offline and never blocks/slows down generating the PDF. An entry with
+  // several photos gets one card per photo.
+  var attachEntries=data.filter(function(e){return entryPhotos(e).length>0;});
   if(!attachEntries.length)return'';
   var bijlagenLbl=LANG==='en'?'Attachments':LANG==='es'?'Adjuntos':LANG==='fr'?'Pièces jointes':LANG==='de'?'Anhänge':LANG==='ro'?'Anexe':LANG==='hu'?'Mellékletek':LANG==='ru'?'Вложения':LANG==='it'?'Allegati':LANG==='pt'?'Anexos':'Bijlagen';
   var cards=attachEntries.map(function(e){
     var dateLbl=parseLocalDate(e.datum).toLocaleDateString(getLocale(),{day:'numeric',month:'short'});
     var amtLbl=parseFloat(e.kosten)>0?(currencySymbol()+parseFloat(e.kosten).toFixed(2).replace('.',',')):'';
     var descLbl=escapeHtml(e.omschrijving||getCatLabel(e.categorie));
-    return '<div class="rp-attach-card">'
-      +'<img src="'+e.foto.thumb+'" class="rp-attach-img">'
-      +'<div class="rp-attach-meta"><div class="rp-attach-date">'+dateLbl+(amtLbl?' &middot; '+amtLbl:'')+'</div><div class="rp-attach-desc">'+descLbl+'</div></div>'
-      +'</div>';
+    return entryPhotos(e).map(function(p){
+      return '<div class="rp-attach-card">'
+        +'<img src="'+p.thumb+'" class="rp-attach-img">'
+        +'<div class="rp-attach-meta"><div class="rp-attach-date">'+dateLbl+(amtLbl?' &middot; '+amtLbl:'')+'</div><div class="rp-attach-desc">'+descLbl+'</div></div>'
+        +'</div>';
+    }).join('');
   }).join('');
   return '<div class="rp-sec-attachments">'
     +'<div class="rp-timeline-sh">'+bijlagenLbl+'</div>'
@@ -31993,7 +32056,7 @@ function saveStudyEntry(cursistId){
 function openEditEntryModal(entryId,skipSummary){
   var e=db.entries.find(function(x){return x.id==entryId;});
   if(!e)return;
-  _pendingReceiptPhoto=null;_pendingReceiptPhotoRemoved=false;
+  resetReceiptPhotoWidget(entryPhotos(e));
   var entryIdArg=ssIdArg(entryId);
   var catOpts=getCATEGORIES().filter(function(c){return !c.isTravel;}).map(function(c){
     return '<option value="'+c.label+'"'+(c.label===e.categorie?' selected':'')+'>'+getCatLabel(c.label)+'</option>';
@@ -32048,7 +32111,8 @@ function openEditEntryModal(entryId,skipSummary){
   if(parseFloat(e.km)>0)eeSumRow('Km', Math.round(parseFloat(e.km))+distUnit());
   if(parseFloat(e.reisUren)>0)eeSumRow(t('wizard_travel_hours'), parseFloat(e.reisUren)+t('hours_abbr'));
   if(parseFloat(e.kosten)>0)eeSumRow(t('col_kosten'), currencySymbol()+parseFloat(e.kosten).toFixed(2).replace('.',','));
-  if(e.foto&&e.foto.thumb)eeSumRow(receiptPhotoLabel(), '<img src="'+e.foto.thumb+'" style="width:32px;height:32px;object-fit:cover;border-radius:6px;border:1px solid var(--border);vertical-align:middle">');
+  var eePhotos=entryPhotos(e);
+  if(eePhotos.length)eeSumRow(receiptPhotoLabel(), eePhotos.map(function(p){return '<img src="'+p.thumb+'" style="width:32px;height:32px;object-fit:cover;border-radius:6px;border:1px solid var(--border);vertical-align:middle;margin-left:4px">';}).join(''));
   eeSumRow(t('wizard_cat'), escapeHtml(getCatLabel(e.categorie)));
   if(e.omschrijving)eeSumRow(t('wizard_desc'), escapeHtml(e.omschrijving));
   if(e.cursistNaam)eeSumRow(t('wizard_with_who').replace('?',''), escapeHtml(e.cursistNaam));
@@ -32079,7 +32143,7 @@ function openEditEntryModal(entryId,skipSummary){
   h+='<div><span class="form-label">'+t('wizard_travel_hours')+'</span><input type="number" id="ee-reisuren" min="0" step="0.25" value="'+(e.reisUren||0)+'" style="width:100%"></div>';
   h+='</div>';
   h+='<div style="margin-bottom:8px"><span class="form-label">'+t('col_kosten')+' ('+currencySymbol()+')</span><input type="number" id="ee-kosten" min="0" step="0.01" value="'+(e.kosten||0)+'" style="width:100%"></div>';
-  h+=receiptPhotoFieldHtml(e.foto&&e.foto.thumb?e.foto.thumb:null,'ee-receipt-photo-widget');
+  h+=receiptPhotoFieldHtml('ee-receipt-photo-widget');
   h+='<span class="form-label">'+t('wizard_cat')+'</span>';
   h+='<select id="ee-cat" style="width:100%;margin-bottom:8px" onchange="toggleEeMultiVisibility()">'+catOpts+'</select>';
   h+='<span class="form-label">'+t('wizard_desc')+'</span>';
@@ -32307,19 +32371,30 @@ function saveEditEntry(entryId){
   if(omsch)e.omschrijving=omsch.value;
   if(opm)e.opmerking=opm.value;
   if(opmShare)e.notitiePrive=opmShare.checked;
-  // Commit whatever the receipt-photo widget landed on: a freshly-picked
-  // photo (upload/replace, reusing the same per-entry Drive file so this
-  // never leaks a second orphaned upload) or an explicit removal. Neither
-  // touched at all just leaves e.foto exactly as it was.
-  if(_pendingReceiptPhoto){
-    var _rpFull=_pendingReceiptPhoto.full;
-    e.foto={thumb:_pendingReceiptPhoto.thumb,driveFileId:(e.foto&&e.foto.driveFileId)||null,uploadedAt:new Date().toISOString()};
-    uploadReceiptPhoto(e.id,_rpFull).then(function(fid){if(fid&&e.foto){e.foto.driveFileId=fid;save();}});
-  } else if(_pendingReceiptPhotoRemoved&&e.foto){
-    if(e.foto.driveFileId)deleteReceiptPhotoFile(e.foto.driveFileId);
-    e.foto=null;
-  }
-  _pendingReceiptPhoto=null;_pendingReceiptPhotoRemoved=false;
+  // Commit whatever the receipt-photo widget landed on: _pendingReceiptPhotos
+  // is the widget's full working list (existing photos it kept, minus any
+  // removed, plus any freshly picked). Any existing Drive file whose photo
+  // got removed from that list is cleaned up; any freshly-picked photo
+  // (no driveFileId yet) gets uploaded now that we have a real entry id -
+  // reusing the same per-entry+slot Drive file so replacing a photo never
+  // leaks a second orphaned upload.
+  var eeOldPhotos=entryPhotos(e);
+  var eeKeptIds=_pendingReceiptPhotos.map(function(p){return p.driveFileId;}).filter(Boolean);
+  eeOldPhotos.forEach(function(p){if(p.driveFileId&&eeKeptIds.indexOf(p.driveFileId)===-1)deleteReceiptPhotoFile(p.driveFileId);});
+  e.fotos=_pendingReceiptPhotos.map(function(p){return {thumb:p.thumb,driveFileId:p.driveFileId||null,uploadedAt:p.uploadedAt||new Date().toISOString()};});
+  e.foto=e.fotos[0]||null; // legacy single-photo mirror (President app, older readers)
+  _pendingReceiptPhotos.forEach(function(p,idx){
+    if(p.full){
+      uploadReceiptPhoto(e.id,p.full,idx).then(function(fid){
+        if(fid&&e.fotos&&e.fotos[idx]){
+          e.fotos[idx].driveFileId=fid;
+          if(idx===0)e.foto=e.fotos[0];
+          save();
+        }
+      });
+    }
+  });
+  _pendingReceiptPhotos=[];
   // "Meerdere studenten" (see openEditEntryModal comment above) - diff the
   // checked contacts against whichever companion entries already share this
   // entry's groupStudyId, so re-opening the edit modal and changing the
