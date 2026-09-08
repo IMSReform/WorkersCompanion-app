@@ -24575,10 +24575,27 @@ function getThemaTitle(code,rawTitle){
 function getThemaOptLabel(code,rawTitle){
   return code+' - '+getThemaTitle(code,rawTitle);
 }
+// Priority order of `aard` groups for the Kantoor/secretariaat role: admin
+// work first (Organisatie, Boekhouding, Beheer, Afwezigheid, Reis/vervoer),
+// then Bijbelstudie/Gemeentebediening/Afdeling, then everything else
+// (Evangelisatie, Divisie/GC, Reistijd, any custom-category aard not listed
+// here) keeps its original relative order at the tail. Applied inside
+// getCATEGORIES() itself (below) rather than at each call site, so every
+// wizard step, spreadsheet dropdown, quick-contact/quick-repeat popup, and
+// edit-entry modal that reads from getCATEGORIES() gets the reorder for
+// free without needing its own copy of this logic.
+var KANTOOR_CAT_ORDER=['Organisatie','Boekhouding','Beheer','Afwezigheid','Vervoer','Bijbelstudie','Gemeentebediening','Commissie'];
 function getCATEGORIES(){
   var custom=(db.settings&&db.settings.customCategories)||[];
   var base=CATEGORIES.slice(0);
   custom.forEach(function(c){if(!base.find(function(b){return b.label===c.label;}))base.push(c);});
+  if(db.settings&&db.settings.workRole==='kantoor'){
+    base=base.slice(0).sort(function(a,b){
+      var ia=KANTOOR_CAT_ORDER.indexOf(a.aard);if(ia<0)ia=KANTOOR_CAT_ORDER.length;
+      var ib=KANTOOR_CAT_ORDER.indexOf(b.aard);if(ib<0)ib=KANTOOR_CAT_ORDER.length;
+      return ia-ib;
+    });
+  }
   return base;
 }
 
