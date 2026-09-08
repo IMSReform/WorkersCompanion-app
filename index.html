@@ -7426,7 +7426,7 @@ var TRANSLATIONS = {
   de: {
     you_lbl:'Sie',expected_lbl:'Erwartet',days_remaining:'Tage verbleibend',of_lbl:'von',study_lbl:'Studie',plan_on_day:'Diesen Tag planen',lesson_progress:'Lernfortschritt',first_n:'ersten',last_study_lbl:'Letzte Studie',days_ago_lbl:'T. her',call_btn:'Anrufen',whatsapp_btn:'WhatsApp',study_history:'Studienhistorie',add_note:'+ Notiz',add_contact_btn:'+ Kontakt hinzufügen',add_lid_btn:'+ Mitglied hinzufügen',studies_tab:'Studien',edit_btn:'Bearbeiten',delete_btn:'Löschen',visit_history:'Besuchshistorie',visits_lbl:'Besuche',days_ago2:'Tage her',register_visit:'+ Besuch registrieren',no_visits:'Noch keine Besuche.',adjust_goals:'Ziele anpassen',never_visited2:'Noch nie besucht',
     nav_dashboard:'Übersicht', nav_log:'Logbuch', nav_cursisten:'Kontakte', nav_rapport:'Bericht', nav_bijbelstudies:'Bibelstudien',
-    worktype_card:'Art der Arbeit', worktype_sub:'Passt an, was du in der App siehst', worktype_bijbelwerker:'Pastor / Bibelarbeiter', worktype_kantoor:'Büro / Sekretariat', church_role_lbl:'Kirchliche Funktion', church_role_hint:'Wird mit dem Präsidenten geteilt (z.B. für den GK-Bericht) - leer lassen, wenn keine davon auf dich zutrifft.', church_role_none:'Keine', church_role_predikant:'Pastor', church_role_ouderling:'Ältester', church_role_kantoorwerker:'Büromitarbeiter', church_role_bijbelwerker:'Bibelarbeiter / Evangelist', wizard_new_gemeente:'+ Neue Gemeinde...',
+    worktype_card:'Art der Arbeit', worktype_sub:'Passt an, was du in der App siehst', worktype_bijbelwerker:'Prediger / Bibelarbeiter', worktype_kantoor:'Büro / Sekretariat', church_role_lbl:'Kirchliche Funktion', church_role_hint:'Wird mit dem Präsidenten geteilt (z.B. für den GK-Bericht) - leer lassen, wenn keine davon auf dich zutrifft.', church_role_none:'Keine', church_role_predikant:'Prediger', church_role_ouderling:'Ältester', church_role_kantoorwerker:'Büromitarbeiter', church_role_bijbelwerker:'Bibelarbeiter / Evangelist', wizard_new_gemeente:'+ Neue Gemeinde...',
     cursisten_tab:'Kontakte', leden_tab:'Mitglieder',
     import_card:'Daten importieren',
     cat_manage:'Kategorien verwalten',
@@ -17213,22 +17213,22 @@ function openContactSharePicker(ids){
   if(!ids.length)return;
   var names=ids.map(function(id){var c=db.cursisten.find(function(c){return c.id==id;});return c?c.naam:'';}).filter(Boolean);
   var h='<div style="padding:16px">';
-  h+='<div style="font-size:15px;font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:6px"><svg width="16" height="16"><use href="#ico-share-ios"/></svg>'+tMap({nl:'Contact delen',en:'Share contact',es:'Compartir contacto'})+'</div>';
+  h+='<div style="font-size:15px;font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:6px"><svg width="16" height="16"><use href="#ico-share-ios"/></svg>'+tMap({nl:'Contact delen',en:'Share contact',es:'Compartir contacto',fr:'Partager le contact',de:'Kontakt teilen',ro:'Distribuie contactul',hu:'Kapcsolat megosztása',ru:'Поделиться контактом',it:'Condividi contatto',pt:'Partilhar contacto'})+'</div>';
   h+='<div style="font-size:12px;color:var(--text3);margin-bottom:14px">'+(names.length>3?names.slice(0,3).join(', ')+' +'+(names.length-3):names.join(', '))+'</div>';
-  h+='<div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin-bottom:8px">'+tMap({nl:'Wat wil je delen?',en:'What do you want to share?',es:'¿Qué quieres compartir?'})+'</div>';
+  h+='<div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin-bottom:8px">'+tMap({nl:'Wat wil je delen?',en:'What do you want to share?',es:'¿Qué quieres compartir?',fr:'Que voulez-vous partager ?',de:'Was möchten Sie teilen?',ro:'Ce vrei să distribui?',hu:'Mit szeretnél megosztani?',ru:'Чем вы хотите поделиться?',it:'Cosa vuoi condividere?',pt:'O que deseja partilhar?'})+'</div>';
   function row(id,label,checked){
     return '<label style="display:flex;align-items:center;gap:10px;padding:9px 0;cursor:pointer;border-bottom:1px solid var(--border)">'
       +'<input type="checkbox" id="'+id+'" '+(checked?'checked':'')+' style="width:18px;height:18px;flex-shrink:0">'
       +'<span style="font-size:14px">'+label+'</span></label>';
   }
-  h+=row('scp-info',tMap({nl:'Contactgegevens (naam, adres, telefoon...)',en:'Contact details (name, address, phone...)',es:'Datos de contacto (nombre, dirección, teléfono...)'}),true);
-  h+=row('scp-study',tMap({nl:'Studiegeschiedenis',en:'Study history',es:'Historial de estudios'}),true);
-  h+=row('scp-contact',tMap({nl:'Contactgeschiedenis (bezoek, gesprek, gebeld...)',en:'Contact history (visits, counseling, calls...)',es:'Historial de contacto (visitas, consejería, llamadas...)'}),true);
-  h+=row('scp-notes',tMap({nl:'Privénotities/opmerkingen',en:'Private notes/comments',es:'Notas/comentarios privados'}),false);
-  h+='<div style="font-size:11px;color:var(--text3);margin-top:10px;margin-bottom:14px">'+tMap({nl:'Notities staan standaard uit - zet aan als je collega ze ook moet zien.',en:'Notes are off by default - turn on if your colleague needs to see them too.',es:'Las notas están desactivadas por defecto - actívalas si tu colega también debe verlas.'})+'</div>';
+  h+=row('scp-info',tMap({nl:'Contactgegevens (naam, adres, telefoon...)',en:'Contact details (name, address, phone...)',es:'Datos de contacto (nombre, dirección, teléfono...)',fr:'Coordonnées (nom, adresse, téléphone...)',de:'Kontaktdaten (Name, Adresse, Telefon...)',ro:'Date de contact (nume, adresă, telefon...)',hu:'Kapcsolattartási adatok (név, cím, telefon...)',ru:'Контактные данные (имя, адрес, телефон...)',it:'Dati di contatto (nome, indirizzo, telefono...)',pt:'Dados de contacto (nome, morada, telefone...)'}),true);
+  h+=row('scp-study',tMap({nl:'Studiegeschiedenis',en:'Study history',es:'Historial de estudios',fr:'Historique d\'étude',de:'Studienverlauf',ro:'Istoric de studiu',hu:'Tanulmányi előzmények',ru:'История изучения',it:'Cronologia degli studi',pt:'Histórico de estudo'}),true);
+  h+=row('scp-contact',tMap({nl:'Contactgeschiedenis (bezoek, gesprek, gebeld...)',en:'Contact history (visits, counseling, calls...)',es:'Historial de contacto (visitas, consejería, llamadas...)',fr:'Historique de contact (visite, entretien, appel...)',de:'Kontaktverlauf (Besuch, Gespräch, Anruf...)',ro:'Istoric de contact (vizită, discuție, apel...)',hu:'Kapcsolattartási előzmények (látogatás, beszélgetés, hívás...)',ru:'История контактов (визит, беседа, звонок...)',it:'Cronologia dei contatti (visita, colloquio, chiamata...)',pt:'Histórico de contacto (visita, conversa, chamada...)'}),true);
+  h+=row('scp-notes',tMap({nl:'Privénotities/opmerkingen',en:'Private notes/comments',es:'Notas/comentarios privados',fr:'Notes privées/remarques',de:'Private Notizen/Bemerkungen',ro:'Note private/observații',hu:'Privát jegyzetek/megjegyzések',ru:'Личные заметки/примечания',it:'Note private/commenti',pt:'Notas privadas/observações'}),false);
+  h+='<div style="font-size:11px;color:var(--text3);margin-top:10px;margin-bottom:14px">'+tMap({nl:'Notities staan standaard uit - zet aan als je collega ze ook moet zien.',en:'Notes are off by default - turn on if your colleague needs to see them too.',es:'Las notas están desactivadas por defecto - actívalas si tu colega también debe verlas.',fr:'Les notes sont désactivées par défaut - activez-les si votre collègue doit aussi les voir.',de:'Notizen sind standardmäßig deaktiviert - aktivieren Sie sie, wenn Ihr Kollege sie auch sehen soll.',ro:'Notele sunt dezactivate implicit - activează-le dacă și colegul tău trebuie să le vadă.',hu:'A jegyzetek alapértelmezés szerint ki vannak kapcsolva - kapcsold be, ha a munkatársadnak is látnia kell őket.',ru:'Заметки по умолчанию отключены - включите их, если вашему коллеге тоже нужно их видеть.',it:'Le note sono disattivate per impostazione predefinita - attivale se anche il tuo collega deve vederle.',pt:'As notas estão desativadas por padrão - ative-as se o seu colega também precisar de as ver.'})+'</div>';
   h+='<div style="display:flex;gap:8px">';
   h+='<button class="btn" onclick="closeModals()" style="flex:1">'+t('cancel_btn')+'</button>';
-  h+='<button class="btn primary" onclick="confirmShareContacts('+JSON.stringify(ids).replace(/"/g,'&quot;')+')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px"><svg width="14" height="14"><use href="#ico-share-ios"/></svg>'+tMap({nl:'Delen',en:'Share',es:'Compartir'})+'</button>';
+  h+='<button class="btn primary" onclick="confirmShareContacts('+JSON.stringify(ids).replace(/"/g,'&quot;')+')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px"><svg width="14" height="14"><use href="#ico-share-ios"/></svg>'+tMap({nl:'Delen',en:'Share',es:'Compartir',fr:'Partager',de:'Teilen',ro:'Distribuie',hu:'Megosztás',ru:'Поделиться',it:'Condividi',pt:'Partilhar'})+'</button>';
   h+='</div></div>';
   showModal(h);
 }
@@ -17268,7 +17268,7 @@ function triggerContactShare(shareData,ids){
   var fname=cu1?('contact_'+cu1.naam.replace(/[^a-z0-9]+/gi,'_')+'.json'):('contacten_'+ymdLocal()+'.json');
   var json=JSON.stringify(shareData,null,2);
   var blob=new Blob([json],{type:'application/json'});
-  var shareTitle=tMap({nl:'ZDA contact',en:'ZDA contact',es:'Contacto ZDA'});
+  var shareTitle=tMap({nl:'ZDA contact',en:'ZDA contact',es:'Contacto ZDA',fr:'Contact ZDA',de:'ZDA-Kontakt',ro:'Contact ZDA',hu:'ZDA kapcsolat',ru:'Контакт ZDA',it:'Contatto ZDA',pt:'Contacto ZDA'});
   var shareText=cu1?cu1.naam:(shareData.cursisten.length+' contacten');
   function fallbackDownload(){
     var url=URL.createObjectURL(blob);
@@ -17292,8 +17292,8 @@ function openBulkSharePicker(){
   var recentIds=ctShareRecentIds(5);
   var sorted=db.cursisten.slice().sort(function(a,b){return (a.naam||'').localeCompare(b.naam||'');});
   var h='<div style="padding:16px">';
-  h+='<div style="font-size:15px;font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:6px"><svg width="16" height="16"><use href="#ico-share-ios"/></svg>'+tMap({nl:'Contacten delen',en:'Share contacts',es:'Compartir contactos'})+'</div>';
-  h+='<div style="font-size:12px;color:var(--text3);margin-bottom:14px">'+tMap({nl:'De 5 meest recente contacten zijn alvast aangevinkt - pas gerust aan.',en:'The 5 most recently active contacts are pre-selected - adjust as needed.',es:'Los 5 contactos más recientes ya están marcados - ajústalo si quieres.'})+'</div>';
+  h+='<div style="font-size:15px;font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:6px"><svg width="16" height="16"><use href="#ico-share-ios"/></svg>'+tMap({nl:'Contacten delen',en:'Share contacts',es:'Compartir contactos',fr:'Partager des contacts',de:'Kontakte teilen',ro:'Distribuie contacte',hu:'Kapcsolatok megosztása',ru:'Поделиться контактами',it:'Condividi contatti',pt:'Partilhar contactos'})+'</div>';
+  h+='<div style="font-size:12px;color:var(--text3);margin-bottom:14px">'+tMap({nl:'De 5 meest recente contacten zijn alvast aangevinkt - pas gerust aan.',en:'The 5 most recently active contacts are pre-selected - adjust as needed.',es:'Los 5 contactos más recientes ya están marcados - ajústalo si quieres.',fr:'Les 5 contacts les plus récents sont déjà cochés - modifiez si nécessaire.',de:'Die 5 zuletzt aktiven Kontakte sind bereits angehakt - passen Sie es bei Bedarf an.',ro:'Cele mai recente 5 contacte sunt deja bifate - ajustează după nevoie.',hu:'Az 5 legutóbb aktív kapcsolat már be van jelölve - szükség esetén módosítsd.',ru:'5 самых недавних контактов уже отмечены - при необходимости измените.',it:'I 5 contatti più recenti sono già selezionati - modifica pure.',pt:'Os 5 contactos mais recentes já estão marcados - ajuste conforme necessário.'})+'</div>';
   h+='<div style="max-height:44vh;overflow-y:auto;margin-bottom:12px">';
   h+=sorted.map(function(cu){
     var checked=recentIds.indexOf(cu.id)>=0;
@@ -17304,13 +17304,13 @@ function openBulkSharePicker(){
   h+='</div>';
   h+='<div style="display:flex;gap:8px">';
   h+='<button class="btn" onclick="closeModals()" style="flex:1">'+t('cancel_btn')+'</button>';
-  h+='<button class="btn primary" onclick="bulkSharePickerNext()" style="flex:1">'+tMap({nl:'Volgende',en:'Next',es:'Siguiente'})+'</button>';
+  h+='<button class="btn primary" onclick="bulkSharePickerNext()" style="flex:1">'+tMap({nl:'Volgende',en:'Next',es:'Siguiente',fr:'Suivant',de:'Weiter',ro:'Următorul',hu:'Következő',ru:'Далее',it:'Avanti',pt:'Seguinte'})+'</button>';
   h+='</div></div>';
   showModal(h);
 }
 function bulkSharePickerNext(){
   var ids=Array.prototype.slice.call(document.querySelectorAll('.bsp-cb:checked')).map(function(cb){return cb.value;});
-  if(!ids.length){alert(tMap({nl:'Kies minstens één contact.',en:'Choose at least one contact.',es:'Elige al menos un contacto.'}));return;}
+  if(!ids.length){alert(tMap({nl:'Kies minstens één contact.',en:'Choose at least one contact.',es:'Elige al menos un contacto.',fr:'Choisissez au moins un contact.',de:'Wählen Sie mindestens einen Kontakt.',ro:'Alege cel puțin un contact.',hu:'Válassz legalább egy kapcsolatot.',ru:'Выберите хотя бы один контакт.',it:'Scegli almeno un contatto.',pt:'Escolha pelo menos um contacto.'}));return;}
   openContactSharePicker(ids);
 }
 function buildCursistAccBody(cu,preOpenCallHist){
@@ -17558,9 +17558,9 @@ function renderCursistenSummary(){
   // rendered as a 3rd child of this space-between flex row with no
   // flex-basis, which pushed it outside the row/card entirely instead of
   // wrapping onto its own line.
-  h+='<button class="btn sm" onclick="handleImportClick()" style="font-size:11px;flex-shrink:0;display:flex;align-items:center;gap:5px;cursor:pointer;margin:0"><svg width="12" height="12"><use href="#ico-import"/></svg>'+tMap({nl:'Importeren',en:'Import',es:'Importar'})+'</button>';
+  h+='<button class="btn sm" onclick="handleImportClick()" style="font-size:11px;flex-shrink:0;display:flex;align-items:center;gap:5px;cursor:pointer;margin:0"><svg width="12" height="12"><use href="#ico-import"/></svg>'+tMap({nl:'Importeren',en:'Import',es:'Importar',fr:'Importer',de:'Importieren',ro:'Importă',hu:'Importálás',ru:'Импорт',it:'Importa',pt:'Importar'})+'</button>';
   h+='<input type="file" id="cursist-import-file" accept=".csv,.json,.pdf" multiple style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;z-index:-1" onchange="handleImportFile(event);this.value=\'\'">';
-  h+='<button class="btn sm" onclick="openBulkSharePicker()" style="font-size:11px;flex-shrink:0;display:flex;align-items:center;gap:5px"><svg width="12" height="12"><use href="#ico-share-ios"/></svg>'+tMap({nl:'Delen',en:'Share',es:'Compartir'})+'</button>';
+  h+='<button class="btn sm" onclick="openBulkSharePicker()" style="font-size:11px;flex-shrink:0;display:flex;align-items:center;gap:5px"><svg width="12" height="12"><use href="#ico-share-ios"/></svg>'+tMap({nl:'Delen',en:'Share',es:'Compartir',fr:'Partager',de:'Teilen',ro:'Distribuie',hu:'Megosztás',ru:'Поделиться',it:'Condividi',pt:'Partilhar'})+'</button>';
   h+='</div>';
   h+='</div></div>';
   el.innerHTML=h;
@@ -18258,7 +18258,7 @@ function openCursistDetail(id){
     +'<div style="flex:1;min-width:0"><div style="font-size:20px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;flex-wrap:wrap;gap:6px">'+cu.naam+getPersonTypeBadge(cu)+(cu.extraZorg?'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--red-light);color:var(--red);white-space:nowrap">&#10084; '+t('extra_zorg_badge')+'</span>':'')+'</div>'
     +'<div style="font-size:12px;color:var(--text3);margin-top:2px">'+([cu.adres,[cu.postcode,cu.plaats].filter(Boolean).join(' '),cu.land,cu.tel].filter(Boolean).join(' \u00b7 ')||t('no_contact_info'))+'</div></div>'
     +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:auto">'
-    +'<button class="btn sm" onclick="openContactSharePicker(['+cu.id+'])" style="font-size:11px;padding:0 9px" title="'+tMap({nl:'Delen',en:'Share',es:'Compartir'})+'"><svg width="13" height="13"><use href="#ico-share-ios"/></svg></button>'
+    +'<button class="btn sm" onclick="openContactSharePicker(['+cu.id+'])" style="font-size:11px;padding:0 9px" title="'+tMap({nl:'Delen',en:'Share',es:'Compartir',fr:'Partager',de:'Teilen',ro:'Distribuie',hu:'Megosztás',ru:'Поделиться',it:'Condividi',pt:'Partilhar'})+'"><svg width="13" height="13"><use href="#ico-share-ios"/></svg></button>'
     +'<button class="btn sm" onclick="toggleEditCursist('+cu.id+')" style="font-size:11px">'+t('edit_btn')+'</button>'
     +'<button class="btn sm" onclick="deleteCursist('+cu.id+')" style="font-size:11px">'+t('delete_btn')+'</button>'
     +'</div>'
@@ -18561,7 +18561,7 @@ function openLidDetail(id){
     +'<div style="flex:1;min-width:0"><div style="font-size:20px;font-weight:700;display:flex;align-items:center;flex-wrap:wrap;gap:6px">'+cu.naam+getPersonTypeBadge(cu)+(cu.extraZorg?'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--red-light);color:var(--red);white-space:nowrap">&#10084; '+t('extra_zorg_badge')+'</span>':'')+'</div>'
     +'<div style="font-size:12px;color:var(--text3);margin-top:2px">'+([cu.adres,[cu.postcode,cu.plaats].filter(Boolean).join(' '),cu.land,cu.tel].filter(Boolean).join(' \u00b7 ')||t('no_contact_info'))+'</div></div>'
     +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:auto">'
-    +'<button class="btn sm" onclick="openContactSharePicker(['+cu.id+'])" style="font-size:11px;padding:0 9px" title="'+tMap({nl:'Delen',en:'Share',es:'Compartir'})+'"><svg width="13" height="13"><use href="#ico-share-ios"/></svg></button>'
+    +'<button class="btn sm" onclick="openContactSharePicker(['+cu.id+'])" style="font-size:11px;padding:0 9px" title="'+tMap({nl:'Delen',en:'Share',es:'Compartir',fr:'Partager',de:'Teilen',ro:'Distribuie',hu:'Megosztás',ru:'Поделиться',it:'Condividi',pt:'Partilhar'})+'"><svg width="13" height="13"><use href="#ico-share-ios"/></svg></button>'
     +'<button class="btn sm" onclick="toggleEditCursist('+cu.id+')" style="font-size:11px">'+t('edit_btn')+'</button>'
     +'<button class="btn sm" onclick="deleteCursist('+cu.id+')" style="font-size:11px">'+t('delete_btn')+'</button>'
     +'</div>'
