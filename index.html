@@ -10206,6 +10206,16 @@ const CATEGORIES=[
   // without logging hours — this category lets that planning time itself be
   // registered and counted toward totals/reports.
   {label:'Plannen',                  aard:'Organisatie',    crit:true, travelLabel:null},
+  // Preparing a talk/topic for a conference or a sermon - distinct from
+  // 'Predicacion' (actually giving the sermon, aard Evangelisatie) and from
+  // 'Pastoraal voorbereiden' (prepping a counseling/pastoral conversation).
+  // Grouped under Organisatie (rather than its own aard) so it shows up
+  // right alongside the rest of Kantoor/secretariaat's everyday admin prep
+  // work per the Kantoor category-priority order above, instead of being
+  // buried at the bottom with the Evangelisatie group. No `role` tag - kept
+  // open to everyone the same as Bezoek/Tel.-WhatsApp, since Bible workers
+  // and pastors prepare talks too.
+  {label:'Voorbereiding thema/preek', aard:'Organisatie',    crit:true, travelLabel:null},
   // Own aard group ('Afwezigheid' = Absence) rather than lumped into
   // Organisatie - these are time you did NOT work, so mixing them into the
   // same group as actual admin/office work made "Organisatie" hours
@@ -24323,6 +24333,7 @@ var CAT_TRANS = {
     'Pastoraal voorbereiden':'Prepare pastoral','Bezoek':'Visit','Vervoer':'Transport','Tel./WhatsApp contact':'Call/WhatsApp contact','Administratie':'Administration',
     'Financiële administratie':'Financial administration','Onderhoud':'Maintenance',
     'Schoonmaken':'Cleaning','Vergaderen':'Meeting','Communicatie':'Communication','Plannen':'Planning',
+    'Voorbereiding thema/preek':'Prepare topic/sermon',
     'Buitenlandse zending':'Foreign mission','Feestdag (NL)':'Public holiday',
     'Verlof':'Leave','Ziekteverzuim':'Sick leave','Vakantie':'Vacation',
     'LMC - Literature and Multimedia':'Department','Commissie voorbereiden':'Prepare department',
@@ -24338,6 +24349,7 @@ var CAT_TRANS = {
     'Pastoraal voorbereiden':'Preparar pastoral','Bezoek':'Visita','Vervoer':'Viaje/transporte','Tel./WhatsApp contact':'Contacto por llamada/WhatsApp','Administratie':'Administración',
     'Financiële administratie':'Administración financiera','Onderhoud':'Mantenimiento',
     'Schoonmaken':'Limpieza','Vergaderen':'Reunión','Communicatie':'Comunicación','Plannen':'Planificación',
+    'Voorbereiding thema/preek':'Preparar tema/sermón',
     'Buitenlandse zending':'Misión extranjera','Feestdag (NL)':'Festivo',
     'Verlof':'Permiso','Ziekteverzuim':'Baja por enfermedad','Vakantie':'Vacaciones',
     'LMC - Literature and Multimedia':'Departamento','Commissie voorbereiden':'Preparar departamento',
@@ -24353,6 +24365,7 @@ var CAT_TRANS = {
     'Pastoraal voorbereiden':'Préparer pastoral','Bezoek':'Visite','Vervoer':'Transport','Tel./WhatsApp contact':'Contact tél./WhatsApp','Administratie':'Administration',
     'Financiële administratie':'Administration financière','Onderhoud':'Entretien',
     'Schoonmaken':'Nettoyage','Vergaderen':'Réunion','Communicatie':'Communication','Plannen':'Planification',
+    'Voorbereiding thema/preek':'Préparer sujet/sermon',
     'Buitenlandse zending':'Mission à l\'étranger','Feestdag (NL)':'Jour férié',
     'Verlof':'Congé','Ziekteverzuim':'Arrêt maladie','Vakantie':'Vacances',
     'LMC - Literature and Multimedia':'Département','Commissie voorbereiden':'Préparer département',
@@ -24368,6 +24381,7 @@ var CAT_TRANS = {
     'Pastoraal voorbereiden':'Pastoral vorbereiten','Bezoek':'Besuch','Vervoer':'Transport','Tel./WhatsApp contact':'Anruf/WhatsApp-Kontakt','Administratie':'Verwaltung',
     'Financiële administratie':'Finanzverwaltung','Onderhoud':'Instandhaltung',
     'Schoonmaken':'Reinigung','Vergaderen':'Besprechung','Communicatie':'Kommunikation','Plannen':'Planung',
+    'Voorbereiding thema/preek':'Thema/Predigt vorbereiten',
     'Buitenlandse zending':'Auslandsmission','Feestdag (NL)':'Feiertag',
     'Verlof':'Urlaub','Ziekteverzuim':'Krankenstand','Vakantie':'Ferien',
     'LMC - Literature and Multimedia':'Abteilung','Commissie voorbereiden':'Abteilung vorbereiten',
@@ -24383,6 +24397,7 @@ var CAT_TRANS = {
     'Pastoraal voorbereiden':'Pregătește pastoral','Bezoek':'Vizită','Vervoer':'Transport','Tel./WhatsApp contact':'Contact telefonic/WhatsApp','Administratie':'Administrație',
     'Financiële administratie':'Administrație financiară','Onderhoud':'Întreținere',
     'Schoonmaken':'Curățenie','Vergaderen':'Ședință','Communicatie':'Comunicare','Plannen':'Planificare',
+    'Voorbereiding thema/preek':'Pregătește temă/predică',
     'Buitenlandse zending':'Misiune externă','Feestdag (NL)':'Sărbătoare',
     'Verlof':'Concediu','Ziekteverzuim':'Concediu medical','Vakantie':'Vacanță',
     'LMC - Literature and Multimedia':'Departament','Commissie voorbereiden':'Pregătește departament',
@@ -24398,6 +24413,7 @@ var CAT_TRANS = {
     'Pastoraal voorbereiden':'Pásztori felkészülés','Bezoek':'Látogatás','Vervoer':'Szállítás','Tel./WhatsApp contact':'Telefon/WhatsApp kapcsolat','Administratie':'Adminisztráció',
     'Financiële administratie':'Pénzügyi adminisztráció','Onderhoud':'Karbantartás',
     'Schoonmaken':'Takarítás','Vergaderen':'Értekezlet','Communicatie':'Kommunikáció','Plannen':'Tervezés',
+    'Voorbereiding thema/preek':'Téma/prédikáció előkészítése',
     'Buitenlandse zending':'Külföldi misszió','Feestdag (NL)':'Ünnepnap',
     'Verlof':'Szabadság','Ziekteverzuim':'Betegszabadság','Vakantie':'Nyaralás',
     'LMC - Literature and Multimedia':'Osztály','Commissie voorbereiden':'Osztály előkészítése',
@@ -24413,6 +24429,7 @@ var CAT_TRANS = {
     'Pastoraal voorbereiden':'Подготовить пастырское','Bezoek':'Визит','Vervoer':'Транспорт','Tel./WhatsApp contact':'Контакт по телефону/WhatsApp','Administratie':'Администрирование',
     'Financiële administratie':'Финансовая администрация','Onderhoud':'Техническое обслуживание',
     'Schoonmaken':'Уборка','Vergaderen':'Собрание','Communicatie':'Коммуникация','Plannen':'Планирование',
+    'Voorbereiding thema/preek':'Подготовить тему/проповедь',
     'Buitenlandse zending':'Зарубежная миссия','Feestdag (NL)':'Праздник',
     'Verlof':'Отпуск','Ziekteverzuim':'Больничный','Vakantie':'Каникулы',
     'LMC - Literature and Multimedia':'Отдел','Commissie voorbereiden':'Подготовить отдел',
@@ -24439,6 +24456,7 @@ var CAT_TRANS = {
     'Vergaderen':'Riunione',
     'Communicatie':'Comunicazione',
     'Plannen':'Pianificazione',
+    'Voorbereiding thema/preek':'Preparazione tema/predica',
     'Buitenlandse zending':'Missione estera',
     'Feestdag (NL)':'Giorno festivo',
     'Verlof':'Permesso',
@@ -24472,6 +24490,7 @@ var CAT_TRANS = {
     'Vergaderen':'Reunião',
     'Communicatie':'Comunicação',
     'Plannen':'Planejamento',
+    'Voorbereiding thema/preek':'Preparar tema/sermão',
     'Buitenlandse zending':'Missão estrangeira',
     'Feestdag (NL)':'Feriado',
     'Verlof':'Licença',
