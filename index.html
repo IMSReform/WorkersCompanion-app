@@ -13528,6 +13528,22 @@ function _renderHomeInner(){
     // from renderCursisten), right where the rest of contact management
     // already happens. See task #736 for the original feature and #818 for
     // the move.
+  } else {
+    // Kantoor/secretariaat has no Follow-up card (that's a pastoral-cadence
+    // feature, not an office one), which used to leave this whole column
+    // empty dead space on wide screens above the .dash-2col-wrap breakpoint
+    // - the calendar ended up squeezed into just the left half instead of
+    // using the width it's paired with. Filled instead with the selected
+    // day's activities (Gepland/Geregistreerd), which renderHomeCalendar
+    // normally tucks directly under its own grid in col 1 - see the
+    // home-daypanel-wrap check in renderHomeCalendar, which redirects that
+    // same markup here whenever this element exists instead of duplicating
+    // the day-panel logic. Below the breakpoint .dash-2col-wrap just stacks
+    // both columns in DOM order, so on phone this still ends up directly
+    // under the calendar grid, same as every other role.
+    var dayActLbl=LANG==='en'?'Activities':LANG==='es'?'Actividades':LANG==='fr'?'Activités':LANG==='de'?'Aktivitäten':LANG==='ro'?'Activități':LANG==='hu'?'Tevékenységek':LANG==='ru'?'Активности':LANG==='it'?'Attività':LANG==='pt'?'Atividades':'Activiteiten';
+    h+='<div class="settings-section-title" style="margin-bottom:8px">'+dayActLbl+'</div>';
+    h+='<div id="home-daypanel-wrap"></div>';
   }
   h+='</div>'; // /col 2
   h+='</div>'; // /dash-2col-wrap (calendar+follow-up)
@@ -25325,6 +25341,15 @@ function sortByTimeAsc(a,b){
 function renderHomeCalendar(){
   var el=document.getElementById('home-calendar-grid');
   if(!el)return;
+  // Present only for kantoor/secretariaat's right-hand dashboard column (see
+  // _renderHomeInner) - when it exists, the selected day's Gepland/
+  // Geregistreerd panel below is built separately and injected there instead
+  // of being nested under the grid here, so the calendar itself isn't
+  // squeezed into just the left half of the wide-screen 2-column layout with
+  // nothing filling the right side (that column has no Follow-up card for
+  // this role). Every other role has no such element, so this stays exactly
+  // the single merged card it always was for them.
+  var dayPanelTarget=document.getElementById('home-daypanel-wrap');
   var now=new Date();
   var firstDay=new Date(calYear,calMonth,1);
   var lastDay=new Date(calYear,calMonth+1,0);
@@ -25382,6 +25407,16 @@ function renderHomeCalendar(){
     h+='</div>';
   }
   h+='</div>';
+  if(dayPanelTarget){
+    // Redirected case (kantoor's right column): the grid gets its own
+    // closed card and is flushed to #home-calendar-grid right away, then h
+    // is reused as a fresh buffer for just the day panel below - it doesn't
+    // need its own outer wrapper since .cal-day-panel already carries full
+    // card styling (background/padding/shadow) on its own.
+    h+='</div>';
+    el.innerHTML=h;
+    h='';
+  }
   if(calSelectedDay!==null){
     var selE=byDay[calSelectedDay]||[];
     var selP=(byDayPlan[calSelectedDay]||[]).slice().sort(sortByTimeAsc);
@@ -25450,8 +25485,12 @@ function renderHomeCalendar(){
     h+='<div style="margin-top:8px"><button class="btn sm primary" onclick="startWizard(\''+selDS+'\')" style="display:inline-flex;align-items:center;gap:6px"><svg width="14" height="14"><use href="#ico-plus"/></svg>'+t('plan_on_day')+'</button></div>';
     h+='</div>';
   }
-  h+='</div>';
-  el.innerHTML=h;
+  if(dayPanelTarget){
+    dayPanelTarget.innerHTML=h;
+  } else {
+    h+='</div>';
+    el.innerHTML=h;
+  }
 }
 
 // ═══ FULL-SCREEN CALENDAR (Apple-Calendar-style Week/Month/Year popup) ═══
