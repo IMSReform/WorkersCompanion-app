@@ -10266,6 +10266,28 @@ var KANTOOR_BLOCKED_CATS=['Bijbelstudie voorbereiden','Evangelisatie voorbereide
 // "about" them - see task feedback: "keep a history of everything that
 // includes a contact."
 var CONTACT_LINKED_CATS=['Bijbelstudie geven','Evangeliseren intern','Pastoraal contact','Pastoraal werk','Pastoraal voorbereiden','Bezoek','Vervoer','Tel./WhatsApp contact'];
+// Categories where the "was anyone else there?" multi-contact checkbox
+// (wizard cursist step, edit-entry modal, quick-repeat popup - see the
+// "Meerdere studenten"/multiContactLabel comments at each call site) is
+// offered at all. Originally Bijbelstudie geven only (task #586); extended
+// to Bezoek/Pastoraal contact/Pastoraal werk (task #959) since a visit or a
+// counseling/pastoral-work conversation just as often involves more than
+// one person, and each attendee should get their own note in their own
+// contact history rather than only the one picked as primary contact.
+var MULTI_CONTACT_CATS=['Bijbelstudie geven','Bezoek','Pastoraal contact','Pastoraal werk'];
+// Label/hint text for the multi-contact checkbox above - Bible study keeps
+// its original "students" wording (that's genuinely what they are), every
+// other eligible category gets the generic "contacts" wording instead.
+function multiContactLabel(cat){
+  return cat==='Bijbelstudie geven'
+    ? tMap({nl:'Meerdere studenten',en:'Multiple students',es:'Varios estudiantes',fr:'Plusieurs étudiants',de:'Mehrere Studenten',ro:'Mai mulți studenți',hu:'Több tanuló',ru:'Несколько учеников',it:'Più studenti',pt:'Vários estudantes'})
+    : tMap({nl:'Meerdere contacten',en:'Multiple contacts',es:'Varios contactos',fr:'Plusieurs contacts',de:'Mehrere Kontakte',ro:'Mai multe contacte',hu:'Több kapcsolattartó',ru:'Несколько контактов',it:'Più contatti',pt:'Vários contatos'});
+}
+function multiContactHint(cat){
+  return cat==='Bijbelstudie geven'
+    ? tMap({nl:'Waren er nog anderen bij deze studie? Vink hen ook aan — elk krijgt zijn eigen aantekening in de studiegeschiedenis.',en:'Was anyone else present at this study? Check them too — each gets their own note in the study history.',es:'¿Había alguien más en este estudio? Márcalos también — cada uno recibe su propia nota en el historial de estudios.',fr:"Quelqu'un d'autre était présent à cette étude ? Cochez-les aussi — chacun reçoit sa propre note dans l'historique.",de:'War noch jemand bei diesem Studium dabei? Auch sie ankreuzen — jeder bekommt einen eigenen Eintrag im Studienverlauf.',ro:'Au mai fost și alții la acest studiu? Bifați-i și pe ei — fiecare primește propria notă în istoricul studiilor.',hu:'Volt más is jelen ezen a tanulmányon? Őket is jelöld be — mindenki saját bejegyzést kap a tanulmánytörténetben.',ru:'Был ли кто-то ещё на этом изучении? Отметьте их тоже — каждый получит свою запись в истории изучений.',it:"C'era qualcun altro a questo studio? Seleziona anche loro — ognuno riceve la propria nota nella cronologia.",pt:'Havia mais alguém neste estudo? Marque-os também — cada um recebe sua própria nota no histórico.'})
+    : tMap({nl:'Waren er nog anderen bij? Vink hen ook aan — elk krijgt zijn eigen aantekening in de contactgeschiedenis.',en:'Was anyone else present? Check them too — each gets their own note in the contact history.',es:'¿Había alguien más presente? Márcalos también — cada uno recibe su propia nota en el historial de contacto.',fr:"Quelqu'un d'autre était présent ? Cochez-les aussi — chacun reçoit sa propre note dans l'historique de contact.",de:'War noch jemand anwesend? Auch sie ankreuzen — jeder bekommt einen eigenen Eintrag im Kontaktverlauf.',ro:'Au mai fost și alții prezenți? Bifați-i și pe ei — fiecare primește propria notă în istoricul de contact.',hu:'Volt más is jelen? Őket is jelöld be — mindenki saját bejegyzést kap a kapcsolattörténetben.',ru:'Был ли кто-то ещё? Отметьте их тоже — каждый получит свою запись в истории контактов.',it:"C'era qualcun altro? Seleziona anche loro — ognuno riceve la propria nota nella cronologia dei contatti.",pt:'Havia mais alguém? Marque-os também — cada um recebe sua própria nota no histórico de contato.'});
+}
 function getCategoriesForRole(cats){
   if(db.settings.workRole==='kantoor'){
     return cats.filter(function(c){return KANTOOR_BLOCKED_CATS.indexOf(c.label)<0;});
@@ -15267,18 +15289,20 @@ function renderWiz(){
     }
   }else if(s==='cursist'){
     const opts=buildCursistOptgroups(db.cursisten,function(cu){return `<option value="${cu.id}" ${draft.cursistId==cu.id?'selected':''}>${cu.naam}</option>`;});
-    // "Meerdere studenten" (multiple students): only offered for actual
-    // Bible-study entries - a home study often has more than one person in
-    // the room, and the worker wants every attendee's own contact history
-    // updated, not just the one picked as primary contact above. Building
-    // out wSave() below to fan this into one linked entry per extra
-    // attendee (see rpWizMultiStudentEntries).
-    const isBS=draft.categorie==='Bijbelstudie geven';
+    // "Meerdere studenten"/"Meerdere contacten" (multiple contacts): offered
+    // for Bijbelstudie geven plus any other MULTI_CONTACT_CATS category
+    // (Bezoek, Pastoraal contact, Pastoraal werk - task #959) - a home
+    // study, visit, or counseling/pastoral-work conversation often has more
+    // than one person in the room, and the worker wants every attendee's
+    // own contact history updated, not just the one picked as primary
+    // contact above. Building out wSave() below to fan this into one linked
+    // entry per extra attendee (see rpWizMultiStudentEntries).
+    const isMultiCat=MULTI_CONTACT_CATS.indexOf(draft.categorie)>=0;
     let multiHtml='';
-    if(isBS){
+    if(isMultiCat){
       const multiChecked=!!(draft.extraCursistIds&&draft.extraCursistIds.length);
-      const multiLbl=tMap({nl:'Meerdere studenten',en:'Multiple students',es:'Varios estudiantes',fr:'Plusieurs étudiants',de:'Mehrere Studenten',ro:'Mai mulți studenți',hu:'Több tanuló',ru:'Несколько учеников',it:'Più studenti',pt:'Vários estudantes'});
-      const multiHint=tMap({nl:'Waren er nog anderen bij deze studie? Vink hen ook aan — elk krijgt zijn eigen aantekening in de studiegeschiedenis.',en:'Was anyone else present at this study? Check them too — each gets their own note in the study history.',es:'¿Había alguien más en este estudio? Márcalos también — cada uno recibe su propia nota en el historial de estudios.',fr:"Quelqu'un d'autre était présent à cette étude ? Cochez-les aussi — chacun reçoit sa propre note dans l'historique.",de:'War noch jemand bei diesem Studium dabei? Auch sie ankreuzen — jeder bekommt einen eigenen Eintrag im Studienverlauf.',ro:'Au mai fost și alții la acest studiu? Bifați-i și pe ei — fiecare primește propria notă în istoricul studiilor.',hu:'Volt más is jelen ezen a tanulmányon? Őket is jelöld be — mindenki saját bejegyzést kap a tanulmánytörténetben.',ru:'Был ли кто-то ещё на этом изучении? Отметьте их тоже — каждый получит свою запись в истории изучений.',it:"C'era qualcun altro a questo studio? Seleziona anche loro — ognuno riceve la propria nota nella cronologia.",pt:'Havia mais alguém neste estudo? Marque-os também — cada um recebe sua própria nota no histórico.'});
+      const multiLbl=multiContactLabel(draft.categorie);
+      const multiHint=multiContactHint(draft.categorie);
       const extraIds=(draft.extraCursistIds||[]).map(String);
       const multiRow=cu=>`<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer"><input type="checkbox" class="w-multi-cb" value="${cu.id}" ${extraIds.indexOf(String(cu.id))>=0?'checked':''} style="width:16px;height:16px;flex-shrink:0"><span style="font-size:13px">${cu.naam}</span></label>`;
       const multiGroups=groupCursistenByLid(db.cursisten);
@@ -15746,14 +15770,15 @@ function wSave(wantsCal){
     delete entry.extraCursistIds; // wizard-only field, not a real entry field
     touch(entry);
     db.entries.unshift(entry);
-    // "Meerdere studenten" (see the cursist wizard step): a group Bible
-    // study only happened once, so the extra attendees get their own linked
-    // entry for contact-history purposes (last-contact date, study count,
-    // lesson-progress suggestions) WITHOUT double-counting the hours already
-    // recorded once on the primary entry above - each companion entry's
-    // uren/km/kosten/travel are zeroed out rather than copied, so Rapport
-    // totals and reimbursements aren't multiplied by the group size.
-    if(entry.categorie==='Bijbelstudie geven'&&draft.extraCursistIds&&draft.extraCursistIds.length){
+    // "Meerdere studenten"/"Meerdere contacten" (see the cursist wizard
+    // step): a group study/visit/pastoral conversation only happened once,
+    // so the extra attendees get their own linked entry for contact-history
+    // purposes (last-contact date, study count, lesson-progress suggestions)
+    // WITHOUT double-counting the hours already recorded once on the
+    // primary entry above - each companion entry's uren/km/kosten/travel
+    // are zeroed out rather than copied, so Rapport totals and
+    // reimbursements aren't multiplied by the group size.
+    if(MULTI_CONTACT_CATS.indexOf(entry.categorie)>=0&&draft.extraCursistIds&&draft.extraCursistIds.length){
       var groupId='grp-'+entry.id;
       entry.groupStudyId=groupId;
       draft.extraCursistIds.forEach(function(exId){
@@ -16887,12 +16912,12 @@ function openQuickRepeatModal(last, prefillDate){
   // that id) so repeating an existing group study starts from its real
   // membership instead of blank.
   var qrMultiHtml='';
-  if(last.categorie==='Bijbelstudie geven'&&!isLid){
+  if(MULTI_CONTACT_CATS.indexOf(last.categorie)>=0&&!isLid){
     var qrExtraIds=(last.groupStudyId?db.entries.filter(function(x){return x.groupStudyId===last.groupStudyId&&x.id!==last.id;}):[])
       .map(function(x){return String(x.cursistId);}).filter(Boolean);
     var qrMultiChecked=qrExtraIds.length>0;
-    var qrMultiLbl=tMap({nl:'Meerdere studenten',en:'Multiple students',es:'Varios estudiantes',fr:'Plusieurs étudiants',de:'Mehrere Studenten',ro:'Mai mulți studenți',hu:'Több tanuló',ru:'Несколько учеников',it:'Più studenti',pt:'Vários estudantes'});
-    var qrMultiHint=tMap({nl:'Waren er nog anderen bij deze studie? Vink hen ook aan — elk krijgt zijn eigen aantekening in de studiegeschiedenis.',en:'Was anyone else present at this study? Check them too — each gets their own note in the study history.',es:'¿Había alguien más en este estudio? Márcalos también — cada uno recibe su propia nota en el historial de estudios.',fr:"Quelqu'un d'autre était présent à cette étude ? Cochez-les aussi — chacun reçoit sa propre note dans l'historique.",de:'War noch jemand bei diesem Studium dabei? Auch sie ankreuzen — jeder bekommt einen eigenen Eintrag im Studienverlauf.',ro:'Au mai fost și alții la acest studiu? Bifați-i și pe ei — fiecare primește propria notă în istoricul studiilor.',hu:'Volt más is jelen ezen a tanulmányon? Őket is jelöld be — mindenki saját bejegyzést kap a tanulmánytörténetben.',ru:'Был ли кто-то ещё на этом изучении? Отметьте их тоже — каждый получит свою запись в истории изучений.',it:"C'era qualcun altro a questo studio? Seleziona anche loro — ognuno riceve la propria nota nella cronologia.",pt:'Havia mais alguém neste estudo? Marque-os também — cada um recebe sua própria nota no histórico.'});
+    var qrMultiLbl=multiContactLabel(last.categorie);
+    var qrMultiHint=multiContactHint(last.categorie);
     var qrMultiRow=function(cu){return '<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer"><input type="checkbox" class="qr-multi-cb" value="'+cu.id+'" '+(qrExtraIds.indexOf(String(cu.id))>=0?'checked':'')+' style="width:16px;height:16px;flex-shrink:0"><span style="font-size:13px">'+cu.naam+'</span></label>';};
     var qrMultiGroups=groupCursistenByLid(db.cursisten);
     var qrMultiSubtitle=function(lbl){return '<div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px">'+lbl+'</div>';};
@@ -17126,7 +17151,7 @@ function saveQuickRepeat(sourceEntryId){
   // planned branch further down doesn't carry a groupStudyId concept, same
   // as the main wizard's saveDraftAsPlanned).
   var qrMultiToggleEl=document.getElementById('qr-multi-toggle');
-  if(newEntry.categorie==='Bijbelstudie geven'&&qrMultiToggleEl&&qrMultiToggleEl.checked){
+  if(MULTI_CONTACT_CATS.indexOf(newEntry.categorie)>=0&&qrMultiToggleEl&&qrMultiToggleEl.checked){
     newEntry._qrExtraCursistIds=Array.from(document.querySelectorAll('.qr-multi-cb:checked'))
       .map(function(cb){return cb.value;})
       .filter(function(id){return id!==String(newEntry.cursistId);});
@@ -32087,8 +32112,8 @@ function openEditEntryModal(entryId,skipSummary){
   var eeGroupSiblings=e.groupStudyId?db.entries.filter(function(x){return x.groupStudyId===e.groupStudyId&&x.id!==e.id;}):[];
   var eeExtraIds=eeGroupSiblings.map(function(x){return String(x.cursistId);}).filter(Boolean);
   var eeMultiChecked=eeExtraIds.length>0;
-  var eeMultiLbl=tMap({nl:'Meerdere studenten',en:'Multiple students',es:'Varios estudiantes',fr:'Plusieurs étudiants',de:'Mehrere Studenten',ro:'Mai mulți studenți',hu:'Több tanuló',ru:'Несколько учеников',it:'Più studenti',pt:'Vários estudantes'});
-  var eeMultiHint=tMap({nl:'Waren er nog anderen bij deze studie? Vink hen ook aan — elk krijgt zijn eigen aantekening in de studiegeschiedenis.',en:'Was anyone else present at this study? Check them too — each gets their own note in the study history.',es:'¿Había alguien más en este estudio? Márcalos también — cada uno recibe su propia nota en el historial de estudios.',fr:"Quelqu'un d'autre était présent à cette étude ? Cochez-les aussi — chacun reçoit sa propre note dans l'historique.",de:'War noch jemand bei diesem Studium dabei? Auch sie ankreuzen — jeder bekommt einen eigenen Eintrag im Studienverlauf.',ro:'Au mai fost și alții la acest studiu? Bifați-i și pe ei — fiecare primește propria notă în istoricul studiilor.',hu:'Volt más is jelen ezen a tanulmányon? Őket is jelöld be — mindenki saját bejegyzést kap a tanulmánytörténetben.',ru:'Был ли кто-то ещё на этом изучении? Отметьте их тоже — каждый получит свою запись в истории изучений.',it:"C'era qualcun altro a questo studio? Seleziona anche loro — ognuno riceve la propria nota nella cronologia.",pt:'Havia mais alguém neste estudo? Marque-os também — cada um recebe sua própria nota no histórico.'});
+  var eeMultiLbl=multiContactLabel(e.categorie);
+  var eeMultiHint=multiContactHint(e.categorie);
   var eeMultiRow=function(cu){return '<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer"><input type="checkbox" class="ee-multi-cb" value="'+cu.id+'" '+(eeExtraIds.indexOf(String(cu.id))>=0?'checked':'')+' style="width:16px;height:16px;flex-shrink:0"><span style="font-size:13px">'+cu.naam+'</span></label>';};
   var eeMultiGroups=groupCursistenByLid(db.cursisten);
   var eeMultiSubtitle=function(lbl){return '<div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px">'+lbl+'</div>';};
@@ -32159,10 +32184,10 @@ function openEditEntryModal(entryId,skipSummary){
   h+='<div id="ee-cursist-new-wrap" style="display:none;margin-bottom:8px">';
   h+='<input type="text" id="ee-cursist-new" placeholder="'+(t('quick_add_name_ph')||t('cursist_naam_lbl')||'Naam')+'" style="width:100%">';
   h+='</div>';
-  h+='<div id="ee-multi-section" style="display:'+(e.categorie==='Bijbelstudie geven'?'block':'none')+';margin-bottom:8px">';
-  h+='<label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="ee-multi-toggle" onchange="toggleEeMultiStudent()" '+(eeMultiChecked?'checked':'')+' style="width:16px;height:16px;flex-shrink:0"><span style="font-size:13px;font-weight:600">'+eeMultiLbl+'</span></label>';
+  h+='<div id="ee-multi-section" style="display:'+(MULTI_CONTACT_CATS.indexOf(e.categorie)>=0?'block':'none')+';margin-bottom:8px">';
+  h+='<label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="ee-multi-toggle" onchange="toggleEeMultiStudent()" '+(eeMultiChecked?'checked':'')+' style="width:16px;height:16px;flex-shrink:0"><span id="ee-multi-toggle-lbl" style="font-size:13px;font-weight:600">'+eeMultiLbl+'</span></label>';
   h+='<div id="ee-multi-wrap" style="display:'+(eeMultiChecked?'block':'none')+';margin-top:6px;padding:10px 12px;background:var(--surface2);border-radius:var(--r-sm)">';
-  h+='<div style="font-size:11px;color:var(--text3);margin-bottom:6px">'+eeMultiHint+'</div>';
+  h+='<div id="ee-multi-hint" style="font-size:11px;color:var(--text3);margin-bottom:6px">'+eeMultiHint+'</div>';
   h+='<div style="max-height:180px;overflow-y:auto">'+(eeCheckList||'<div style="font-size:12px;color:var(--text3)">'+t('wizard_no_contact')+'</div>')+'</div>';
   h+='</div></div>';
   h+='<span class="form-label">'+t('wizard_gemeente')+'</span>';
@@ -32403,7 +32428,7 @@ function saveEditEntry(entryId){
   // geven (the section is hidden/cleared otherwise by toggleEeMultiVisibility).
   var eeMultiToggleEl=document.getElementById('ee-multi-toggle');
   var eeExistingSiblings=e.groupStudyId?db.entries.filter(function(x){return x.groupStudyId===e.groupStudyId&&x.id!==e.id;}):[];
-  if(e.categorie==='Bijbelstudie geven'&&eeMultiToggleEl&&eeMultiToggleEl.checked){
+  if(MULTI_CONTACT_CATS.indexOf(e.categorie)>=0&&eeMultiToggleEl&&eeMultiToggleEl.checked){
     var eeCheckedIds=Array.from(document.querySelectorAll('.ee-multi-cb:checked'))
       .map(function(cb){return cb.value;})
       .filter(function(id){return id!==String(e.cursistId);});
@@ -32481,9 +32506,17 @@ function toggleEeMultiVisibility(){
   var cat=document.getElementById('ee-cat');
   var sec=document.getElementById('ee-multi-section');
   if(!cat||!sec)return;
-  var isBS=cat.value==='Bijbelstudie geven';
-  sec.style.display=isBS?'block':'none';
-  if(!isBS){
+  var isMulti=MULTI_CONTACT_CATS.indexOf(cat.value)>=0;
+  sec.style.display=isMulti?'block':'none';
+  // Keep the label/hint wording in sync with whichever multi-eligible
+  // category is now selected (Bible study keeps "students" wording, every
+  // other category gets the generic "contacts" wording) - see
+  // multiContactLabel/multiContactHint.
+  var lblEl=document.getElementById('ee-multi-toggle-lbl');
+  if(lblEl)lblEl.textContent=multiContactLabel(cat.value);
+  var hintEl=document.getElementById('ee-multi-hint');
+  if(hintEl)hintEl.textContent=multiContactHint(cat.value);
+  if(!isMulti){
     var toggle=document.getElementById('ee-multi-toggle');
     if(toggle)toggle.checked=false;
     var wrap=document.getElementById('ee-multi-wrap');
