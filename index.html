@@ -6245,7 +6245,7 @@ var MONTHS_FULL=getMonthsFull();
 
 const AARDEN_COLORS={'Bijbelstudie':'#83A371','Evangelisatie':'#335781','Gemeentebediening':'#5179A8','Vervoer':'#3E8E85','Organisatie':'#A85C7A','Boekhouding':'#B2A675','Beheer':'#9B8C6A','Commissie':'#4A7C9E','Divisie / GC':'#7C6FAE','Reistijd':'#B2A675','Afwezigheid':'#C1743A','Overig':'#9AA5B4'};
 
-var LANG = 'nl';
+var LANG = 'en';
 function getLocale(){
   var map={nl:'nl-NL',en:'en-GB',es:'es-ES',fr:'fr-FR',de:'de-DE',ro:'ro-RO',hu:'hu-HU',ru:'ru-RU',it:'it-IT',pt:'pt-PT'};
   return map[LANG]||'nl-NL';
@@ -6627,8 +6627,8 @@ var TRANSLATIONS = {
     vacation_days_goal:'Vacation days per year',
     km_rate_goal:'Km reimbursement', currency_label:'Currency', distance_unit_label:'Distance unit',
     days_lbl:'days',
-    welcome_title:'Welcome',
-    welcome_subtitle:'Register your first activity or import existing data.',
+    welcome_title:'Welcome to WorkersCompanion',
+    welcome_subtitle:'More than an hour tracker — it\'s your agenda, reports, contacts and Bible study companion, all in one place.',
     welcome_add_activity:'Register activity',
     welcome_import:'Import',
     welcome_demo:'Load demo data',
@@ -13602,7 +13602,8 @@ function _renderHomeInner(){
     // like an intentional welcome screen rather than a stray card at the
     // top of an otherwise-empty page. The card's own width is unchanged
     // (full-width on mobile, capped by .onboard-card on desktop).
-    var onboardH='<div style="min-height:calc(100vh - 180px);display:flex;align-items:center;justify-content:center;box-sizing:border-box">';
+    var onboardH='<div style="min-height:calc(100vh - 180px);display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box">';
+    onboardH+='<div id="welcome-isotope-mark" style="width:44px;height:44px;opacity:.35;margin-bottom:14px;flex-shrink:0"></div>';
     onboardH+='<div class="card onboard-card" style="text-align:center;padding:20px 16px;width:100%">';
     onboardH+='<div style="font-size:15px;font-weight:700;color:var(--brand);margin-bottom:4px">'+t('welcome_title')+'</div>';
     onboardH+='<div style="font-size:12.5px;color:var(--text3);margin-bottom:14px;line-height:1.5">'+t('welcome_subtitle')+'</div>';
@@ -13611,6 +13612,21 @@ function _renderHomeInner(){
     onboardH+='<button onclick="loadDemoData()" style="background:transparent;color:var(--text3);border:1px solid var(--border);padding:7px 14px;border-radius:10px;font-size:12px;cursor:pointer;display:block;width:100%;max-width:280px;margin:0 auto">'+t('welcome_demo')+'</button>';
     onboardH+='</div></div>';
     dash.innerHTML=onboardH;
+    // Soft gray isotope mark above the welcome card - same CSS mask-recolor
+    // technique as #about-isotope-mark in Settings, but muted (var(--text3)
+    // + low opacity) instead of the theme brand color, since this sits on
+    // an otherwise-empty first-run screen and shouldn't compete with the
+    // welcome copy or buttons for attention.
+    var wiso=document.getElementById('welcome-isotope-mark');
+    if(wiso&&!wiso.dataset.set){
+      wiso.style.backgroundColor='var(--text3)';
+      wiso.style.webkitMaskImage="url('"+IMS_ISOTOPE_DATA_URI+"')";
+      wiso.style.maskImage="url('"+IMS_ISOTOPE_DATA_URI+"')";
+      wiso.style.webkitMaskSize='contain';wiso.style.maskSize='contain';
+      wiso.style.webkitMaskRepeat='no-repeat';wiso.style.maskRepeat='no-repeat';
+      wiso.style.webkitMaskPosition='center';wiso.style.maskPosition='center';
+      wiso.dataset.set='1';
+    }
     updateReminderBar();
     return;
   }
