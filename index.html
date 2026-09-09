@@ -17698,7 +17698,7 @@ function renderCursistenSummary(){
     h+='</div>';
   });
   h+='</div>';
-  h+='<div style="display:flex;gap:24px;align-items:center;justify-content:space-between">';
+  h+='<div style="display:flex;gap:24px;align-items:center;justify-content:space-between;flex-wrap:wrap">';
   h+='<div style="display:flex;gap:24px">';
   h+='<div><div style="font-size:16px;font-weight:700;color:var(--text)">+'+ret.newStudents.length+'</div><div style="font-size:10px;color:var(--text3)">'+t('cs_new_lbl')+' '+curYear+'</div></div>';
   h+='<div><div style="font-size:16px;font-weight:700;color:var(--text)">-'+ret.droppedStudents.length+'</div><div style="font-size:10px;color:var(--text3)">'+t('cs_dropped_lbl')+'</div></div>';
@@ -17707,7 +17707,14 @@ function renderCursistenSummary(){
   // or handing off during a holiday. Opens a contact-selection step first
   // (pre-checking the 5 most recently active), then the same field picker
   // used for a single-contact share.
-  h+='<div style="display:flex;gap:6px;flex-shrink:0">';
+  // flex-wrap here (plus flex-wrap on the outer row above) is what actually
+  // fixes the Kantoor GC-export button spilling outside the card on narrow
+  // phones: this row now holds up to 3 buttons (Import/Share/+GC-export for
+  // Kantoor), and flex-shrink:0 on each keeps them from getting squished
+  // unreadable - but without wrapping, that same flex-shrink:0 has nowhere
+  // to send the overflow except past the card's right edge. Wrapping lets
+  // the 3rd button drop to its own line instead.
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0;max-width:100%">';
   // Receiving end of the same handover: a colleague's Share button (above)
   // produces a zda_contact_share JSON file, but the only place to actually
   // import it used to be buried in Settings > Gegevensbeheer, with no hint
