@@ -19592,15 +19592,23 @@ function expandEntriesForReport(entries){
   return out;
 }
 function findCatByLabel(label){
+  // #977: was searching the static CATEGORIES array only, so a hand-added
+  // custom category (Settings > categories) never matched here - every
+  // color/aard lookup that goes through this function (Rapport grouping,
+  // calendar dots, search results, etc.) silently fell back to 'Overig'
+  // for custom categories, regardless of which group the user actually
+  // filed them under when creating them. getCATEGORIES() is CATEGORIES
+  // plus db.settings.customCategories, so this now finds those too.
+  var allCats=getCATEGORIES();
   // Try Dutch label first (primary storage key)
-  var c=CATEGORIES.find(function(x){return x.label===label;});
+  var c=allCats.find(function(x){return x.label===label;});
   if(c)return c;
   // Reverse-lookup through all CAT_TRANS languages (handles entries saved with translated labels)
   for(var lng in CAT_TRANS){
     var m=CAT_TRANS[lng];
     for(var dutch in m){
       if(m[dutch]===label){
-        return CATEGORIES.find(function(x){return x.label===dutch;})||null;
+        return allCats.find(function(x){return x.label===dutch;})||null;
       }
     }
   }
