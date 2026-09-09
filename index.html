@@ -12911,6 +12911,36 @@ function toggleCalAcc(headerEl){
   var wrap=headerEl.closest('.cal-acc');
   if(wrap)wrap.classList.toggle('acc-open');
 }
+// #980 follow-up: plain scrollIntoView({block:'start'}) always snaps the
+// item's top edge flush to the very top of the window - but #g-header
+// floats position:fixed over that exact spot (see its CSS), so a short
+// item (a subtitle + one dropdown, e.g. "Soort werk"/"Versleuteling") or
+// one that was already fully visible before being tapped ended up shoved
+// partway BEHIND the header instead of just staying where it was. This
+// only scrolls the minimum needed to clear the header at the top and the
+// window edge at the bottom, and does nothing at all if the item (now
+// expanded) already fits on screen either way - so items near the top of
+// the list that are already visible simply stay put, and only ones that
+// would actually run off the bottom edge get nudged into view.
+function scrollSettingsItemIntoView(item){
+  if(!item)return;
+  var ghead=document.getElementById('g-header');
+  var headH=ghead?ghead.getBoundingClientRect().height:76;
+  var margin=10;
+  var rect=item.getBoundingClientRect();
+  var viewTop=headH+margin, viewBottom=window.innerHeight-margin;
+  var delta=0;
+  if(rect.bottom>viewBottom){
+    // Bottom runs off-screen - scroll down just enough to reveal it, but
+    // never so far that doing so would push the top up behind the header
+    // (that just trades one hidden edge for the other on a tall item).
+    delta=Math.min(rect.bottom-viewBottom,Math.max(0,rect.top-viewTop));
+  }else if(rect.top<viewTop){
+    delta=rect.top-viewTop;
+  }
+  if(Math.abs(delta)<1)return; // already fully visible - leave the scroll position alone
+  window.scrollTo({top:window.pageYOffset+delta,behavior:'smooth'});
+}
 // The header cloud badge used to just do navTo('settings') - that lands on
 // the Settings screen but leaves every accordion section collapsed, so the
 // Google Drive item (the one thing actually relevant to a sync-status tap)
@@ -12927,7 +12957,7 @@ function openDriveSettings(){
     if(other!==item)other.classList.remove('acc-open');
   });
   item.classList.add('acc-open');
-  item.scrollIntoView({block:'start',behavior:'smooth'});
+  scrollSettingsItemIntoView(item);
 }
 // The CSS rule for an open .settings-item-body transitions max-height from
 // 0 to a big fixed ceiling (2400px, sized for the longest section) over a
@@ -12982,10 +13012,11 @@ function toggleSettingsItem(headerEl){
     // nothing telling the user something happened if the item was near the
     // bottom of the screen - the newly-opened content rendered off-screen
     // below the fold, so it looked like the tap did nothing at all. Same
-    // scrollIntoView already used by the openGoalsSettings/openImportSettings
-    // deep-links below, so every way of opening a Settings accordion item
-    // now behaves consistently.
-    item.scrollIntoView({block:'start',behavior:'smooth'});
+    // scrollSettingsItemIntoView already used by the
+    // openGoalsSettings/openImportSettings deep-links below, so every way of
+    // opening a Settings accordion item now behaves consistently - and, per
+    // its own comment above, only actually scrolls when needed.
+    scrollSettingsItemIntoView(item);
   }else collapseSettingsBody(body);
 }
 function openGoalsSettings(){
@@ -12997,7 +13028,7 @@ function openGoalsSettings(){
     if(other!==item)other.classList.remove('acc-open');
   });
   item.classList.add('acc-open');
-  item.scrollIntoView({block:'start',behavior:'smooth'});
+  scrollSettingsItemIntoView(item);
 }
 // Jumps straight to the Gegevens (import/export/wissen/demo) accordion item
 // and opens it, instead of just landing on a generic Settings screen and
@@ -13014,7 +13045,7 @@ function openImportSettings(){
     if(other!==item)other.classList.remove('acc-open');
   });
   item.classList.add('acc-open');
-  item.scrollIntoView({block:'start',behavior:'smooth'});
+  scrollSettingsItemIntoView(item);
 }
 function setTextSize(sz){
   sz=sz||'md';
