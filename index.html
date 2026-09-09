@@ -26837,6 +26837,208 @@ function getCalExportPref(){
 function setCalExportPref(on){
   try{ localStorage.setItem(CAL_EXPORT_PREF_KEY, on?'1':'0'); }catch(e){}
 }
+// ── Smart planning helper ──────────────────────────────────────────
+// "Type what you need to do, the app suggests category/contact/date" -
+// deliberately built WITHOUT any outside AI service: everything below runs
+// offline, for free, from data already in the app (the worker's own
+// category list and contacts, plus a small hand-written Dutch keyword/date
+// map). It only ever produces a *suggestion* - openSmartPlanHelper always
+// hands off into the same openPlanModal() form used everywhere else for
+// planning an activity, with the guesses pre-filled but every field still
+// fully editable before anything is actually saved.
+//
+// Curated synonyms per category, keyed by the category's stable internal
+// `label` (not the translated display text, which getCatLabel may localize
+// away from these Dutch words) - covers common casual phrasings whose
+// words don't literally appear in the category's own label.
+var SP_CATEGORY_SYNONYMS={
+  'Bezoek':['bezoeken','langsgaan','langs gaan','op bezoek'],
+  'Bijbelstudie geven':['bijbelstudie','studie geven','bijbellessen'],
+  'Bijbelstudie voorbereiden':['studie voorbereiden'],
+  'Tel./WhatsApp contact':['bellen','telefoneren','appen','whatsappen','telefoon','bel '],
+  'Vergaderen':['vergadering','meeting','overleg'],
+  'Communicatie':['mailen','e-mail','bericht sturen'],
+  'Evangeliseren extern':['evangeliseren','evangelisatie','flyeren'],
+  'Evangeliseren intern':['evangeliseren','evangelisatie'],
+  'Pastoraal werk':['pastoraal','pastoraat','gebed voor'],
+  'Pastoraal contact':['pastoraal gesprek','luisterend oor'],
+  'Vervoer':['rijden','ophalen','wegbrengen','een lift'],
+  'Administratie':['administratie','papierwerk'],
+  'Preken':['preek','prediken','preken']
+};
+function spGuessCategory(text){
+  var norm=normNameForMatch(text);
+  if(!norm)return null;
+  var cats=getCATEGORIES().filter(function(c){return !c.isTravel;});
+  var best=null,bestScore=0;
+  cats.forEach(function(c){
+    var labelNorm=normNameForMatch(getCatLabel(c.label));
+    var words=labelNorm.split(/[^a-z0-9à-ÿ]+/).filter(function(w){return w.length>=4;});
+    var score=0;
+    words.forEach(function(w){if(norm.indexOf(w)>=0)score++;});
+    (SP_CATEGORY_SYNONYMS[c.label]||[]).forEach(function(syn){
+      if(norm.indexOf(normNameForMatch(syn))>=0)score+=2;
+    });
+    if(score>bestScore){bestScore=score;best=c.label;}
+  });
+  return bestScore>0?best:null;
+}
+// Longest-name-wins substring/whole-word match against the worker's own
+// contacts (db.cursisten covers both Cursisten and Leden - see
+// buildCursistOptgroups) - reuses normNameForMatch, the same
+// accent-insensitive normalizer already used for search/dedup elsewhere.
+function spGuessContact(text){
+  var norm=normNameForMatch(text);
+  if(!norm)return null;
+  var best=null,bestLen=0;
+  (db.cursisten||[]).forEach(function(c){
+    if(!c.naam)return;
+    var n=normNameForMatch(c.naam);
+    if(!n)return;
+    var hit=false;
+    if(norm.indexOf(n)>=0)hit=true;
+    else{
+      var first=n.split(' ')[0];
+      if(first&&first.length>=3){
+        var re=new RegExp('(^|[^a-z0-9à-ÿ])'+first.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'([^a-z0-9à-ÿ]|$)');
+        if(re.test(norm))hit=true;
+      }
+    }
+    if(hit&&n.length>bestLen){best=c;bestLen=n.length;}
+  });
+  return best;
+}
+// Small, deliberately-forgiving Dutch relative/absolute date phrase parser
+// - "vandaag/morgen/overmorgen", a weekday name (optionally "volgende
+// <dag>"), "over N dagen/weken", or "<dag> <maand>". Reuses
+// MONTHS_NL_LOOKUP, already built for the gemeente-planning PDF parser
+// (#982/#983), rather than duplicating that month-name map. Anything it
+// can't confidently parse just returns null - the date field in the
+// resulting plan form still defaults to today and is always editable, so
+// an unrecognized phrase never blocks planning, it just means no date
+// suggestion was possible.
+function spGuessDate(text, baseDs){
+  var norm=normNameForMatch(text);
+  if(!norm)return null;
+  var base=baseDs?new Date(baseDs+'T00:00:00'):new Date();
+  function addDays(n){var d=new Date(base);d.setDate(d.getDate()+n);return ymdLocal(d);}
+  if(/\bvandaag\b/.test(norm))return ymdLocal(base);
+  if(/\bovermorgen\b/.test(norm))return addDays(2);
+  if(/\bmorgen\b/.test(norm))return addDays(1);
+  var overM=norm.match(/\bover\s+(\d+)\s+(dag|dagen|week|weken)\b/);
+  if(overM){
+    var n=parseInt(overM[1],10);
+    return addDays((overM[2]==='week'||overM[2]==='weken')?n*7:n);
+  }
+  var WD=['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
+  for(var i=0;i<WD.length;i++){
+    if(norm.indexOf(WD[i])>=0){
+      var delta=(i-base.getDay()+7)%7;
+      if(delta===0)delta=7;
+      if(/\bvolgende\b/.test(norm))delta+=7;
+      return addDays(delta);
+    }
+  }
+  var dm=norm.match(/\b(\d{1,2})\s+([a-zà-ÿ]+)\b/);
+  if(dm){
+    var day=parseInt(dm[1],10), mon=MONTHS_NL_LOOKUP[dm[2]];
+    if(mon&&day>=1&&day<=31){
+      var year=base.getFullYear();
+      var cand=new Date(year,mon-1,day);
+      if(cand<base)cand=new Date(year+1,mon-1,day);
+      return ymdLocal(cand);
+    }
+  }
+  return null;
+}
+var _spGuess={cat:'',cursistId:'',datum:''};
+// Entry point: the third card in openRegisterOrPlanChoice() (the main "+"
+// button's choice sheet), right next to "Register" and "Plan for later" -
+// deliberately NOT a new nav tab/screen, per the earlier discussion about
+// where this belongs.
+function openSmartPlanHelper(){
+  var titleLbl=tMap({nl:'Slim plannen',en:'Smart plan',es:'Planificación inteligente',fr:'Planification intelligente',de:'Intelligent planen',ro:'Planificare inteligentă',hu:'Okos tervezés',ru:'Умное планирование',it:'Pianificazione intelligente',pt:'Planejamento inteligente'});
+  var hintLbl=tMap({nl:'Typ in je eigen woorden wat je wilt doen. De app doet een voorstel voor categorie, contact en datum, op basis van je eigen gegevens - je kunt daarna nog alles aanpassen.',en:'Type in your own words what you want to do. The app suggests a category, contact and date based on your own data - you can still adjust everything afterward.',es:'Escribe con tus propias palabras lo que quieres hacer. La app sugiere una categoría, contacto y fecha según tus propios datos - puedes ajustarlo todo después.'});
+  var placeholderLbl=tMap({nl:'bijv. bijbelstudie bij Maria volgende week',en:'e.g. bible study with Maria next week',es:'p. ej. estudio bíblico con María la próxima semana'});
+  var nextLbl=tMap({nl:'Verder',en:'Next',es:'Siguiente',fr:'Suivant',de:'Weiter',ro:'Continuă',hu:'Tovább',ru:'Далее',it:'Avanti',pt:'Avançar'});
+  _spGuess={cat:'',cursistId:'',datum:ymdLocal()};
+  var h='<div style="padding:16px">';
+  h+='<div style="font-size:15px;font-weight:700;margin-bottom:4px">'+titleLbl+'</div>';
+  h+='<div style="font-size:12px;color:var(--text2);margin-bottom:12px">'+hintLbl+'</div>';
+  h+='<textarea id="sp-input" oninput="spAnalyze()" rows="2" placeholder="'+placeholderLbl+'" style="width:100%;resize:none;margin-bottom:10px;box-sizing:border-box"></textarea>';
+  h+='<div id="sp-suggestions"></div>';
+  h+='<div style="display:flex;gap:8px;margin-top:14px">';
+  h+='<button class="btn" onclick="closeModals()" style="flex:1">'+t('cancel_btn')+'</button>';
+  h+='<button class="btn primary" onclick="spConfirm()" style="flex:1">'+nextLbl+'</button>';
+  h+='</div>';
+  h+='</div>';
+  showModal(h);
+  renderSpSuggestions();
+  setTimeout(function(){var el=document.getElementById('sp-input');if(el)el.focus();},30);
+}
+function spAnalyze(){
+  var el=document.getElementById('sp-input');
+  var text=el?el.value:'';
+  _spGuess.cat=spGuessCategory(text)||'';
+  var c=spGuessContact(text);
+  _spGuess.cursistId=c?c.id:'';
+  _spGuess.datum=spGuessDate(text,ymdLocal())||ymdLocal();
+  renderSpSuggestions();
+}
+// The three suggestion fields are plain selects/date-input pre-set to the
+// current guess - not read-only chips - so overriding a wrong guess is a
+// single tap, same effort as the equivalent fields in the real plan form
+// this hands off into.
+function renderSpSuggestions(){
+  var box=document.getElementById('sp-suggestions');
+  if(!box)return;
+  var catOpts=getCATEGORIES().filter(function(c){return !c.isTravel;}).map(function(c){
+    return '<option value="'+c.label+'"'+(c.label===_spGuess.cat?' selected':'')+'>'+getCatLabel(c.label)+'</option>';
+  }).join('');
+  var cursistenOpts=buildCursistOptgroups(db.cursisten,function(c){
+    return '<option value="'+c.id+'"'+(String(c.id)===String(_spGuess.cursistId)?' selected':'')+'>'+c.naam+'</option>';
+  });
+  var h='';
+  h+='<span class="form-label">'+t('wizard_cat')+'</span>';
+  h+='<select id="sp-cat" onchange="_spGuess.cat=this.value" style="margin-bottom:8px"><option value="">'+(t('wizard_choose_cat')||'Kies categorie...')+'</option>'+catOpts+'</select>';
+  h+='<span class="form-label">'+t('plan_contact')+'</span>';
+  h+='<select id="sp-cursist" onchange="_spGuess.cursistId=this.value" style="margin-bottom:8px"><option value="">'+(t('wizard_no_contact')||'— geen —')+'</option>'+cursistenOpts+'</select>';
+  h+='<span class="form-label">'+t('wizard_date')+'</span>';
+  h+='<input type="date" id="sp-datum" value="'+_spGuess.datum+'" onchange="_spGuess.datum=this.value">';
+  box.innerHTML=h;
+}
+// Hands off into the real, existing plan-activity form (openPlanModal)
+// with the (possibly corrected) suggestions pre-filled, then triggers the
+// same onPlanCatChange/onPlanCursistChange handlers a manual selection
+// would - so any category/contact-dependent UI in that form (thema
+// dropdown, contact-linked fields, etc.) reacts exactly as if the worker
+// had picked them by hand. The typed text itself becomes the plan's
+// description, so nothing typed is lost even if the guesses were off.
+function spConfirm(){
+  var textEl=document.getElementById('sp-input');
+  var text=textEl?textEl.value.trim():'';
+  var catEl=document.getElementById('sp-cat');
+  var curEl=document.getElementById('sp-cursist');
+  var datEl=document.getElementById('sp-datum');
+  var catVal=(catEl?catEl.value:'')||_spGuess.cat||'';
+  var cursistVal=(curEl?curEl.value:'')||_spGuess.cursistId||'';
+  var datumVal=(datEl?datEl.value:'')||_spGuess.datum||ymdLocal();
+  closeModals();
+  openPlanModal(null,datumVal);
+  setTimeout(function(){
+    var pc=document.getElementById('plan-cat');
+    if(pc&&catVal){pc.value=catVal;if(typeof onPlanCatChange==='function')onPlanCatChange();}
+    var pcu=document.getElementById('plan-cursist');
+    if(pcu&&cursistVal){pcu.value=cursistVal;if(typeof onPlanCursistChange==='function')onPlanCursistChange();}
+    if(text){
+      var pd=document.getElementById('plan-omschrijving');
+      if(pd)pd.value=text;
+      var moreBtn=document.getElementById('plan-more-toggle');
+      var moreBox=document.getElementById('plan-more');
+      if(moreBtn&&moreBox){moreBox.style.display='block';moreBtn.style.display='none';}
+    }
+  },40);
+}
 function openPlanModal(planId, prefillDate){
   ensurePlanned();
   var p = planId ? db.planned.find(function(x){return x.id===planId;}) : null;
@@ -27261,6 +27463,16 @@ function openRegisterOrPlanChoice(){
   h+='<button class="action-fab-card" onclick="closeModals();openPlanModal(null)" style="background:var(--surface2);border:1.5px solid var(--border2)">';
   h+='<div class="action-fab-ico" style="background:var(--brand-light)"><svg width="24" height="24" style="color:var(--brand)"><use href="#ico-calendar"/></svg></div>';
   h+='<div class="action-fab-text"><div class="action-fab-title" style="color:var(--text)">'+t('plan_on_day')+'</div><div class="action-fab-sub" style="color:var(--text3)">'+t('plan_sub')+'</div></div>';
+  h+='<svg width="18" height="18" style="color:var(--text3)"><use href="#ico-arrow-right"/></svg>';
+  h+='</button>';
+  // Third option: not sure what to plan or when? Type it in your own words
+  // and get a suggestion instead of filling in the form cold. See
+  // openSmartPlanHelper() - offline, no AI service involved.
+  var spTitleLbl=tMap({nl:'Slim plannen',en:'Smart plan',es:'Planificación inteligente',fr:'Planification intelligente',de:'Intelligent planen',ro:'Planificare inteligentă',hu:'Okos tervezés',ru:'Умное планирование',it:'Pianificazione intelligente',pt:'Planejamento inteligente'});
+  var spSubLbl=tMap({nl:'Typ wat je wilt doen, krijg een voorstel',en:'Type what you want to do, get a suggestion',es:'Escribe lo que quieres hacer, recibe una sugerencia',fr:'Dites ce que vous voulez faire, obtenez une suggestion',de:'Sag was du tun willst, erhalte einen Vorschlag',ro:'Spune ce vrei să faci, primești o sugestie',hu:'Írd le, mit szeretnél, kapsz javaslatot',ru:'Напишите, что хотите сделать, получите совет',it:'Scrivi cosa vuoi fare, ricevi un suggerimento',pt:'Diga o que quer fazer, receba uma sugestão'});
+  h+='<button class="action-fab-card" onclick="closeModals();openSmartPlanHelper()" style="background:var(--surface2);border:1.5px solid var(--border2)">';
+  h+='<div class="action-fab-ico" style="background:var(--brand-light)"><svg width="24" height="24" style="color:var(--brand)"><use href="#ico-suggest"/></svg></div>';
+  h+='<div class="action-fab-text"><div class="action-fab-title" style="color:var(--text)">'+spTitleLbl+'</div><div class="action-fab-sub" style="color:var(--text3)">'+spSubLbl+'</div></div>';
   h+='<svg width="18" height="18" style="color:var(--text3)"><use href="#ico-arrow-right"/></svg>';
   h+='</button>';
   showModal(h);
