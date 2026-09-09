@@ -25610,6 +25610,12 @@ var fcSelectedDate=null; // 'YYYY-MM-DD' of the day expanded in month view
 var fcLoadedMonths=null; // array of {year,month}, ascending — the continuous-scroll month view's currently-rendered window; null means "needs reseeding around fcYear/fcMonth"
 var fcLoadedYears=null; // array of year numbers, ascending — same idea as fcLoadedMonths but for the year view
 var fcScrollLoading=false; // re-entrancy guard for the prepend/append-on-scroll logic
+// #976: search across db.entries + active db.planned by description/contact/
+// category/topic/note text, accent-insensitive. Toggling this on replaces
+// the normal week/month/year body with a flat results list (see
+// renderFcSearchBody) - it doesn't touch fcView, so closing search restores
+// exactly whatever view/anchor the user was on before.
+var fcSearchOpen=false, fcSearchQuery='';
 
 function fcLbl(key){
   var map={
@@ -25637,6 +25643,8 @@ function openFullCalendar(){
   fcLoadedMonths=null;
   fcLoadedYears=null;
   fcView='month';
+  fcSearchOpen=false;
+  fcSearchQuery='';
   document.body.insertAdjacentHTML('beforeend','<div id="full-cal-overlay" style="position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box"></div>');
   fcRefreshFull();
   document.addEventListener('keydown',fcKeyHandler);
@@ -25659,15 +25667,96 @@ function renderFullCalHeader(){
   var h='<div class="fc-header" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:12px 10px 10px;border-bottom:1px solid var(--border);flex-shrink:0;box-sizing:border-box;width:100%">';
   h+='<button onclick="closeFullCalendar()" style="background:none;border:none;font-size:26px;line-height:1;color:var(--text3);cursor:pointer;padding:0 4px;flex-shrink:0" aria-label="Close">&times;</button>';
   h+='<div id="fc-title" style="font-size:16px;font-weight:700;flex:1;min-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+fcTitle()+'</div>';
+  // #976: search toggle - a magnifier button that swaps the whole body for a
+  // flat, chronological results list (see renderFcSearchBody) instead of
+  // opening a separate screen, so closing search drops the user right back
+  // into whatever week/month/year view and scroll position they had before.
+  h+='<button class="cal-nav-btn" onclick="fcToggleSearch()" aria-label="'+(t('search_placeholder')||'Zoeken')+'" style="flex-shrink:0'+(fcSearchOpen?';background:var(--brand-light);color:var(--brand)':'')+'"><svg width="15" height="15"><use href="#ico-search"/></svg></button>';
   h+='<button class="cal-nav-btn" onclick="fcPrev()" style="flex-shrink:0">‹</button>';
   h+='<button class="btn sm" onclick="fcToday()" style="padding:5px 9px;font-size:12px;flex-shrink:0">'+fcLbl('today')+'</button>';
   h+='<button class="cal-nav-btn" onclick="fcNext()" style="flex-shrink:0">›</button>';
   h+='</div>';
-  h+='<div style="padding:10px 10px 0;flex-shrink:0;box-sizing:border-box;width:100%"><div class="view-toggle" style="margin-bottom:0">';
-  ['week','month','year'].forEach(function(v){
-    h+='<button type="button" class="view-btn'+(fcView===v?' active':'')+'" onclick="fcSetView(\''+v+'\')">'+fcLbl(v)+'</button>';
+  if(!fcSearchOpen){
+    h+='<div style="padding:10px 10px 0;flex-shrink:0;box-sizing:border-box;width:100%"><div class="view-toggle" style="margin-bottom:0">';
+    ['week','month','year'].forEach(function(v){
+      h+='<button type="button" class="view-btn'+(fcView===v?' active':'')+'" onclick="fcSetView(\''+v+'\')">'+fcLbl(v)+'</button>';
+    });
+    h+='</div></div>';
+  }
+  return h;
+}
+function fcToggleSearch(){
+  fcSearchOpen=!fcSearchOpen;
+  if(!fcSearchOpen)fcSearchQuery='';
+  fcRefreshFull();
+  if(fcSearchOpen)setTimeout(function(){var el=document.getElementById('fc-search-input');if(el)el.focus();},30);
+}
+// Accent-insensitive substring match, same normalize('NFD')-strip-combining-
+// marks approach already used elsewhere in this file (normNameForMatch,
+// smartNormHeader) so "José"/"Jose"-style searches behave consistently
+// app-wide (see task #863).
+function fcSearchNorm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();}
+function fcOnSearchInput(){
+  var el=document.getElementById('fc-search-input');
+  fcSearchQuery=el?el.value:'';
+  var resultsEl=document.getElementById('fc-search-results');
+  if(resultsEl)resultsEl.innerHTML=renderFcSearchResultsList();
+}
+// Searches both logged entries and still-active planned items (matching the
+// "isPlanned" distinction fcOpenYearDayPopup already uses for its own rows,
+// so tapping a planned result correctly opens openPlanModal instead of the
+// entries-only openEditEntryModal) across description, contact name, topic,
+// note, category and church - basically every free-text field someone might
+// remember typing when they logged or planned the activity.
+function fcSearchMatches(){
+  var qn=fcSearchNorm(fcSearchQuery);
+  if(!qn)return [];
+  var rows=[];
+  db.entries.forEach(function(e){if(e.categorie)rows.push({item:e,isPlanned:false});});
+  ensurePlanned();
+  db.planned.forEach(function(p){if(p.categorie&&!p.completed&&!p.skipped)rows.push({item:p,isPlanned:true});});
+  return rows.filter(function(row){
+    var item=row.item;
+    var cat=findCatByLabel(item.categorie);
+    var hay=[item.omschrijving,item.cursistNaam,item.thema,item.opmerking,getCatLabel(item.categorie),cat?getAardLabel(cat.aard):'',item.gemeente].filter(Boolean).join(' ');
+    return fcSearchNorm(hay).indexOf(qn)>=0;
+  }).sort(function(a,b){return (b.item.datum||'').localeCompare(a.item.datum||'');});
+}
+function renderFcSearchResultsList(){
+  var qn=fcSearchQuery.trim();
+  if(!qn){
+    var hintTxt=tMap({nl:'Typ om te zoeken naar wat je gedaan (of gepland) hebt',en:'Type to search what you did (or planned)',es:'Escribe para buscar lo que hiciste (o planeaste)',fr:'Tapez pour rechercher ce que vous avez fait (ou prévu)',de:'Tippen, um zu suchen, was du getan (oder geplant) hast',ro:'Tastează pentru a căuta ce ai făcut (sau planificat)',hu:'Gépelj a kereséshez, mit csináltál (vagy terveztél)',ru:'Введите, чтобы найти, что вы сделали (или запланировали)',it:'Digita per cercare cosa hai fatto (o pianificato)',pt:'Digite para pesquisar o que você fez (ou planejou)'});
+    return '<div style="text-align:center;color:var(--text3);padding:24px 10px;font-size:13px">'+hintTxt+'</div>';
+  }
+  var matches=fcSearchMatches();
+  if(!matches.length){
+    var noneTxt=tMap({nl:'Niets gevonden',en:'Nothing found',es:'No se encontró nada',fr:'Aucun résultat',de:'Nichts gefunden',ro:'Niciun rezultat',hu:'Nincs találat',ru:'Ничего не найдено',it:'Nessun risultato',pt:'Nada encontrado'});
+    return '<div style="text-align:center;color:var(--text3);padding:24px 10px;font-size:13px">'+noneTxt+'</div>';
+  }
+  var h='';
+  matches.slice(0,200).forEach(function(row){
+    var item=row.item,isPlanned=row.isPlanned;
+    var cat=findCatByLabel(item.categorie);
+    var col=AARDEN_COLORS[cat?cat.aard:'Overig']||'#A1A1AA';
+    var idArg=ssIdArg(item.id);
+    var titleTxt=escapeHtml(item.cursistNaam||activityTitle(item));
+    var dateTxt=item.datum?formatDate(item.datum):'';
+    h+='<div class="activity-card" style="margin-bottom:6px;cursor:pointer" onclick="'+(isPlanned?'openPlanModal('+idArg+')':'openEditEntryModal('+idArg+')')+'"><div class="activity-card-inner">';
+    h+='<div class="ac-stripe" style="background:'+col+'"></div>';
+    h+='<div class="ac-body">';
+    h+='<div class="ac-top"><div class="ac-who">'+titleTxt+'</div><div class="ac-hours">'+dateTxt+'</div></div>';
+    h+='<div class="ac-cat">'+getCatLabel(item.categorie)+(isPlanned?' · '+t('planned_lbl'):'')+'</div>';
+    h+='</div></div></div>';
   });
-  h+='</div></div>';
+  return h;
+}
+function renderFcSearchBody(){
+  var ph=t('search_placeholder')||'Zoeken...';
+  var h='<div style="position:relative;margin-bottom:10px">';
+  h+='<svg width="14" height="14" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none"><use href="#ico-search"/></svg>';
+  h+='<input type="text" id="fc-search-input" oninput="fcOnSearchInput()" value="'+escapeHtml(fcSearchQuery)+'" placeholder="'+ph+'" style="width:100%;padding-left:32px;box-sizing:border-box">';
+  h+='</div>';
+  h+='<div id="fc-search-results">'+renderFcSearchResultsList()+'</div>';
   return h;
 }
 // Prev/Next/Today/view-switch all reset the loaded-months window (fcLoadedMonths=null)
@@ -25698,14 +25787,15 @@ function fcSetView(v){fcView=v;fcSelectedDate=null;if(v==='month')fcLoadedMonths
 function fcRefreshFull(){
   var ov=document.getElementById('full-cal-overlay');
   if(!ov)return;
-  ov.innerHTML=renderFullCalHeader()+'<div id="fc-body" style="flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:12px 10px 28px;box-sizing:border-box;width:100%">'+renderFullCalBody()+'</div>';
+  ov.innerHTML=renderFullCalHeader()+'<div id="fc-body" style="flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:12px 10px 28px;box-sizing:border-box;width:100%">'+(fcSearchOpen?renderFcSearchBody():renderFullCalBody())+'</div>';
   fcAttachScrollListener();
+  if(fcSearchOpen)return; // no month/year scroll-anchoring while the body shows search results instead
   if(fcView==='month')fcScrollToAnchorMonth();
   else if(fcView==='year')fcScrollToAnchorYear();
 }
 function fcAttachScrollListener(){
   var body=document.getElementById('fc-body');
-  if(body)body.onscroll=fcOnBodyScroll;
+  if(body)body.onscroll=fcSearchOpen?null:fcOnBodyScroll;
 }
 function fcScrollToAnchorMonth(){
   var body=document.getElementById('fc-body');
