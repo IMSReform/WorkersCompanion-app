@@ -26296,12 +26296,16 @@ function renderHomeCalendar(){
   // Same quick Gemeente on/off as the full-screen calendar header
   // (fcToggleGpVisibility) - shares db.settings.showGemeentePlanning, so
   // this stays visible and works from the dashboard's small calendar too,
-  // not just in full-screen mode.
-  var homeGpOn=db.settings.showGemeentePlanning!==false;
-  var homeGpLbl=tMap({nl:'Gemeente',en:'Church',es:'Iglesia',fr:'\u00c9glise',de:'Gemeinde',ro:'Biseric\u0103',hu:'Gy\u00fclekezet',ru:'\u0426\u0435\u0440\u043a\u043e\u0432\u044c',it:'Chiesa',pt:'Igreja'});
-  h+='<div style="padding:0 0 6px;display:flex;justify-content:flex-end">';
-  h+='<button type="button" class="btn sm" onclick="homeToggleGpVisibility()" style="padding:4px 8px;font-size:11px;display:flex;align-items:center;gap:5px;'+(homeGpOn?'':'opacity:.5')+'"><span style="width:7px;height:7px;border-radius:50%;background:'+GEMEENTE_PLANNING_COLOR+';flex-shrink:0"></span>'+homeGpLbl+'</button>';
-  h+='</div>';
+  // not just in full-screen mode. Only shown once something has actually
+  // been imported - a toggle for an empty, never-used feature is just
+  // clutter on a screen most people check every day.
+  if(db.gemeentePlanning&&db.gemeentePlanning.length){
+    var homeGpOn=db.settings.showGemeentePlanning!==false;
+    var homeGpLbl=tMap({nl:'Gemeente',en:'Church',es:'Iglesia',fr:'\u00c9glise',de:'Gemeinde',ro:'Biseric\u0103',hu:'Gy\u00fclekezet',ru:'\u0426\u0435\u0440\u043a\u043e\u0432\u044c',it:'Chiesa',pt:'Igreja'});
+    h+='<div style="padding:0 0 6px;display:flex;justify-content:flex-end">';
+    h+='<button type="button" class="btn sm" onclick="homeToggleGpVisibility()" style="padding:4px 8px;font-size:11px;display:flex;align-items:center;gap:5px;'+(homeGpOn?'':'opacity:.5')+'"><span style="width:7px;height:7px;border-radius:50%;background:'+GEMEENTE_PLANNING_COLOR+';flex-shrink:0"></span>'+homeGpLbl+'</button>';
+    h+='</div>';
+  }
   h+='<div class="cal-grid">';
   dayNames.forEach(function(d){h+='<div class="cal-header">'+d+'</div>';});
   for(var i=0;i<startDow;i++)h+='<div></div>';
@@ -26506,10 +26510,13 @@ function renderFullCalHeader(){
     // Quick on/off for the imported gemeente-planning layer, right where the
     // person is looking at the calendar - mirrors the Settings toggle
     // (db.settings.showGemeentePlanning) rather than duplicating state, so
-    // switching it off here also reflects in Settings and vice versa.
-    var gpOn=db.settings.showGemeentePlanning!==false;
-    var gpLbl=tMap({nl:'Gemeente',en:'Church',es:'Iglesia',fr:'Église',de:'Gemeinde',ro:'Biserică',hu:'Gyülekezet',ru:'Церковь',it:'Chiesa',pt:'Igreja'});
-    h+='<button type="button" class="btn sm" onclick="fcToggleGpVisibility()" style="padding:5px 9px;font-size:12px;flex-shrink:0;display:flex;align-items:center;gap:5px;'+(gpOn?'':'opacity:.5')+'"><span style="width:8px;height:8px;border-radius:50%;background:'+GEMEENTE_PLANNING_COLOR+';flex-shrink:0"></span>'+gpLbl+'</button>';
+    // switching it off here also reflects in Settings and vice versa. Only
+    // shown once something has actually been imported.
+    if(db.gemeentePlanning&&db.gemeentePlanning.length){
+      var gpOn=db.settings.showGemeentePlanning!==false;
+      var gpLbl=tMap({nl:'Gemeente',en:'Church',es:'Iglesia',fr:'Église',de:'Gemeinde',ro:'Biserică',hu:'Gyülekezet',ru:'Церковь',it:'Chiesa',pt:'Igreja'});
+      h+='<button type="button" class="btn sm" onclick="fcToggleGpVisibility()" style="padding:5px 9px;font-size:12px;flex-shrink:0;display:flex;align-items:center;gap:5px;'+(gpOn?'':'opacity:.5')+'"><span style="width:8px;height:8px;border-radius:50%;background:'+GEMEENTE_PLANNING_COLOR+';flex-shrink:0"></span>'+gpLbl+'</button>';
+    }
     h+='</div>';
   }
   return h;
