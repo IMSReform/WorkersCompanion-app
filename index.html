@@ -25717,13 +25717,20 @@ function fcScrollToAnchorMonth(){
   }
 }
 function fcScrollToAnchorYear(){
+  // #974: used to scroll to the top of the whole year section (so "Vandaag"/
+  // Today always landed on January, regardless of the actual current month)
+  // - now scrolls to the specific month cell within that year's 12-month
+  // grid instead, so Today actually brings the current month into view.
+  // Falls back to the year section itself if the specific month cell isn't
+  // found for some reason (shouldn't normally happen).
   var body=document.getElementById('fc-body');
   if(!body)return;
-  var sec=body.querySelector('.fc-year-section[data-fc-year="'+fcYear+'"]');
-  if(sec){
-    var bodyRect=body.getBoundingClientRect(), secRect=sec.getBoundingClientRect();
-    body.scrollTop+=(secRect.top-bodyRect.top);
-  }
+  var yearSec=body.querySelector('.fc-year-section[data-fc-year="'+fcYear+'"]');
+  if(!yearSec)return;
+  var monthSec=(fcMonth!=null)?yearSec.querySelector('[data-fc-month="'+fcMonth+'"]'):null;
+  var sec=monthSec||yearSec;
+  var bodyRect=body.getBoundingClientRect(), secRect=sec.getBoundingClientRect();
+  body.scrollTop+=(secRect.top-bodyRect.top);
 }
 function fcDayNames(){
   return LANG==='en'?['Su','Mo','Tu','We','Th','Fr','Sa']:LANG==='es'?['Do','Lu','Ma','Mi','Ju','Vi','Sa']:LANG==='fr'?['Di','Lu','Ma','Me','Je','Ve','Sa']:LANG==='de'?['So','Mo','Di','Mi','Do','Fr','Sa']:LANG==='ro'?['Du','Lu','Ma','Mi','Jo','Vi','Sâ']:LANG==='hu'?['V','H','K','Sze','Cs','P','Szo']:LANG==='ru'?['Вс','Пн','Вт','Ср','Чт','Пт','Сб']:LANG==='it'?['Do','Lu','Ma','Me','Gi','Ve','Sa']:LANG==='pt'?['Do','Se','Te','Qu','Qu','Se','Sá']:['Zo','Ma','Di','Wo','Do','Vr','Za'];
@@ -25989,7 +25996,7 @@ function renderFcYearSection(yr){
   h+='<div style="font-size:12.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.03em;padding:2px 2px 10px">'+yr+'</div>';
   h+='<div class="fc-year-months-grid" style="box-sizing:border-box;width:100%">';
   for(var m=0;m<12;m++){
-    h+='<div onclick="fcJumpMonth('+m+','+yr+')" style="cursor:pointer;min-width:0">';
+    h+='<div onclick="fcJumpMonth('+m+','+yr+')" data-fc-month="'+m+'" style="cursor:pointer;min-width:0">';
     h+='<div class="fc-month-title" style="color:'+((yr===now.getFullYear()&&m===now.getMonth())?'var(--brand)':'var(--text)')+'">'+MONTHS_FULL[m]+'</div>';
     h+=renderMiniMonthGrid(yr,m);
     h+='</div>';
