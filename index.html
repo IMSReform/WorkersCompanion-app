@@ -13603,7 +13603,7 @@ function _renderHomeInner(){
     // top of an otherwise-empty page. The card's own width is unchanged
     // (full-width on mobile, capped by .onboard-card on desktop).
     var onboardH='<div style="min-height:calc(100vh - 180px);display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box">';
-    onboardH+='<img id="welcome-isotope-mark" src="'+IMS_APP_ICON_DATA_URI+'" alt="" style="width:56px;height:56px;margin-bottom:14px;flex-shrink:0;border-radius:14px"/>';
+    onboardH+='<img id="welcome-isotope-mark" src="'+IMS_APP_ICON_DATA_URI+'" alt="" style="width:56px;height:56px;margin-bottom:14px;flex-shrink:0;border-radius:14px;filter:grayscale(1);opacity:.55"/>';
     onboardH+='<div class="card onboard-card" style="text-align:center;padding:20px 16px;width:100%">';
     onboardH+='<div style="font-size:15px;font-weight:700;color:var(--brand);margin-bottom:4px">'+t('welcome_title')+'</div>';
     onboardH+='<div style="font-size:12.5px;color:var(--text3);margin-bottom:14px;line-height:1.5">'+t('welcome_subtitle')+'</div>';
