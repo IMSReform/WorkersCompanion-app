@@ -26676,14 +26676,32 @@ function triggerPrintExport(prefs){
   }
   var _origDocTitle=document.title;
   document.title=buildPdfExportTitle();
-  var _restoreDocTitle=function(){document.title=_origDocTitle;window.removeEventListener('afterprint',_restoreDocTitle);};
+  // #978: the previous fixed 2s fallback restored document.title (wiping the
+  // worker's name back out of the suggested filename) way too early on
+  // mobile - iOS Safari's print/share sheet doesn't reliably fire
+  // 'afterprint' at all, and tapping through Share > Save to Files > choose
+  // a folder > confirm easily takes longer than 2 seconds, so the OS often
+  // ended up reading the *restored* generic title instead of the one with
+  // the worker's name in it. 'visibilitychange'/'pageshow' firing again
+  // (i.e. the user is back looking at the app) is a much more reliable
+  // "the print/share flow is done" signal than any fixed delay; the long
+  // 60s timeout is now just a final safety net, not the primary mechanism.
+  var _restored=false;
+  var _restoreDocTitle=function(){
+    if(_restored)return;
+    _restored=true;
+    document.title=_origDocTitle;
+    window.removeEventListener('afterprint',_restoreDocTitle);
+    document.removeEventListener('visibilitychange',_onFcVisible);
+    window.removeEventListener('pageshow',_restoreDocTitle);
+  };
+  var _onFcVisible=function(){if(document.visibilityState==='visible')_restoreDocTitle();};
   window.addEventListener('afterprint',_restoreDocTitle);
+  document.addEventListener('visibilitychange',_onFcVisible);
+  window.addEventListener('pageshow',_restoreDocTitle);
   setTimeout(function(){
     window.print();
-    // afterprint doesn't fire reliably in every browser's print-preview
-    // flow, so also restore on a delay as a fallback (harmless if
-    // afterprint already ran - just re-sets the same original title).
-    setTimeout(_restoreDocTitle,2000);
+    setTimeout(_restoreDocTitle,60000);
   },150);
 }
 
