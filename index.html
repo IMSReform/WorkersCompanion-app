@@ -12945,8 +12945,17 @@ function toggleSettingsItem(headerEl){
   }
   item.classList.toggle('acc-open');
   var body=item.querySelector('.settings-item-body');
-  if(opening)expandSettingsBody(body);
-  else collapseSettingsBody(body);
+  if(opening){
+    expandSettingsBody(body);
+    // #980: tapping an accordion header used to just toggle the class, with
+    // nothing telling the user something happened if the item was near the
+    // bottom of the screen - the newly-opened content rendered off-screen
+    // below the fold, so it looked like the tap did nothing at all. Same
+    // scrollIntoView already used by the openGoalsSettings/openImportSettings
+    // deep-links below, so every way of opening a Settings accordion item
+    // now behaves consistently.
+    item.scrollIntoView({block:'start',behavior:'smooth'});
+  }else collapseSettingsBody(body);
 }
 function openGoalsSettings(){
   navTo('settings');
