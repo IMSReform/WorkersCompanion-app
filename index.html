@@ -471,12 +471,14 @@ html.dark .settings-box{border-color:rgba(255,255,255,.06)}
 .ct-elderly{background:#F3E8FF;color:#6B21A8}
 .ct-student{background:#E6F4F7;color:#0E6E82}
 .ct-child{background:#FCE7F3;color:#9D2A6B}
+.ct-teen{background:#E0E7FF;color:#4338CA}
 html.dark .ct-jeugd{background:var(--amber-light);color:#D8A857}
 html.dark .ct-interested{background:#3A2A1A;color:#D99A5E}
 html.dark .ct-doop{background:#1B3328;color:#4CAE7D}
 html.dark .ct-elderly{background:#2E1F3D;color:#C084E5}
 html.dark .ct-student{background:#153035;color:#5CC9DE}
 html.dark .ct-child{background:#3A1F30;color:#E2699E}
+html.dark .ct-teen{background:#28285A;color:#A5B4FC}
 .doop-badge{display:inline-block;background:#E3F5E9;color:#1B6B3A;border:1.5px solid #81C784;border-radius:10px;font-size:10px;font-weight:700;padding:1px 7px;margin-left:5px;vertical-align:middle}
 html.dark .doop-badge{background:#1B3328;color:#4CAE7D;border-color:#3A6B4E}
 .cc-loc{font-size:11px;color:var(--text3);margin-top:1px}
@@ -1942,9 +1944,10 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
           <label class="ptype-chip"><input type="checkbox" class="c-ptype-cb" value="lid" onchange="updateGemeenteFieldVisibility()"><span data-i18n="ct_lid">Lid</span></label>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+          <label class="ptype-chip"><input type="checkbox" class="c-ptype-cb" value="child" onchange="updateGemeenteFieldVisibility()"><span data-i18n="ct_child">Kind</span></label>
+          <label class="ptype-chip"><input type="checkbox" class="c-ptype-cb" value="teen" onchange="updateGemeenteFieldVisibility()"><span data-i18n="ct_teen">Tiener</span></label>
           <label class="ptype-chip"><input type="checkbox" class="c-ptype-cb" value="jeugd" onchange="updateGemeenteFieldVisibility()"><span data-i18n="ct_jeugd">Jeugd</span></label>
           <label class="ptype-chip"><input type="checkbox" class="c-ptype-cb" value="elderly" onchange="updateGemeenteFieldVisibility()"><span data-i18n="ct_elderly">Oudere</span></label>
-          <label class="ptype-chip"><input type="checkbox" class="c-ptype-cb" value="child" onchange="updateGemeenteFieldVisibility()"><span data-i18n="ct_child">Kind</span></label>
         </div>
       </div>
     </div>
@@ -6282,7 +6285,7 @@ var TRANSLATIONS = {
     form_postcode_lbl:'Postcode',form_postcode:'Postcode',time_format_lbl:'Tijdnotatie',time_format_24h:'24-uurs (14:30)',time_format_12h:'12-uurs (2:30 pm)',date_format_lbl:'Datumnotatie',date_format_dmy:'Dag-Maand-Jaar (26-05-2026)',date_format_mdy:'Maand-Dag-Jaar (05-26-2026)',
     visit_btn:'Bezoek',
     custom_study_new:'Nieuwe studie',my_studies:'Mijn studies',study_title_lbl:'Titel',study_refs_lbl:'Bijbelteksten',study_tags_lbl:'Tags',study_text_lbl:'Inhoud / Notities',send_gabriel_btn:'Verstuur naar Gabriel',study_suggest_edit:'Verbetering voorstellen',study_edit_footer:'Wil je een van de studies bewerken of een nieuwe toevoegen? Stuur de studie naar:',
-    person_type_lbl:'Type persoon',ct_contact:'Contact',ct_jeugd:'Jeugd',ct_sabbath:'Sabbatschoolgast',ct_interested:'Geïnteresseerde',ct_student:'Bijbelstudent',ct_doop:'Doopkandidaat',ct_lid:'Lid',ct_elderly:'Oudere',ct_child:'Kind',ct_contact_pl:'Contacten',ct_interested_pl:'Geïnteresseerden',ct_student_pl:'Bijbelstudenten',ct_sabbath_pl:'Sabbatschoolgasten',ct_doop_pl:'Doopkandidaten',ct_lid_pl:'Leden',
+    person_type_lbl:'Type persoon',ct_contact:'Contact',ct_jeugd:'Jeugd',ct_sabbath:'Sabbatschoolgast',ct_interested:'Geïnteresseerde',ct_student:'Bijbelstudent',ct_doop:'Doopkandidaat',ct_lid:'Lid',ct_elderly:'Oudere',ct_child:'Kind',ct_teen:'Tiener',ct_contact_pl:'Contacten',ct_interested_pl:'Geïnteresseerden',ct_student_pl:'Bijbelstudenten',ct_sabbath_pl:'Sabbatschoolgasten',ct_doop_pl:'Doopkandidaten',ct_lid_pl:'Leden',
     planned_lbl:'gepland',
     plan_vacation_day:'Vakantiedag plannen',vacation_planned:'Vakantiedag gepland',
     doop_badge:'Doopkandidaat',
@@ -6640,7 +6643,7 @@ var TRANSLATIONS = {
     form_postcode_lbl:'Postal code',form_postcode:'Postal code',time_format_lbl:'Time format',time_format_24h:'24-hour (14:30)',time_format_12h:'12-hour (2:30 pm)',date_format_lbl:'Date format',date_format_dmy:'Day-Month-Year (26-05-2026)',date_format_mdy:'Month-Day-Year (05-26-2026)',
     visit_btn:'Visit',
     custom_study_new:'New study',my_studies:'My studies',study_title_lbl:'Title',study_refs_lbl:'Bible references',study_tags_lbl:'Tags',study_text_lbl:'Content / Notes',send_gabriel_btn:'Send to Gabriel',study_suggest_edit:'Suggest an edit',study_edit_footer:'If you want to edit one of the studies or want to add one, please send the study to:',
-    person_type_lbl:'Person type',ct_contact:'Contact',ct_jeugd:'Youth',ct_sabbath:'Sabbath school visitor',ct_interested:'Interested person',ct_student:'Bible student',ct_doop:'Baptism candidate',ct_lid:'Member',ct_elderly:'Elderly',ct_child:'Child',ct_contact_pl:'Contacts',ct_interested_pl:'Interested people',ct_student_pl:'Bible students',ct_sabbath_pl:'Sabbath school visitors',ct_doop_pl:'Baptism candidates',ct_lid_pl:'Members',
+    person_type_lbl:'Person type',ct_contact:'Contact',ct_jeugd:'Youth',ct_sabbath:'Sabbath school visitor',ct_interested:'Interested person',ct_student:'Bible student',ct_doop:'Baptism candidate',ct_lid:'Member',ct_elderly:'Elderly',ct_child:'Child',ct_teen:'Teen',ct_contact_pl:'Contacts',ct_interested_pl:'Interested people',ct_student_pl:'Bible students',ct_sabbath_pl:'Sabbath school visitors',ct_doop_pl:'Baptism candidates',ct_lid_pl:'Members',
     planned_lbl:'planned',
     plan_vacation_day:'Plan vacation day',vacation_planned:'Vacation day planned',
     doop_badge:'Baptism candidate',
@@ -7016,7 +7019,7 @@ var TRANSLATIONS = {
     form_postcode_lbl:'C\u00f3digo postal',form_postcode:'C\u00f3digo postal',time_format_lbl:'Formato de hora',time_format_24h:'24 horas (14:30)',time_format_12h:'12 horas (2:30 pm)',date_format_lbl:'Formato de fecha',date_format_dmy:'Día-Mes-Año (26-05-2026)',date_format_mdy:'Mes-Día-Año (05-26-2026)',
     visit_btn:'Visita',
     custom_study_new:'Nuevo estudio',my_studies:'Mis estudios',study_title_lbl:'Título',study_refs_lbl:'Referencias bíblicas',study_tags_lbl:'Etiquetas',study_text_lbl:'Contenido / Notas',send_gabriel_btn:'Enviar a Gabriel',study_suggest_edit:'Sugerir una edición',study_edit_footer:'¿Quieres editar uno de los estudios o añadir uno nuevo? Envía el estudio a:',
-    person_type_lbl:'Tipo de persona',ct_contact:'Contacto',ct_jeugd:'Joven',ct_sabbath:'Visitante escuela sabática',ct_interested:'Interesado',ct_student:'Estudiante bíblico',ct_doop:'Candidato bautismo',ct_lid:'Miembro',ct_elderly:'Persona mayor',ct_child:'Niño',ct_contact_pl:'Contactos',ct_interested_pl:'Interesados',ct_student_pl:'Estudiantes bíblicos',ct_sabbath_pl:'Visitantes escuela sabática',ct_doop_pl:'Candidatos bautismo',ct_lid_pl:'Miembros',
+    person_type_lbl:'Tipo de persona',ct_contact:'Contacto',ct_jeugd:'Joven',ct_sabbath:'Visitante escuela sabática',ct_interested:'Interesado',ct_student:'Estudiante bíblico',ct_doop:'Candidato bautismo',ct_lid:'Miembro',ct_elderly:'Persona mayor',ct_child:'Niño',ct_teen:'Adolescente',ct_contact_pl:'Contactos',ct_interested_pl:'Interesados',ct_student_pl:'Estudiantes bíblicos',ct_sabbath_pl:'Visitantes escuela sabática',ct_doop_pl:'Candidatos bautismo',ct_lid_pl:'Miembros',
     planned_lbl:'planificado',
     plan_vacation_day:'Planear día de vacaciones',vacation_planned:'Día de vacaciones planificado',
     doop_badge:'Candidato bautismo',
@@ -7418,7 +7421,7 @@ var TRANSLATIONS = {
     studies_goal:"Études bibliques par mois",evang_goal:"Visites d'évangélisation par mois",hours_week_goal:"Heures par semaine",followup_goal:"Visites de suivi par mois",
     sick_leave:"Maladie",holiday:"Vacances et congés",sick_days_used:"Jours maladie pris",sick_days_rem:"Jours maladie restants",vacation_remaining:"Congés restants",
     custom_study_new:'Nouvelle étude',my_studies:'Mes études',study_title_lbl:'Titre',study_refs_lbl:'Références bibliques',study_tags_lbl:'Étiquettes',study_text_lbl:'Contenu / Notes',send_gabriel_btn:'Envoyer à Gabriel',study_suggest_edit:'Suggérer une modification',study_edit_footer:'Vous souhaitez modifier une étude ou en ajouter une nouvelle ? Envoyez l\'étude à :',
-    person_type_lbl:'Type de personne',ct_contact:'Contact',ct_jeugd:'Jeunesse',ct_sabbath:'Visiteur école du sabbat',ct_interested:'Intéressé',ct_student:'Étudiant biblique',ct_doop:'Candidat baptême',ct_lid:'Membre',ct_elderly:'Personne âgée',ct_child:'Enfant',ct_contact_pl:'Contacts',ct_interested_pl:'Intéressés',ct_student_pl:'Étudiants bibliques',ct_sabbath_pl:'Visiteurs école du sabbat',ct_doop_pl:'Candidats baptême',ct_lid_pl:'Membres',
+    person_type_lbl:'Type de personne',ct_contact:'Contact',ct_jeugd:'Jeunesse',ct_sabbath:'Visiteur école du sabbat',ct_interested:'Intéressé',ct_student:'Étudiant biblique',ct_doop:'Candidat baptême',ct_lid:'Membre',ct_elderly:'Personne âgée',ct_child:'Enfant',ct_teen:'Adolescent',ct_contact_pl:'Contacts',ct_interested_pl:'Intéressés',ct_student_pl:'Étudiants bibliques',ct_sabbath_pl:'Visiteurs école du sabbat',ct_doop_pl:'Candidats baptême',ct_lid_pl:'Membres',
     planned_lbl:'planifié',
     plan_vacation_day:'Planifier jour de congé',vacation_planned:'Jour de congé planifié',
     doop_badge:'Candidat baptême',
@@ -7542,7 +7545,7 @@ var TRANSLATIONS = {
     studies_goal:'Bibelstudien pro Monat',evang_goal:'Evangelisationsbesuche pro Monat',hours_week_goal:'Stunden pro Woche',followup_goal:'Nachverfolgungsbesuche pro Monat',
     sick_leave:'Krankenstand',holiday:'Urlaub und Freizeit',sick_days_used:'Genommene Krankentage',sick_days_rem:'Verbleibende Krankentage',vacation_remaining:'Verbleibender Urlaub',
     custom_study_new:'Neue Studie',my_studies:'Meine Studien',study_title_lbl:'Titel',study_refs_lbl:'Bibelstellen',study_tags_lbl:'Tags',study_text_lbl:'Inhalt / Notizen',send_gabriel_btn:'An Gabriel senden',study_suggest_edit:'Änderung vorschlagen',study_edit_footer:'Möchten Sie eine der Studien bearbeiten oder eine neue hinzufügen? Senden Sie die Studie an:',
-    person_type_lbl:'Personentyp',ct_contact:'Kontakt',ct_jeugd:'Jugend',ct_sabbath:'Sabbatschulbesucher',ct_interested:'Interessierter',ct_student:'Bibelschüler',ct_doop:'Taufkandidat',ct_lid:'Mitglied',ct_elderly:'Senior',ct_child:'Kind',ct_contact_pl:'Kontakte',ct_interested_pl:'Interessierte',ct_student_pl:'Bibelschüler',ct_sabbath_pl:'Sabbatschulbesucher',ct_doop_pl:'Taufkandidaten',ct_lid_pl:'Mitglieder',
+    person_type_lbl:'Personentyp',ct_contact:'Kontakt',ct_jeugd:'Jugend',ct_sabbath:'Sabbatschulbesucher',ct_interested:'Interessierter',ct_student:'Bibelschüler',ct_doop:'Taufkandidat',ct_lid:'Mitglied',ct_elderly:'Senior',ct_child:'Kind',ct_teen:'Teenager',ct_contact_pl:'Kontakte',ct_interested_pl:'Interessierte',ct_student_pl:'Bibelschüler',ct_sabbath_pl:'Sabbatschulbesucher',ct_doop_pl:'Taufkandidaten',ct_lid_pl:'Mitglieder',
     planned_lbl:'geplant',
     plan_vacation_day:'Urlaubstag planen',vacation_planned:'Urlaubstag geplant',
     doop_badge:'Taufkandidat',
@@ -7680,7 +7683,7 @@ var TRANSLATIONS = {
     studies_goal:'Studii biblice pe lună',evang_goal:'Vizite evanghelizare pe lună',hours_week_goal:'Ore pe săptămână',followup_goal:'Vizite urmărire pe lună',
     sick_leave:'Concediu medical',holiday:'Vacanță și concediu',sick_days_used:'Zile medicale luate',sick_days_rem:'Zile medicale rămase',vacation_remaining:'Concediu rămas',
     custom_study_new:'Studiu nou',my_studies:'Studiile mele',study_title_lbl:'Titlu',study_refs_lbl:'Referințe biblice',study_tags_lbl:'Etichete',study_text_lbl:'Conținut / Note',send_gabriel_btn:'Trimite lui Gabriel',study_suggest_edit:'Sugerează o modificare',study_edit_footer:'Vrei să editezi unul dintre studii sau să adaugi unul nou? Trimite studiul la:',
-    person_type_lbl:'Tip persoană',ct_contact:'Contact',ct_jeugd:'Tineret',ct_sabbath:'Vizitator școală de sabat',ct_interested:'Interesat',ct_student:'Student biblic',ct_doop:'Candidat botez',ct_lid:'Membru',ct_elderly:'Persoană în vârstă',ct_child:'Copil',ct_contact_pl:'Contacte',ct_interested_pl:'Interesați',ct_student_pl:'Studenți biblici',ct_sabbath_pl:'Vizitatori școală de sabat',ct_doop_pl:'Candidați botez',ct_lid_pl:'Membri',
+    person_type_lbl:'Tip persoană',ct_contact:'Contact',ct_jeugd:'Tineret',ct_sabbath:'Vizitator școală de sabat',ct_interested:'Interesat',ct_student:'Student biblic',ct_doop:'Candidat botez',ct_lid:'Membru',ct_elderly:'Persoană în vârstă',ct_child:'Copil',ct_teen:'Adolescent',ct_contact_pl:'Contacte',ct_interested_pl:'Interesați',ct_student_pl:'Studenți biblici',ct_sabbath_pl:'Vizitatori școală de sabat',ct_doop_pl:'Candidați botez',ct_lid_pl:'Membri',
     planned_lbl:'planificat',
     plan_vacation_day:'Planificați zi de concediu',vacation_planned:'Zi de concediu planificată',
     doop_badge:'Candidat botez',
@@ -7819,7 +7822,7 @@ var TRANSLATIONS = {
     studies_goal:'Bibliatanulmányok havonta',evang_goal:'Evangelizációs látogatások havonta',hours_week_goal:'Órák hetente',followup_goal:'Nyomon követési látogatások havonta',
     sick_leave:'Betegszabadság',holiday:'Szabadság és pihenő',sick_days_used:'Kivett betegnapok',sick_days_rem:'Maradék betegnapok',vacation_remaining:'Maradék szabadság',
     custom_study_new:'Új tanulmány',my_studies:'Saját tanulmányok',study_title_lbl:'Cím',study_refs_lbl:'Bibliai hivatkozások',study_tags_lbl:'Címkék',study_text_lbl:'Tartalom / Jegyzetek',send_gabriel_btn:'Küldés Gabrielnek',study_suggest_edit:'Javaslat módosításra',study_edit_footer:'Szeretnél módosítani egy tanulmányt, vagy újat hozzáadni? Küldd el a tanulmányt ide:',
-    person_type_lbl:'Személy típusa',ct_contact:'Kapcsolat',ct_jeugd:'Ifjúság',ct_sabbath:'Szombatiskolai látogató',ct_interested:'Érdeklődő',ct_student:'Bibliatanulmányozó',ct_doop:'Keresztelési jelölt',ct_lid:'Tag',ct_elderly:'Idős',ct_child:'Gyermek',ct_contact_pl:'Kapcsolatok',ct_interested_pl:'Érdeklődők',ct_student_pl:'Bibliatanulmányozók',ct_sabbath_pl:'Szombatiskolai látogatók',ct_doop_pl:'Keresztelési jelöltek',ct_lid_pl:'Tagok',
+    person_type_lbl:'Személy típusa',ct_contact:'Kapcsolat',ct_jeugd:'Ifjúság',ct_sabbath:'Szombatiskolai látogató',ct_interested:'Érdeklődő',ct_student:'Bibliatanulmányozó',ct_doop:'Keresztelési jelölt',ct_lid:'Tag',ct_elderly:'Idős',ct_child:'Gyermek',ct_teen:'Tinédzser',ct_contact_pl:'Kapcsolatok',ct_interested_pl:'Érdeklődők',ct_student_pl:'Bibliatanulmányozók',ct_sabbath_pl:'Szombatiskolai látogatók',ct_doop_pl:'Keresztelési jelöltek',ct_lid_pl:'Tagok',
     planned_lbl:'tervezett',
     plan_vacation_day:'Szabadnap tervezése',vacation_planned:'Szabadnap tervezve',
     doop_badge:'Keresztelési jelölt',
@@ -7958,7 +7961,7 @@ var TRANSLATIONS = {
     studies_goal:'Библейских изучений в месяц',evang_goal:'Евангелизационных посещений в месяц',hours_week_goal:'Часов в неделю',followup_goal:'Посещений наблюдения в месяц',
     sick_leave:'Больничный',holiday:'Отпуск и выходные',sick_days_used:'Использованные больничные дни',sick_days_rem:'Оставшиеся больничные дни',vacation_remaining:'Оставшийся отпуск',
     custom_study_new:'Новое исследование',my_studies:'Мои исследования',study_title_lbl:'Заголовок',study_refs_lbl:'Библейские ссылки',study_tags_lbl:'Теги',study_text_lbl:'Содержание / Заметки',send_gabriel_btn:'Отправить Габриэлю',study_suggest_edit:'Предложить правку',study_edit_footer:'Хотите отредактировать одно из исследований или добавить новое? Отправьте его на адрес:',
-    person_type_lbl:'Тип человека',ct_contact:'Контакт',ct_jeugd:'Молодёжь',ct_sabbath:'Посетитель субботней школы',ct_interested:'Интересующийся',ct_student:'Изучающий Библию',ct_doop:'Кандидат на крещение',ct_lid:'Член',ct_elderly:'Пожилой человек',ct_child:'Ребёнок',ct_contact_pl:'Контакты',ct_interested_pl:'Интересующиеся',ct_student_pl:'Изучающие Библию',ct_sabbath_pl:'Посетители субботней школы',ct_doop_pl:'Кандидаты на крещение',ct_lid_pl:'Члены',
+    person_type_lbl:'Тип человека',ct_contact:'Контакт',ct_jeugd:'Молодёжь',ct_sabbath:'Посетитель субботней школы',ct_interested:'Интересующийся',ct_student:'Изучающий Библию',ct_doop:'Кандидат на крещение',ct_lid:'Член',ct_elderly:'Пожилой человек',ct_child:'Ребёнок',ct_teen:'Подросток',ct_contact_pl:'Контакты',ct_interested_pl:'Интересующиеся',ct_student_pl:'Изучающие Библию',ct_sabbath_pl:'Посетители субботней школы',ct_doop_pl:'Кандидаты на крещение',ct_lid_pl:'Члены',
     planned_lbl:'запланировано',
     plan_vacation_day:'Запланировать выходной',vacation_planned:'Выходной запланирован',
     doop_badge:'Кандидат в члены',
@@ -8079,7 +8082,7 @@ var TRANSLATIONS = {
     studies_goal:'Studi biblici al mese',evang_goal:'Visite di evangelizzazione al mese',hours_week_goal:'Ore a settimana',followup_goal:'Visite di seguito al mese',
     sick_leave:'Malattia',holiday:'Vacanze e permessi',sick_days_used:'Giorni malattia presi',sick_days_rem:'Giorni malattia rimanenti',vacation_remaining:'Ferie rimanenti',
     custom_study_new:'Nuovo studio',my_studies:'I miei studi',study_title_lbl:'Titolo',study_refs_lbl:'Riferimenti biblici',study_tags_lbl:'Tag',study_text_lbl:'Contenuto / Note',send_gabriel_btn:'Invia a Gabriel',study_suggest_edit:'Suggerisci una modifica',study_edit_footer:'Vuoi modificare uno degli studi o aggiungerne uno nuovo? Invia lo studio a:',
-    person_type_lbl:'Tipo persona',ct_contact:'Contatto',ct_jeugd:'Gioventù',ct_sabbath:'Visitatore scuola del sabato',ct_interested:'Interessato',ct_student:'Studente biblico',ct_doop:'Candidato battesimo',ct_lid:'Membro',ct_elderly:'Anziano',ct_child:'Bambino',ct_contact_pl:'Contatti',ct_interested_pl:'Interessati',ct_student_pl:'Studenti biblici',ct_sabbath_pl:'Visitatori scuola del sabato',ct_doop_pl:'Candidati battesimo',ct_lid_pl:'Membri',
+    person_type_lbl:'Tipo persona',ct_contact:'Contatto',ct_jeugd:'Gioventù',ct_sabbath:'Visitatore scuola del sabato',ct_interested:'Interessato',ct_student:'Studente biblico',ct_doop:'Candidato battesimo',ct_lid:'Membro',ct_elderly:'Anziano',ct_child:'Bambino',ct_teen:'Adolescente',ct_contact_pl:'Contatti',ct_interested_pl:'Interessati',ct_student_pl:'Studenti biblici',ct_sabbath_pl:'Visitatori scuola del sabato',ct_doop_pl:'Candidati battesimo',ct_lid_pl:'Membri',
     planned_lbl:'pianificato',
     plan_vacation_day:'Pianifica giorno ferie',vacation_planned:'Giorno ferie pianificato',
     doop_badge:'Candidato battesimo',
@@ -8209,7 +8212,7 @@ var TRANSLATIONS = {
     studies_goal:'Estudos bíblicos por mês',evang_goal:'Visitas de evangelismo por mês',hours_week_goal:'Horas por semana',followup_goal:'Visitas de acompanhamento por mês',
     sick_leave:'Licença médica',holiday:'Férias e folgas',sick_days_used:'Dias de doença tirados',sick_days_rem:'Dias de doença restantes',vacation_remaining:'Férias restantes',
     custom_study_new:'Novo estudo',my_studies:'Meus estudos',study_title_lbl:'Título',study_refs_lbl:'Referências bíblicas',study_tags_lbl:'Tags',study_text_lbl:'Conteúdo / Notas',send_gabriel_btn:'Enviar para Gabriel',study_suggest_edit:'Sugerir uma edição',study_edit_footer:'Quer editar um dos estudos ou adicionar um novo? Envie o estudo para:',
-    person_type_lbl:'Tipo de pessoa',ct_contact:'Contato',ct_jeugd:'Jovem',ct_sabbath:'Visitante escola sabática',ct_interested:'Interessado',ct_student:'Estudante da Bíblia',ct_doop:'Candidato batismo',ct_lid:'Membro',ct_elderly:'Idoso',ct_child:'Criança',ct_contact_pl:'Contatos',ct_interested_pl:'Interessados',ct_student_pl:'Estudantes da Bíblia',ct_sabbath_pl:'Visitantes escola sabática',ct_doop_pl:'Candidatos batismo',ct_lid_pl:'Membros',
+    person_type_lbl:'Tipo de pessoa',ct_contact:'Contato',ct_jeugd:'Jovem',ct_sabbath:'Visitante escola sabática',ct_interested:'Interessado',ct_student:'Estudante da Bíblia',ct_doop:'Candidato batismo',ct_lid:'Membro',ct_elderly:'Idoso',ct_child:'Criança',ct_teen:'Adolescente',ct_contact_pl:'Contatos',ct_interested_pl:'Interessados',ct_student_pl:'Estudantes da Bíblia',ct_sabbath_pl:'Visitantes escola sabática',ct_doop_pl:'Candidatos batismo',ct_lid_pl:'Membros',
     planned_lbl:'planejado',
     plan_vacation_day:'Planejar dia de férias',vacation_planned:'Dia de férias planejado',
     doop_badge:'Candidato batismo',
@@ -14288,7 +14291,7 @@ function getContactTier(cu,daysSince){
   var groupFreq=(db.settings.groupFrequency||{})[getCursistGroupKey(cu)];
   var groupFreqUrg=getFreqUrgency(daysSince,groupFreq);
   if(groupFreqUrg)return groupFreqUrg;
-  var slow=cu.type==='lid'||tags.indexOf('jeugd')>=0;
+  var slow=cu.type==='lid'||tags.indexOf('jeugd')>=0||tags.indexOf('teen')>=0;
   return slow?(daysSince>180?'urgent':daysSince>60?'soon':'ok'):(daysSince>42?'urgent':daysSince>21?'soon':'ok');
 }
 // Single source of truth for "when did we last actually reach this contact",
@@ -15050,7 +15053,7 @@ function loadDemoData_legacy2(){
   save();
   renderHome();
 }
-var PERSON_TYPES=['contact','jeugd','sabbath','interested','student','doop','lid','elderly','child'];
+var PERSON_TYPES=['contact','jeugd','sabbath','interested','student','doop','lid','elderly','child','teen'];
 // The picker used to be one flat flex-wrap row, which just happened to
 // break onto two lines at most phone widths - not an intentional grouping,
 // so it looked arbitrary (e.g. "Lid" landing next to "Doopkandidaat" by
@@ -15068,7 +15071,7 @@ var PERSON_TYPES=['contact','jeugd','sabbath','interested','student','doop','lid
 // between Bible student and Baptism candidate since attending Sabbath school
 // is typically the next step once someone is being studied with.
 var PERSON_TYPE_STAGE=['contact','interested','student','sabbath','doop','lid'];
-var PERSON_TYPE_TAGS=['jeugd','elderly','child'];
+var PERSON_TYPE_TAGS=['child','teen','jeugd','elderly'];
 // Which church a contact attends is only meaningful once they're actually
 // attached to a congregation in some way (Sabbath school visitor, baptism
 // candidate, member, youth, child, elderly) — a plain Contact/Interested/
@@ -15077,7 +15080,7 @@ var PERSON_TYPE_TAGS=['jeugd','elderly','child'];
 // (#edit-c-gemeente-row, .edit-c-ptype-cb) — checks whichever group(s) are
 // actually present in the DOM right now, called on every ptype checkbox
 // change and once when a form is opened/populated.
-var GEMEENTE_RELEVANT_TYPES=['sabbath','doop','lid','jeugd','child','elderly'];
+var GEMEENTE_RELEVANT_TYPES=['sabbath','doop','lid','jeugd','child','teen','elderly'];
 function updateGemeenteFieldVisibility(){
   function computeShow(cbClass){
     var boxes=document.querySelectorAll('.'+cbClass);
@@ -15101,7 +15104,13 @@ function personTypeChipsHtml(checkedTypes,cbClass){
   return row(PERSON_TYPE_STAGE)+'<div style="height:6px"></div>'+row(PERSON_TYPE_TAGS);
 }
 function getPersonTypeLabel(type){
-  var map={contact:t('ct_contact'),jeugd:t('ct_jeugd'),sabbath:t('ct_sabbath'),interested:t('ct_interested'),student:t('ct_student'),doop:t('ct_doop'),lid:t('ct_lid'),elderly:t('ct_elderly')};
+  // 'child' used to be missing from this map entirely, so any badge for a
+  // child-tagged contact silently fell back to the "Contact" default below
+  // instead of ever showing "Kind"/"Child" - the actual cause behind
+  // reports that the Children tag "isn't there": it's set on the contact
+  // just fine, it just never displayed as its own label anywhere a badge
+  // is shown (Contacts tab rows, contact detail popup, Follow-up card).
+  var map={contact:t('ct_contact'),jeugd:t('ct_jeugd'),sabbath:t('ct_sabbath'),interested:t('ct_interested'),student:t('ct_student'),doop:t('ct_doop'),lid:t('ct_lid'),elderly:t('ct_elderly'),child:t('ct_child'),teen:t('ct_teen')};
   return map[type]||t('ct_contact')||'Contact';
 }
 // Shared "Leden" / "Niet-leden" sectioning for every cursist/student picker
@@ -17939,7 +17948,7 @@ function orgHeaderHtml(sizePt,forceLang){
   return h;
 }
 
-var GC_EXPORT_CATS_WORKER=['churches','lid','doop','student','sabbath','jeugd','child','interested','contact','workers','pastors','missionhouses','buildings'];
+var GC_EXPORT_CATS_WORKER=['churches','lid','doop','student','sabbath','jeugd','child','teen','interested','contact','workers','pastors','missionhouses','buildings'];
 var GC_EXPORT_INFRA_KEYS_WORKER=['workers','pastors','missionhouses','buildings'];
 function gcExportBtnLabel(){return tMap({nl:'Exporteren voor GC',en:'Export for GC',es:'Exportar para CG',fr:'Exporter pour CG',de:'Für GK exportieren',ro:'Exportă pentru CG',hu:'Exportálás a GK-nak',ru:'Экспорт для ГК',it:'Esporta per CG',pt:'Exportar para CG'});}
 function gcShowChurchesLabel(){return tMap({nl:'Toon gemeentes',en:'Show churches',es:'Mostrar iglesias',fr:'Afficher les églises',de:'Gemeinden anzeigen',ro:'Arată bisericile',hu:'Gyülekezetek megjelenítése',ru:'Показать церкви',it:'Mostra chiese',pt:'Mostrar igrejas'});}
@@ -17959,9 +17968,9 @@ function gcExportCatLabel(key){
 // app set to (see gcS() below).
 var GC_REPORT_STR={
   en:{title:'Report for the General Conference',generated_on:'Generated on',overview:'Overview',infra:'Workers & infrastructure',churches:'Churches',note_off:'Church names withheld - only aggregate totals are shared for this export.',note_on:'This export includes church names and locations.',growth5yr:'Growth over the last 5 years',no_data:'No baptism-date data available.',print_pdf:'Print/Export PDF',lang_lbl:'Report language',
-    lbl_churches:'Number of churches',lbl_lid:'Members',lbl_doop:'Baptism candidates',lbl_student:'Bible students',lbl_sabbath:'Sabbath school visitors',lbl_jeugd:'Youth',lbl_child:'Children',lbl_interested:'Interested',lbl_contact:'Contacts',lbl_workers:'Number of workers',lbl_pastors:'Number of pastors',lbl_missionhouses:'Main churches/mission houses',lbl_buildings:'Own buildings'},
+    lbl_churches:'Number of churches',lbl_lid:'Members',lbl_doop:'Baptism candidates',lbl_student:'Bible students',lbl_sabbath:'Sabbath school visitors',lbl_jeugd:'Youth',lbl_child:'Children',lbl_teen:'Teens',lbl_interested:'Interested',lbl_contact:'Contacts',lbl_workers:'Number of workers',lbl_pastors:'Number of pastors',lbl_missionhouses:'Main churches/mission houses',lbl_buildings:'Own buildings'},
   es:{title:'Informe para la Asociación General',generated_on:'Generado el',overview:'Resumen',infra:'Obreros e infraestructura',churches:'Iglesias',note_off:'Solo se comparten totales — no se comparten nombres ni ubicaciones de las iglesias.',note_on:'Esta exportación incluye nombres y ubicaciones de las iglesias.',growth5yr:'Crecimiento en los últimos 5 años',no_data:'No hay datos de fecha de bautismo disponibles.',print_pdf:'Imprimir/Exportar PDF',lang_lbl:'Idioma del informe',
-    lbl_churches:'Número de iglesias',lbl_lid:'Miembros',lbl_doop:'Candidatos al bautismo',lbl_student:'Estudiantes bíblicos',lbl_sabbath:'Visitantes de escuela sabática',lbl_jeugd:'Jóvenes',lbl_child:'Niños',lbl_interested:'Interesados',lbl_contact:'Contactos',lbl_workers:'Número de obreros',lbl_pastors:'Número de pastores',lbl_missionhouses:'Iglesias principales/casas de misión',lbl_buildings:'Edificios propios'}
+    lbl_churches:'Número de iglesias',lbl_lid:'Miembros',lbl_doop:'Candidatos al bautismo',lbl_student:'Estudiantes bíblicos',lbl_sabbath:'Visitantes de escuela sabática',lbl_jeugd:'Jóvenes',lbl_child:'Niños',lbl_teen:'Adolescentes',lbl_interested:'Interesados',lbl_contact:'Contactos',lbl_workers:'Número de obreros',lbl_pastors:'Número de pastores',lbl_missionhouses:'Iglesias principales/casas de misión',lbl_buildings:'Edificios propios'}
 };
 function gcS(key,lang){
   var d=GC_REPORT_STR[lang]||GC_REPORT_STR.en;
@@ -18034,7 +18043,7 @@ function gcExportGenerateWorker(){
   gcExportPdfWorker(selected,sharePrivate,infra,lang);
 }
 function gcBuildFunnelCountsWorker(){
-  var counts={contact:0,interested:0,student:0,sabbath:0,doop:0,lid:0,jeugd:0,elderly:0,child:0};
+  var counts={contact:0,interested:0,student:0,sabbath:0,doop:0,lid:0,jeugd:0,elderly:0,child:0,teen:0};
   db.cursisten.forEach(function(cu){
     var gk=getCursistGroupKey(cu);
     if(counts[gk]!==undefined)counts[gk]++;
@@ -18094,6 +18103,7 @@ function gcExportPdfWorker(selectedKeys,sharePrivate,infra,lang){
     sabbath:{label:gcS('lbl_sabbath',lang),val:counts.sabbath},
     jeugd:{label:gcS('lbl_jeugd',lang),val:counts.jeugd},
     child:{label:gcS('lbl_child',lang),val:counts.child},
+    teen:{label:gcS('lbl_teen',lang),val:counts.teen},
     interested:{label:gcS('lbl_interested',lang),val:counts.interested},
     contact:{label:gcS('lbl_contact',lang),val:counts.contact},
     workers:{label:gcS('lbl_workers',lang),val:infra.workers},
