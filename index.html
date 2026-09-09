@@ -1701,6 +1701,15 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
         </div>
       </div>
 
+      <div class="settings-item" id="settings-item-gpdisplay">
+        <div class="settings-item-header" onclick="toggleSettingsItem(this)">
+          <span class="acc-title"><span class="acc-icon"><svg><use href="#ico-calendar"/></svg></span><span id="gp-display-title"></span></span><span class="acc-chevron">⌄</span>
+        </div>
+        <div class="settings-item-body">
+        <div id="setting-gpdisplay-wrap"></div>
+        </div>
+      </div>
+
       <div class="settings-item" id="settings-item-duplicates">
         <div class="settings-item-header" onclick="toggleSettingsItem(this)">
           <span class="acc-title"><span class="acc-icon"><svg><use href="#ico-duplicate"/></svg></span><span data-i18n="find_issues_lbl">Zoeken &amp; herstellen</span></span><span class="acc-chevron">⌄</span>
@@ -8390,6 +8399,43 @@ function buildChurchRoleSelect(savedVal){
   wrap.appendChild(box);
 }
 
+// Two display toggles for imported gemeente-planning rows (#982/#983), added
+// after feedback that a big PDF import floods the calendar with entries that
+// aren't the worker's own and shouldn't compete visually with them: one to
+// show/hide gemeente planning in the calendar entirely, and - nested under
+// that - one to also hide the auto-detected absence/holiday rows of other
+// workers (see gpIsAbsence). Built with tMap() rather than data-i18n/
+// TRANSLATIONS, same as the rest of this feature and the Smart Planning
+// helper before it - new UI text, giant per-language TRANSLATIONS blocks
+// left alone.
+function renderGpDisplaySettings(){
+  var titleEl=document.getElementById('gp-display-title');
+  if(titleEl)titleEl.textContent=tMap({nl:'Gemeente-planning weergave',en:'Church schedule display',es:'Visualización de planificación',fr:'Affichage du planning',de:'Anzeige Gemeindeplan',ro:'Afișare planificare',hu:'Gyülekezeti terv megjelenítése',ru:'Отображение расписания',it:'Visualizzazione pianificazione',pt:'Exibição da programação'});
+  var wrap=document.getElementById('setting-gpdisplay-wrap');
+  if(!wrap)return;
+  var s=db.settings;
+  var showGp=s.showGemeentePlanning!==false;
+  var showAbs=s.showGpAbsences!==false;
+  var h='<div class="toggle-row">';
+  h+='<div><div class="toggle-label">'+tMap({nl:'Tonen in kalender',en:'Show in calendar',es:'Mostrar en el calendario',fr:'Afficher dans le calendrier',de:'Im Kalender anzeigen',ro:'Afișează în calendar',hu:'Megjelenítés a naptárban',ru:'Показывать в календаре',it:'Mostra nel calendario',pt:'Mostrar no calendário'})+'</div>';
+  h+='<div class="toggle-sub">'+tMap({nl:'Geïmporteerde gemeente-activiteiten als grijze info in je kalender - telt niet mee als gewerkte uren',en:'Imported church activities as gray info in your calendar - does not count as worked hours',es:'Actividades de iglesia importadas como info gris en tu calendario - no cuenta como horas trabajadas',fr:'Activités d\'église importées en gris dans votre calendrier - ne compte pas comme heures travaillées',de:'Importierte Gemeindeaktivitäten als graue Info im Kalender - zählt nicht als Arbeitszeit',ro:'Activități de biserică importate ca info gri în calendar - nu contează ca ore lucrate',hu:'Importált gyülekezeti tevékenységek szürke infóként a naptárban - nem számít munkaóra','ru':'Импортированные церковные мероприятия как серая информация - не считается рабочим временем',it:'Attività ecclesiastiche importate come info grigia - non conta come ore lavorate',pt:'Atividades da igreja importadas como info cinza - não conta como horas trabalhadas'})+'</div></div>';
+  h+='<label class="toggle"><input type="checkbox" id="setting-gp-show" '+(showGp?'checked':'')+' onchange="toggleGpDisplaySetting(\'showGemeentePlanning\',this.checked)"><span class="toggle-slider"></span></label>';
+  h+='</div>';
+  h+='<div class="toggle-row" style="opacity:'+(showGp?'1':'.45')+';pointer-events:'+(showGp?'auto':'none')+'">';
+  h+='<div><div class="toggle-label">'+tMap({nl:'Afwezigheid van anderen',en:'Others\' absences',es:'Ausencias de otros',fr:'Absences des autres',de:'Abwesenheit anderer',ro:'Absențe ale altora',hu:'Mások távolléte',ru:'Отсутствие других',it:'Assenze di altri',pt:'Ausências de outros'})+'</div>';
+  h+='<div class="toggle-sub">'+tMap({nl:'Vakantie/verlof van collega\'s uit de planning meetonen (herkend aan het woord in de titel)',en:'Show colleagues\' vacation/leave from the schedule (detected by keyword in the title)',es:'Mostrar vacaciones/permisos de colegas de la planificación (detectado por palabra clave)',fr:'Afficher les congés des collègues (détecté par mot-clé)',de:'Urlaub/Abwesenheit von Kollegen anzeigen (per Stichwort erkannt)',ro:'Afișează concediile colegilor (detectat după cuvânt cheie)',hu:'Kollégák szabadságának mutatása (kulcsszó alapján)',ru:'Показывать отпуска коллег (по ключевому слову)',it:'Mostra ferie/assenze dei colleghi (rilevato da parola chiave)',pt:'Mostrar férias de colegas (detectado por palavra-chave)'})+'</div></div>';
+  h+='<label class="toggle"><input type="checkbox" id="setting-gp-show-abs" '+(showAbs?'checked':'')+' onchange="toggleGpDisplaySetting(\'showGpAbsences\',this.checked)"><span class="toggle-slider"></span></label>';
+  h+='</div>';
+  wrap.innerHTML=h;
+}
+function toggleGpDisplaySetting(key,val){
+  if(_suppressSettingsChange)return;
+  db.settings[key]=!!val;
+  save();
+  renderGpDisplaySettings();
+  if(typeof rerenderCurrentScreen==='function')rerenderCurrentScreen();
+}
+
 // Show/hide role-specific parts of the UI. Cursisten (contacts) stays visible for
 // both roles — office staff track contacts/candidates/youth too, just not the
 // bible-study-giving workflow, so only the Bijbelstudies tab is role-gated.
@@ -12574,6 +12620,7 @@ function applySettings(){const s=db.settings;
   buildIntervalSelect(parseInt(s.interval)||60);
   buildWorkRoleSelect(s.workRole||'bijbelwerker');
   buildChurchRoleSelect(s.churchRoles&&s.churchRoles.length?s.churchRoles:(s.churchRole?[s.churchRole]:[]));
+  renderGpDisplaySettings();
   var kmRateEl=document.getElementById('goal-km-rate');
   if(kmRateEl)kmRateEl.placeholder=(LANG==='en'?'auto: ':LANG==='es'?'auto: ':LANG==='fr'?'auto : ':LANG==='de'?'auto: ':LANG==='ro'?'auto: ':LANG==='hu'?'auto: ':LANG==='ru'?'авто: ':'auto: ')+getKmRateForYear(new Date().getFullYear());
   const sv=(id,val)=>{const el=document.getElementById(id);if(el){if(el.type==='checkbox')el.checked=!!val;else el.value=val||'';}};sv('setting-reminder-on',s.reminderOn);
@@ -17068,10 +17115,10 @@ function fcOpenYearDayPopup(ds,anchorEl){
   if(gpItems.length){
     h+='<div style="font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.03em;margin:10px 0 4px">'+tMap({nl:'Gemeente-planning',en:'Church schedule',es:'Planificación de iglesia'})+'</div>';
     gpItems.forEach(function(item){
-      h+='<div class="activity-card" onclick="closeFcYdPopup();openGemeentePlanningDetail('+item.id+')"><div class="activity-card-inner">';
-      h+='<div class="ac-stripe" style="background:'+GEMEENTE_PLANNING_COLOR+'"></div>';
+      h+='<div class="activity-card" onclick="closeFcYdPopup();openGemeentePlanningDetail('+item.id+')" style="opacity:'+(item.accented?'1':'.72')+'"><div class="activity-card-inner">';
+      h+='<div class="ac-stripe" style="background:'+gpItemColor(item)+'"></div>';
       h+='<div class="ac-body" style="cursor:pointer">';
-      h+='<div class="ac-top"><div class="ac-who">'+escapeHtml(item.titel)+'</div></div>';
+      h+='<div class="ac-top"><div class="ac-who" style="color:'+(item.accented?'inherit':'var(--text3)')+'">'+escapeHtml(item.titel)+'</div></div>';
       h+='<div class="ac-cat">'+(item.tijd?item.tijd+' · ':'')+(item.verantwoordelijke?escapeHtml(item.verantwoordelijke):'')+'</div>';
       h+='</div></div></div>';
     });
@@ -22987,28 +23034,72 @@ function confirmGemeentePlanningImportReview(){
 // Returns every gemeentePlanning item whose date range covers ds (a
 // yyyy-mm-dd string) - used by the calendar's day/month/year rendering to
 // show these as a distinct, non-hour-counted marker alongside real entries
-// and planned activities.
+// and planned activities. Respects the two display toggles added after
+// user feedback that a big PDF import floods the calendar: "show gemeente
+// planning at all" and, within that, "show the absence/holiday rows too"
+// (auto-detected by keyword - see gpIsAbsence). Both default to on/visible
+// when the setting is unset, so existing users see no change until they
+// deliberately turn something off.
 function gemeentePlanningForDay(ds){
   if(!ds||!db.gemeentePlanning)return[];
+  if(db.settings&&db.settings.showGemeentePlanning===false)return[];
+  var hideAbs=db.settings&&db.settings.showGpAbsences===false;
   return db.gemeentePlanning.filter(function(g){
     if(!g.datumStart)return false;
     var end=g.datumEind||g.datumStart;
-    return ds>=g.datumStart&&ds<=end;
+    if(ds<g.datumStart||ds>end)return false;
+    if(hideAbs&&gpIsAbsence(g))return false;
+    return true;
+  });
+}
+// Keyword-based detection of "someone else's absence" rows (vacation/leave/
+// sick) within the imported planning, so the "hide colleagues' absences"
+// toggle can work without asking the user to tag every row on import.
+// Prefix-matched (word must START with one of these) rather than plain
+// substring, so it catches Dutch compounds like "verlofdag"/"ziekmelding"
+// without false-positives like "vrijwilligers" or "aanwezig".
+var GP_ABSENCE_KEYWORDS=['vakantie','verlof','afwezig','ziek'];
+function gpIsAbsence(item){
+  var t=normNameForMatch(item&&item.titel||'');
+  return GP_ABSENCE_KEYWORDS.some(function(kw){
+    return new RegExp('\\b'+kw).test(t);
   });
 }
 var GEMEENTE_PLANNING_COLOR='#6D4FC2';
+var GEMEENTE_PLANNING_COLOR_MUTED='#9CA3AF';
+// Imported planning rows are "for info" by default (muted gray) rather than
+// competing visually with the worker's own entries - per user feedback that
+// a PDF import full of committee/other-worker rows shouldn't be prominent.
+// Tapping an item's detail popup lets the worker "pin" individual rows they
+// personally care about (e.g. a committee meeting) so those stand out in
+// the accent color while everything else stays gray.
+function gpItemColor(item){
+  return (item&&item.accented)?GEMEENTE_PLANNING_COLOR:GEMEENTE_PLANNING_COLOR_MUTED;
+}
+function toggleGpAccent(id){
+  var item=(db.gemeentePlanning||[]).find(function(g){return g.id==id;});
+  if(!item)return;
+  item.accented=!item.accented;
+  touch(item);
+  save();
+  openGemeentePlanningDetail(id);
+  if(typeof rerenderCurrentScreen==='function')rerenderCurrentScreen();
+}
 function openGemeentePlanningDetail(id){
   var item=(db.gemeentePlanning||[]).find(function(g){return g.id==id;});
   if(!item)return;
+  var col=gpItemColor(item);
   var h='<div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>';
   h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">';
-  h+='<div style="width:10px;height:10px;border-radius:50%;background:'+GEMEENTE_PLANNING_COLOR+';flex-shrink:0"></div>';
+  h+='<div style="width:10px;height:10px;border-radius:50%;background:'+col+';flex-shrink:0"></div>';
   h+='<div style="font-size:15px;font-weight:700">'+escapeHtml(item.titel)+'</div>';
   h+='</div>';
   h+='<div style="font-size:13px;color:var(--text2);margin-bottom:4px">'+escapeHtml(gpFormatRange(item))+(item.tijd?' · '+item.tijd:'')+'</div>';
   if(item.verantwoordelijke)h+='<div style="font-size:13px;color:var(--text2);margin-bottom:4px">'+tMap({nl:'Verantwoordelijke: ',en:'Responsible: ',es:'Responsable: '})+escapeHtml(item.verantwoordelijke)+'</div>';
   if(item.onduidelijkeDatum)h+='<div style="font-size:12px;color:var(--amber);margin-bottom:4px">'+tMap({nl:'Let op: de datum in de PDF was niet helemaal duidelijk.',en:'Note: the date in the PDF wasn\'t entirely clear.',es:'Nota: la fecha en el PDF no estaba del todo clara.'})+'</div>';
   h+='<div style="font-size:11px;color:var(--text3);margin-bottom:14px">'+tMap({nl:'Uit een geïmporteerde gemeente-planning - telt niet mee als gewerkte uren.',en:'From an imported church schedule - does not count as worked hours.',es:'De una planificación de iglesia importada - no cuenta como horas trabajadas.'})+'</div>';
+  var pinLbl=item.accented?tMap({nl:'Niet meer laten opvallen',en:'Unpin (make gray again)',es:'Dejar de destacar'}):tMap({nl:'Laten opvallen in de kalender',en:'Pin - make it stand out',es:'Destacar en el calendario'});
+  h+='<button class="btn" onclick="toggleGpAccent('+item.id+')" style="width:100%;margin-bottom:8px'+(item.accented?';background:var(--brand-light);color:var(--brand);border-color:var(--brand)':'')+'"><svg width="14" height="14" style="margin-right:4px;vertical-align:-2px"><use href="#ico-pin"/></svg>'+pinLbl+'</button>';
   h+='<button class="btn" onclick="deleteGemeentePlanningItem('+item.id+')" style="width:100%;color:var(--danger)">'+t('delete_btn')+'</button>';
   showModal(h);
 }
@@ -26246,7 +26337,7 @@ function renderFcSearchResultsList(){
       // used everywhere else in the calendar for these items (#982/#983),
       // not an edit form - they're imported, not something the worker owns.
       h+='<div class="activity-card" style="margin-bottom:6px;cursor:pointer" onclick="openGemeentePlanningDetail('+item.id+')"><div class="activity-card-inner">';
-      h+='<div class="ac-stripe" style="background:'+GEMEENTE_PLANNING_COLOR+'"></div>';
+      h+='<div class="ac-stripe" style="background:'+gpItemColor(item)+'"></div>';
       h+='<div class="ac-body">';
       h+='<div class="ac-top"><div class="ac-who">'+escapeHtml(item.titel)+'</div><div class="ac-hours">'+(item.datumStart?formatDate(item.datumStart):'')+'</div></div>';
       h+='<div class="ac-cat">'+(item.verantwoordelijke?escapeHtml(item.verantwoordelijke)+' · ':'')+tMap({nl:'Gemeente-planning',en:'Church schedule',es:'Planificación de iglesia'})+'</div>';
@@ -26404,7 +26495,7 @@ function renderFcMonthSection(yr,mo){
       chips+='<div style="font-size:9.5px;background:'+col+';color:#fff;border-radius:3px;padding:1px 4px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+label+'</div>';
     });
     gpItems.slice(0,Math.max(0,3-items.length)).forEach(function(item){
-      chips+='<div style="font-size:9.5px;background:'+GEMEENTE_PLANNING_COLOR+';color:#fff;border-radius:3px;padding:1px 4px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escapeHtml(item.titel)+'</div>';
+      chips+='<div style="font-size:9.5px;background:'+gpItemColor(item)+';color:#fff;border-radius:3px;padding:1px 4px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escapeHtml(item.titel)+'</div>';
     });
     var extra=items.length+gpItems.length-3;
     // Same small anchored popover as year view (fcOpenYearDayPopup), instead
@@ -26558,10 +26649,10 @@ function renderFcDayDetail(ds){
       h+='</div></div></div>';
     });
     gpItems.forEach(function(item){
-      h+='<div class="activity-card" style="margin-bottom:6px" onclick="openGemeentePlanningDetail('+item.id+')"><div class="activity-card-inner">';
-      h+='<div class="ac-stripe" style="background:'+GEMEENTE_PLANNING_COLOR+'"></div>';
+      h+='<div class="activity-card" style="margin-bottom:6px;opacity:'+(item.accented?'1':'.72')+'" onclick="openGemeentePlanningDetail('+item.id+')"><div class="activity-card-inner">';
+      h+='<div class="ac-stripe" style="background:'+gpItemColor(item)+'"></div>';
       h+='<div class="ac-body" style="cursor:pointer">';
-      h+='<div class="ac-top"><div class="ac-who">'+escapeHtml(item.titel)+'</div></div>';
+      h+='<div class="ac-top"><div class="ac-who" style="color:'+(item.accented?'inherit':'var(--text3)')+'">'+escapeHtml(item.titel)+'</div></div>';
       h+='<div class="ac-cat">'+(item.tijd?item.tijd+' · ':'')+(item.verantwoordelijke?escapeHtml(item.verantwoordelijke):'')+'</div>';
       h+='</div></div></div>';
     });
@@ -26606,8 +26697,8 @@ function renderFullCalWeek(){
     });
     gpItems.forEach(function(item){
       h+='<div onclick="openGemeentePlanningDetail('+item.id+')" style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid var(--border);cursor:pointer">';
-      h+='<div style="width:8px;height:8px;border-radius:50%;background:'+GEMEENTE_PLANNING_COLOR+';flex-shrink:0"></div>';
-      h+='<div style="font-size:13px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)">'+escapeHtml(item.titel)+'</div>';
+      h+='<div style="width:8px;height:8px;border-radius:50%;background:'+gpItemColor(item)+';flex-shrink:0"></div>';
+      h+='<div style="font-size:13px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:'+(item.accented?'var(--text)':'var(--text3)')+'">'+escapeHtml(item.titel)+'</div>';
       if(item.tijd)h+='<div style="font-size:11px;color:var(--text3)">'+item.tijd+'</div>';
       h+='</div>';
     });
@@ -26678,7 +26769,12 @@ function renderMiniMonthGrid(yr,mo){
     // Gemeente-planning items (#982/#983) get their own dot color, always
     // shown even if the 4-dot cap from real entries is already hit - a
     // church-wide event is worth knowing about even on a busy day.
-    if(gemeentePlanningForDay(dateStr).length)dots+='<span class="fc-year-dot" style="border-radius:50%;background:'+GEMEENTE_PLANNING_COLOR+';display:inline-block"></span>';
+    (function(){
+      var gpDay=gemeentePlanningForDay(dateStr);
+      if(!gpDay.length)return;
+      var anyAccented=gpDay.some(function(g){return g.accented;});
+      dots+='<span class="fc-year-dot" style="border-radius:50%;background:'+(anyAccented?GEMEENTE_PLANNING_COLOR:GEMEENTE_PLANNING_COLOR_MUTED)+';display:inline-block"></span>';
+    })();
     // Own click target per day, with stopPropagation, so tapping a single
     // day opens that day's activities in a popup instead of the whole
     // month wrapper's onclick (fcJumpMonth) firing and navigating away to
