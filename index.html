@@ -10228,7 +10228,13 @@ const CATEGORIES=[
   {label:'Financiële administratie', aard:'Boekhouding',    crit:true, travelLabel:null, role:'kantoor'},
   {label:'Onderhoud',                aard:'Beheer',         crit:true, travelLabel:null, role:'kantoor'},
   {label:'Schoonmaken',              aard:'Beheer',         crit:true, travelLabel:null, role:'kantoor'},
-  {label:'Vergaderen',               aard:'Organisatie',    crit:true, travelLabel:null},
+  // allowKm: unlike most no-travelLabel categories (Administratie, Communicatie,
+  // Plannen, etc.), a Vergaderen (meeting) can involve driving to another
+  // location - the worker wants to log that km even though it isn't linked to
+  // one of the four dedicated Reistijd travel-time categories. See the
+  // 'travel' wizard step below (renderWiz) for the dedicated km+kosten branch
+  // this flag enables.
+  {label:'Vergaderen',               aard:'Organisatie',    crit:true, travelLabel:null, allowKm:true},
   {label:'Communicatie',             aard:'Organisatie',    crit:true, travelLabel:null},
   // Time spent planning/coordinating future activities (calling or writing
   // to arrange something) is real work time, so — unlike the separate
@@ -15367,6 +15373,25 @@ function renderWiz(){
       </div>
       <div style="font-size:12px;color:var(--text3);margin-top:8px">${t('wizard_no_travel')}</div>
       <div class="btn-row"><button class="btn" onclick="wBack()">${t('wizard_back')}</button><button class="btn" onclick="wQuickSave()">${t('save_btn')}</button><button class="btn primary" onclick="wSet('reisUren','w-reisuren');wSet('km','w-km');wSet('kosten','w-kosten');wNext()">${t('wizard_next')}</button></div>`;
+    }else if(draft.allowKm){
+      // Category has no dedicated Reistijd travel-time category to link to
+      // (travelLabel is null - e.g. Vergaderen, task #973: a meeting can be
+      // at another location, and the worker wants to declare the km without
+      // it being counted as separate travel time), but still wants a km field
+      // alongside the usual expense field.
+      c.innerHTML=`<div class="wiz-q">${t('wizard_expense_label')}</div>
+      <div class="wiz-hint" style="margin-bottom:0">${t('wizard_expense_hint')}</div>
+      <div class="travel-box">
+        <div>
+          <span class="form-label">${distLabel()}</span>
+          <input type="number" id="w-km" min="0" step="1" placeholder="0" value="${draft.km||''}">
+        </div>
+        <div style="margin-top:10px">
+          <input type="number" id="w-kosten" min="0" step="0.01" placeholder="0.00 (${currencySymbol()})" value="${draft.kosten||''}">
+          ${receiptPhotoFieldHtml()}
+        </div>
+      </div>
+      <div class="btn-row"><button class="btn" onclick="wBack()">${t('wizard_back')}</button><button class="btn" onclick="wQuickSave()">${t('save_btn')}</button><button class="btn primary" onclick="wSet('km','w-km');wSet('kosten','w-kosten');wNext()">${t('wizard_next')}</button></div>`;
     }else{
       c.innerHTML=`<div class="wiz-q">${t('wizard_expense_label')}</div>
       <div class="wiz-hint" style="margin-bottom:0">${t('wizard_expense_hint')}</div>
@@ -15622,6 +15647,7 @@ function wDecideType(){
   draft.needsGemeente=aard==='Gemeentebediening'||aard==='Commissie'||draft.categorie==='Vergaderen'||draft.categorie==='Buitenlandse zending'||draft.categorie==='Predicacion'||draft.categorie==='Vervoer';
   draft.travelLabel=cat?cat.travelLabel||null:null;
   draft.noExpense=cat?!!cat.noExpense:false;
+  draft.allowKm=cat?!!cat.allowKm:false;
   wizStep++;
   // Apply same skip logic as wNext
   var s=WIZ[wizStep];
