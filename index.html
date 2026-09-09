@@ -26263,13 +26263,27 @@ function renderFullCalHeader(){
   h+='<button class="cal-nav-btn" onclick="fcNext()" style="flex-shrink:0">›</button>';
   h+='</div>';
   if(!fcSearchOpen){
-    h+='<div style="padding:10px 10px 0;flex-shrink:0;box-sizing:border-box;width:100%"><div class="view-toggle" style="margin-bottom:0">';
+    h+='<div style="padding:10px 10px 0;flex-shrink:0;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:8px">';
+    h+='<div class="view-toggle" style="margin-bottom:0;flex:1">';
     ['week','month','year'].forEach(function(v){
       h+='<button type="button" class="view-btn'+(fcView===v?' active':'')+'" onclick="fcSetView(\''+v+'\')">'+fcLbl(v)+'</button>';
     });
-    h+='</div></div>';
+    h+='</div>';
+    // Quick on/off for the imported gemeente-planning layer, right where the
+    // person is looking at the calendar - mirrors the Settings toggle
+    // (db.settings.showGemeentePlanning) rather than duplicating state, so
+    // switching it off here also reflects in Settings and vice versa.
+    var gpOn=db.settings.showGemeentePlanning!==false;
+    var gpLbl=tMap({nl:'Gemeente',en:'Church',es:'Iglesia',fr:'Église',de:'Gemeinde',ro:'Biserică',hu:'Gyülekezet',ru:'Церковь',it:'Chiesa',pt:'Igreja'});
+    h+='<button type="button" class="btn sm" onclick="fcToggleGpVisibility()" style="padding:5px 9px;font-size:12px;flex-shrink:0;display:flex;align-items:center;gap:5px;'+(gpOn?'':'opacity:.5')+'"><span style="width:8px;height:8px;border-radius:50%;background:'+GEMEENTE_PLANNING_COLOR+';flex-shrink:0"></span>'+gpLbl+'</button>';
+    h+='</div>';
   }
   return h;
+}
+function fcToggleGpVisibility(){
+  db.settings.showGemeentePlanning=db.settings.showGemeentePlanning===false;
+  save();
+  fcRefreshFull();
 }
 function fcToggleSearch(){
   fcSearchOpen=!fcSearchOpen;
