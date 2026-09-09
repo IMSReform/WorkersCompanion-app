@@ -5943,6 +5943,7 @@ const DRIVE_FILE_NAME='ZDA_Urenregistratie_'+new Date().getFullYear()+'.json';
 // it), not commit messages.
 const CHANGELOG=[
   {date:'2026-09-09',items:[
+    {nl:'Gemeente-planning verder uitgebreid: geïmporteerde items staan nu standaard grijs (niet opvallend) op de kalender, en je kunt losse items "vastpinnen" om ze te laten opvallen (bijv. commissievergaderingen of andere belangrijke activiteiten) — dit is dezelfde paarse stip als bij importeren, alleen actief zetten kun je nu zelf per item. De aan/uit-toggle voor gemeente-planning staat nu ook bovenin de kleine kalender op je Home-scherm, naast Instellingen en de knop "Gemeente" bovenin de volledig-scherm-kalender — overal dezelfde instelling. Nieuw: bij het importeren kies je per regel of een item op de kalenderdag zelf moet verschijnen, of als voetnoot onder de maand (handig voor bijv. andermans vakantie/verlof — je blijft op de hoogte zonder dat je eigen kalender volgeplakt raakt). Absenties worden automatisch als voetnoot voorgesteld. Die keuze kun je later altijd nog wijzigen vanuit het detailpopupje van dat item. In de jaarweergave zie je een klein telbadge naast een maandnaam wanneer die maand voetnoot-info heeft; tik erop voor de lijst.',en:'Church schedule feature extended further: imported items now default to gray (not prominent) on the calendar, and you can "pin" individual items to make them stand out (e.g. committee meetings or other important activities) — same purple dot as on import, just now something you control per item. The church-schedule on/off toggle is now also on the small calendar on your Home screen, alongside Settings and the "Church" button at the top of the full-screen calendar — one shared setting everywhere. New: when importing, you choose per row whether an item should appear on its calendar day, or as a footnote listed under the month (handy for e.g. a colleague\'s vacation/leave — you stay informed without your own calendar getting cluttered). Absences are pre-selected as footnote by default. You can always change that choice later from the item\'s detail popup. In year view, a small count badge appears next to a month\'s name when that month has footnote info — tap it for the list.',es:'La función de planificación de la iglesia se ha ampliado: los elementos importados ahora aparecen en gris por defecto (no destacados) en el calendario, y puedes "fijar" elementos individuales para que destaquen (p. ej. reuniones de comité u otras actividades importantes) — el mismo punto morado que al importar, solo que ahora lo controlas tú por elemento. El interruptor de mostrar/ocultar la planificación de la iglesia ahora también está en el calendario pequeño de tu pantalla de Inicio, junto a Ajustes y el botón "Iglesia" en la parte superior del calendario a pantalla completa — un mismo ajuste en todas partes. Nuevo: al importar, eliges por fila si un elemento debe aparecer en su día del calendario, o como nota al pie debajo del mes (útil, por ejemplo, para las vacaciones/permiso de un compañero — te mantienes informado sin que se llene tu propio calendario). Las ausencias se preseleccionan como nota al pie por defecto. Esa elección siempre se puede cambiar después desde el popup de detalle del elemento. En la vista anual aparece un pequeño indicador junto al nombre de un mes cuando ese mes tiene información en notas al pie — tócalo para ver la lista.'},
     {nl:'Nieuw: bij "Gegevens importeren" kun je nu ook een PDF met de gemeente-planning (activiteitenoverzicht) van de secretaris importeren. De app herkent de datums, activiteiten en verantwoordelijken uit de tabel, laat je vooraf aanvinken wat je wilt toevoegen, en zet ze als aparte informatiepuntjes in de kalender (herkenbaar aan een paarse stip) — dit telt niet mee als gewerkte uren, het is puur ter info voor iedereen in de gemeente.',en:'New: under "Import data" you can now also import a PDF of the secretary\'s church schedule (activity planning). The app recognizes the dates, activities and responsible people from the table, lets you check off beforehand what to add, and places them as separate awareness markers on the calendar (shown with a purple dot) — this does not count as worked hours, it\'s purely informational for everyone in the church.',es:'Nuevo: en "Importar datos" ahora también puedes importar un PDF con la planificación de la iglesia (calendario de actividades) del secretario. La app reconoce las fechas, actividades y responsables de la tabla, te deja marcar de antemano qué añadir, y los coloca como puntos informativos aparte en el calendario (con un punto morado) — esto no cuenta como horas trabajadas, es puramente informativo para todos en la iglesia.'}
   ]},
   {date:'2026-09-01',items:[
@@ -6051,7 +6052,9 @@ const TIPS=[
   {nl:'Wist je dat je een contact - of je actiefste contacten in bulk - kunt delen met een collega, bijvoorbeeld tijdens vakantie? Tik op het deel-icoontje bij een contact; je collega importeert het bestand en ziet de volledige geschiedenis.',en:'Did you know? You can share a contact — or hand over your most active contacts in bulk — with a colleague, for example while you\'re on holiday. Tap the share icon on a contact; your colleague imports the file and sees the full history.',es:'¿Sabías que puedes compartir un contacto - o entregar en bloque tus contactos más activos - con un colega, por ejemplo durante tus vacaciones? Toca el icono de compartir en un contacto; tu colega importa el archivo y ve el historial completo.',fr:'Le saviez-vous ? Vous pouvez partager un contact - ou transférer en bloc vos contacts les plus actifs - à un collègue, par exemple pendant vos vacances. Appuyez sur l\'icône de partage sur un contact ; votre collègue importe le fichier et voit tout l\'historique.',de:'Wussten Sie schon? Sie können einen Kontakt - oder Ihre aktivsten Kontakte gesammelt - an einen Kollegen weitergeben, zum Beispiel während des Urlaubs. Tippen Sie auf das Teilen-Symbol bei einem Kontakt; Ihr Kollege importiert die Datei und sieht den vollständigen Verlauf.',ro:'Știai că poți distribui un contact - sau poți preda în bloc contactele tale cele mai active - unui coleg, de exemplu în vacanță? Atinge pictograma de distribuire de la un contact; colegul tău importă fișierul și vede întregul istoric.',hu:'Tudtad? Megoszthatsz egy kapcsolatot - vagy tömegesen átadhatod a legaktívabb kapcsolataidat - egy munkatársnak, például szabadság idejére? Koppints a megosztás ikonra egy kapcsolatnál; a kollégád importálja a fájlt, és látja a teljes előzményt.',ru:'Знаете ли вы? Вы можете поделиться контактом - или передать массово самые активные контакты - коллеге, например, во время отпуска. Нажмите на значок «поделиться» у контакта; коллега импортирует файл и видит всю историю.',it:'Lo sapevi? Puoi condividere un contatto - o trasferire in blocco i tuoi contatti più attivi - con un collega, ad esempio durante le vacanze. Tocca l\'icona di condivisione su un contatto; il tuo collega importa il file e vede tutta la cronologia.',pt:'Sabia que pode partilhar um contacto - ou entregar em massa os seus contactos mais ativos - a um colega, por exemplo durante as férias? Toque no ícone de partilha num contacto; o seu colega importa o ficheiro e vê todo o histórico.'},
   {nl:'Wist je dat je bij Rapport alle bonnetje-foto\'s van de bekeken periode in één keer kunt downloaden als zip-bestand? Tik op "Bonnetjes downloaden (zip)" — handig om in één keer bij te voegen aan een e-mail.',en:'Did you know? In Report you can download every receipt photo from the period you\'re viewing in one go, as a zip file — tap "Download receipts (zip)", handy for attaching to an email at once.',es:'¿Sabías que en Informe puedes descargar de una vez todas las fotos de recibos del período que estás viendo, como archivo zip? Toca "Descargar recibos (zip)" — útil para adjuntarlas todas a un correo.',fr:'Le saviez-vous ? Dans Rapport, vous pouvez télécharger d\'un coup toutes les photos de reçus de la période affichée, sous forme de fichier zip — appuyez sur « Télécharger les reçus (zip) », pratique pour les joindre en une fois à un e-mail.',de:'Wussten Sie schon? Im Bericht können Sie alle Beleg-Fotos aus dem angezeigten Zeitraum auf einmal als Zip-Datei herunterladen — tippen Sie auf „Belege herunterladen (zip)", praktisch zum Anhängen an eine E-Mail.',ro:'Știai că în Raport poți descărca dintr-o dată toate fotografiile chitanțelor din perioada afișată, ca fișier zip? Atinge „Descarcă chitanțele (zip)” — util pentru a le atașa dintr-o dată la un e-mail.',hu:'Tudtad? A Jelentésben egyszerre letöltheted a megtekintett időszak összes nyugtafotóját zip-fájlként — koppints a "Nyugták letöltése (zip)" gombra, kényelmes egy e-mailhez való csatoláshoz.',ru:'Знаете ли вы? В Отчёте можно скачать сразу все фото чеков за просматриваемый период в виде zip-файла — нажмите «Скачать чеки (zip)», удобно для прикрепления к письму.',it:'Lo sapevi? Nel Report puoi scaricare in una volta tutte le foto delle ricevute del periodo visualizzato, come file zip — tocca "Scarica ricevute (zip)", comodo per allegarle a un\'email.',pt:'Sabia que no Relatório pode descarregar de uma vez todas as fotos de recibos do período visualizado, como ficheiro zip? Toque em "Baixar recibos (zip)" — prático para anexar tudo a um email.'},
   {nl:'Wist je dat je bij het exporteren van je PDF-rapport een "Bijlagen"-sectie kunt aanzetten die al je bonnetje-foto\'s op volledige grootte afdrukt, in plaats van het kleine miniatuurtje?',en:'Did you know? When exporting your PDF report you can turn on an "Attachments" section that prints all your receipt photos at full size, instead of the small thumbnail?',es:'¿Sabías que al exportar tu informe en PDF puedes activar una sección "Anexos" que imprime todas tus fotos de recibos a tamaño completo, en vez de la pequeña miniatura?',fr:'Le saviez-vous ? Lors de l\'export de votre rapport PDF, vous pouvez activer une section « Pièces jointes » qui imprime toutes vos photos de reçus en taille réelle, au lieu de la petite vignette ?',de:'Wussten Sie schon? Beim Exportieren Ihres PDF-Berichts können Sie einen Abschnitt „Anhänge" aktivieren, der alle Ihre Beleg-Fotos in voller Größe abdruckt, statt der kleinen Miniaturansicht?',ro:'Știai că la exportarea raportului PDF poți activa o secțiune „Anexe” care tipărește toate fotografiile chitanțelor tale la dimensiune completă, în loc de miniatura mică?',hu:'Tudtad? A PDF-jelentés exportálásakor bekapcsolhatsz egy "Mellékletek" szakaszt, amely az összes nyugtafotódat teljes méretben nyomtatja ki, a kis bélyegkép helyett?',ru:'Знаете ли вы? При экспорте PDF-отчёта можно включить раздел "Вложения", который печатает все ваши фото чеков в полном размере вместо маленькой миниатюры?',it:'Lo sapevi? Quando esporti il tuo report PDF puoi attivare una sezione "Allegati" che stampa tutte le tue foto di ricevute a grandezza naturale, invece della piccola miniatura?',pt:'Sabia que ao exportar o seu relatório PDF pode ativar uma secção "Anexos" que imprime todas as suas fotos de recibos em tamanho real, em vez da pequena miniatura?'},
-  {nl:'Wist je dat je bij "Exporteer voor Voorzitter" ook een PDF-versie kunt meesturen? Vink "Ook een PDF-versie exporteren" aan om het rapport apart per e-mail te kunnen versturen.',en:'Did you know? When you "Export for president" you can also generate a PDF version at the same time — check "Also export a PDF version" to be able to email the report separately.',es:'¿Sabías que al "Exportar para el presidente" también puedes generar una versión en PDF a la vez? Marca "Exportar también una versión en PDF" para poder enviar el informe por correo aparte.',fr:'Le saviez-vous ? Lorsque vous « exportez pour le président », vous pouvez aussi générer une version PDF en même temps — cochez « Exporter aussi une version PDF » pour pouvoir envoyer le rapport séparément par e-mail.',de:'Wussten Sie schon? Beim „Export für den Vorsitzenden" können Sie gleichzeitig auch eine PDF-Version erstellen — kreuzen Sie „Zusätzlich eine PDF-Version exportieren" an, um den Bericht separat per E-Mail versenden zu können.',ro:'Știai că atunci când „exporți pentru președinte” poți genera simultan și o versiune PDF? Bifează „Exportă și o versiune PDF” pentru a putea trimite raportul separat prin e-mail.',hu:'Tudtad? Amikor "Exportálás az elnöknek" funkciót használod, egyszerre PDF-verziót is készíthetsz — jelöld be a "PDF-verzió exportálása is" opciót, hogy a jelentést külön is elküldhesd e-mailben.',ru:'Знаете ли вы? При использовании "Экспорт для президента" можно одновременно создать и PDF-версию — отметьте «Также экспортировать версию в PDF», чтобы отправить отчёт отдельно по почте.',it:'Lo sapevi? Quando usi "Esporta per il presidente" puoi generare anche una versione PDF allo stesso tempo — seleziona "Esporta anche una versione PDF" per poter inviare il report separatamente via email.',pt:'Sabia que ao "Exportar para o presidente" também pode gerar uma versão em PDF ao mesmo tempo? Marque "Também exportar uma versão em PDF" para poder enviar o relatório separadamente por email.'}
+  {nl:'Wist je dat je bij "Exporteer voor Voorzitter" ook een PDF-versie kunt meesturen? Vink "Ook een PDF-versie exporteren" aan om het rapport apart per e-mail te kunnen versturen.',en:'Did you know? When you "Export for president" you can also generate a PDF version at the same time — check "Also export a PDF version" to be able to email the report separately.',es:'¿Sabías que al "Exportar para el presidente" también puedes generar una versión en PDF a la vez? Marca "Exportar también una versión en PDF" para poder enviar el informe por correo aparte.',fr:'Le saviez-vous ? Lorsque vous « exportez pour le président », vous pouvez aussi générer une version PDF en même temps — cochez « Exporter aussi une version PDF » pour pouvoir envoyer le rapport séparément par e-mail.',de:'Wussten Sie schon? Beim „Export für den Vorsitzenden" können Sie gleichzeitig auch eine PDF-Version erstellen — kreuzen Sie „Zusätzlich eine PDF-Version exportieren" an, um den Bericht separat per E-Mail versenden zu können.',ro:'Știai că atunci când „exporți pentru președinte” poți genera simultan și o versiune PDF? Bifează „Exportă și o versiune PDF” pentru a putea trimite raportul separat prin e-mail.',hu:'Tudtad? Amikor "Exportálás az elnöknek" funkciót használod, egyszerre PDF-verziót is készíthetsz — jelöld be a "PDF-verzió exportálása is" opciót, hogy a jelentést külön is elküldhesd e-mailben.',ru:'Знаете ли вы? При использовании "Экспорт для президента" можно одновременно создать и PDF-версию — отметьте «Также экспортировать версию в PDF», чтобы отправить отчёт отдельно по почте.',it:'Lo sapevi? Quando usi "Esporta per il presidente" puoi generare anche una versione PDF allo stesso tempo — seleziona "Esporta anche una versione PDF" per poter inviare il report separatamente via email.',pt:'Sabia que ao "Exportar para o presidente" também pode gerar uma versão em PDF ao mesmo tempo? Marque "Também exportar uma versão em PDF" para poder enviar o relatório separadamente por email.'},
+  {nl:'Wist je dat je een geïmporteerd gemeente-planningsitem kunt "vastpinnen" zodat het opvalt in de kalender (bijv. een commissievergadering), terwijl de rest netjes grijs en rustig blijft? Tik op het item en dan op de speld-knop.',en:'Did you know? You can "pin" an imported church-schedule item so it stands out on the calendar (e.g. a committee meeting), while everything else stays calm and gray. Tap the item, then the pin button.',es:'¿Sabías que puedes "fijar" un elemento importado de la planificación de la iglesia para que destaque en el calendario (p. ej. una reunión de comité), mientras el resto se queda tranquilo y en gris? Toca el elemento y luego el botón de fijar.',fr:'Le saviez-vous ? Vous pouvez « épingler » un élément importé de la planification de l\'église pour qu\'il se démarque dans le calendrier (p. ex. une réunion de comité), tandis que le reste reste discret et gris. Appuyez sur l\'élément, puis sur le bouton d\'épingle.',de:'Wussten Sie schon? Sie können ein importiertes Gemeindeplanungs-Element „anheften", damit es im Kalender auffällt (z. B. eine Ausschusssitzung), während der Rest ruhig und grau bleibt. Tippen Sie auf das Element und dann auf die Anheften-Schaltfläche.',ro:'Știai că poți „fixa” un element importat din planificarea bisericii pentru a ieși în evidență pe calendar (de ex. o ședință de comitet), în timp ce restul rămâne discret și gri? Atinge elementul, apoi butonul de fixare.',hu:'Tudtad? "Kitűzhetsz" egy importált gyülekezeti terv-elemet, hogy kiemelkedjen a naptárban (pl. egy bizottsági ülés), míg a többi nyugodtan szürke marad? Koppints az elemre, majd a tű gombra.',ru:'Знаете ли вы? Вы можете «закрепить» импортированный элемент церковного расписания, чтобы он выделялся в календаре (например, заседание комитета), а остальные оставались спокойными и серыми. Нажмите на элемент, затем на кнопку закрепления.',it:'Lo sapevi? Puoi "fissare" un elemento importato della pianificazione della chiesa per farlo risaltare nel calendario (es. una riunione di comitato), mentre il resto resta grigio e discreto. Tocca l\'elemento, poi il pulsante di fissaggio.',pt:'Sabia que pode "fixar" um item importado da programação da igreja para que se destaque no calendário (por ex. uma reunião de comité), enquanto o resto permanece discreto e cinzento? Toque no item e depois no botão de fixar.'},
+  {nl:'Wist je dat je bij het importeren van de gemeente-planning per regel kunt kiezen: op de kalenderdag zelf, of als voetnoot onder de maand? Zo blijf je op de hoogte van bijv. andermans vakantie zonder dat je eigen kalender volgeplakt raakt. Achteraf nog wijzigen kan altijd, via het item zelf.',en:'Did you know? When importing the church schedule, you choose per row: on the calendar day itself, or as a footnote listed under the month? That way you stay informed about e.g. a colleague\'s vacation without your own calendar getting cluttered. You can always change it later from the item itself.',es:'¿Sabías que al importar la planificación de la iglesia puedes elegir por fila: en el día del calendario, o como nota al pie debajo del mes? Así te mantienes informado, por ejemplo, de las vacaciones de un compañero sin que tu propio calendario se llene. Siempre puedes cambiarlo después desde el propio elemento.',fr:'Le saviez-vous ? Lors de l\'import de la planification de l\'église, vous choisissez par ligne : sur le jour du calendrier, ou en note de bas de page sous le mois ? Vous restez ainsi informé, par ex., des vacances d\'un collègue sans encombrer votre propre calendrier. Vous pouvez toujours le modifier plus tard depuis l\'élément lui-même.',de:'Wussten Sie schon? Beim Importieren des Gemeindeplans wählen Sie pro Zeile: auf dem Kalendertag selbst, oder als Fußnote unter dem Monat? So bleiben Sie z. B. über den Urlaub eines Kollegen informiert, ohne dass Ihr eigener Kalender überladen wird. Später jederzeit über das Element selbst änderbar.',ro:'Știai că la importarea planificării bisericii poți alege pe fiecare rând: pe ziua din calendar, sau ca notă de subsol sub lună? Astfel rămâi informat despre, de ex., vacanța unui coleg fără ca propriul tău calendar să se aglomereze. Poți schimba oricând ulterior, din elementul respectiv.',hu:'Tudtad? A gyülekezeti terv importálásakor soronként választhatsz: a naptári napon magán, vagy lábjegyzetként a hónap alatt? Így tudsz maradni pl. egy kolléga szabadságáról anélkül, hogy a saját naptárad zsúfolt lenne. Később bármikor módosíthatod magából az elemből.',ru:'Знаете ли вы? При импорте расписания церкви вы выбираете для каждой строки: показать в день календаря или как сноску под месяцем? Так вы остаётесь в курсе, например, отпуска коллеги, не загромождая свой календарь. Изменить это можно в любой момент из самого элемента.',it:'Lo sapevi? Quando importi la pianificazione della chiesa scegli per ogni riga: nel giorno del calendario, o come nota a piè di pagina sotto il mese? Così resti informato, ad esempio, sulle ferie di un collega senza affollare il tuo calendario. Puoi sempre cambiarlo in seguito dall\'elemento stesso.',pt:'Sabia que ao importar a programação da igreja escolhe por linha: no próprio dia do calendário, ou como nota de rodapé sob o mês? Assim fica a par, por ex., das férias de um colega sem que o seu calendário fique sobrecarregado. Pode sempre alterar depois a partir do próprio item.'}
 ];
 // Rotation: same tip stays put all day (tipsLastDate/tipsLastIndex), picked
 // fresh - and different from yesterday's, when there's more than one tip -
@@ -22975,12 +22978,35 @@ var _gpReviewItems=null;
 // couldn't be parsed with confidence are flagged "onduidelijk" rather than
 // silently guessed, so the person doing the import can decide whether to
 // still include them.
+// Per-row "show on the day" (calendar chip) vs "footnote only" mode chosen
+// during import review. Pre-seeded from the same keyword heuristic used
+// everywhere else (gpIsAbsence) so absences default to footnote-only and
+// everything else defaults to calendar - matching item.showInDays' own
+// undefined-safe default. Kept as a module-level array (not DOM state)
+// so confirmGemeentePlanningImportReview can read it directly.
+var _gpReviewShowInDays=null;
+function gpModeBtnStyle(active){
+  return 'font-size:9.5px;font-weight:700;padding:3px 7px;border-radius:6px;border:none;cursor:pointer;white-space:nowrap;background:'+(active?'var(--brand)':'var(--surface2)')+';color:'+(active?'#fff':'var(--text3)')+'';
+}
+function gpSetRowMode(idx,showInDays){
+  if(!_gpReviewShowInDays)return;
+  _gpReviewShowInDays[idx]=showInDays;
+  var wrap=document.querySelector('.gp-mode-toggle[data-idx="'+idx+'"]');
+  if(!wrap)return;
+  var daysBtn=wrap.querySelector('[data-mode-btn="days"]');
+  var footBtn=wrap.querySelector('[data-mode-btn="footnote"]');
+  if(daysBtn)daysBtn.style.cssText=gpModeBtnStyle(showInDays);
+  if(footBtn)footBtn.style.cssText=gpModeBtnStyle(!showInDays);
+}
 function openGemeentePlanningImportReview(items){
   _gpReviewItems=items;
+  _gpReviewShowInDays=items.map(function(item){return !gpIsAbsence(item);});
   var existing={};
   (db.gemeentePlanning||[]).forEach(function(g){existing[gpDedupKey(g)]=true;});
   var titleLbl=tMap({nl:'Gemeente-planning gevonden',en:'Church schedule found',es:'Planificación de iglesia encontrada'});
-  var subLbl=tMap({nl:items.length+' regel(s) gevonden. Vink aan wat je wilt toevoegen aan de kalender. Dit telt niet mee als gewerkte uren - het is alleen ter info voor iedereen.',en:items.length+' row(s) found. Check what you want to add to the calendar. This does not count as worked hours - awareness only, for everyone.',es:items.length+' fila(s) encontradas. Marca lo que quieras añadir al calendario. Esto no cuenta como horas trabajadas - es solo informativo para todos.'});
+  var subLbl=tMap({nl:items.length+' regel(s) gevonden. Vink aan wat je wilt toevoegen aan de kalender, en kies per regel Dag (op de kalenderdag) of Voetnoot (alleen als info onder de maand). Dit telt niet mee als gewerkte uren - het is alleen ter info voor iedereen.',en:items.length+' row(s) found. Check what you want to add to the calendar, and pick Day (shown on the calendar day) or Footnote (info only, listed under the month) for each row. This does not count as worked hours - awareness only, for everyone.',es:items.length+' fila(s) encontradas. Marca lo que quieras añadir al calendario, y elige Día (se muestra en el día del calendario) o Nota (solo información, debajo del mes) para cada fila. Esto no cuenta como horas trabajadas - es solo informativo para todos.'});
+  var dayLbl=tMap({nl:'Dag',en:'Day',es:'Día'});
+  var footLbl=tMap({nl:'Voetnoot',en:'Footnote',es:'Nota'});
   var h='<div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>';
   h+='<div style="font-size:15px;font-weight:700;margin-bottom:4px">'+titleLbl+'</div>';
   h+='<div style="font-size:12px;color:var(--text2);margin-bottom:12px">'+subLbl+'</div>';
@@ -22988,14 +23014,23 @@ function openGemeentePlanningImportReview(items){
   items.forEach(function(item,i){
     var already=existing[gpDedupKey(item)];
     var dateTxt=gpFormatRange(item);
-    h+='<label style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;'+(i>0?'border-top:1px solid var(--border);':'')+'cursor:'+(already?'default':'pointer')+';opacity:'+(already?'.5':'1')+'">'
+    var showInDays=_gpReviewShowInDays[i];
+    h+='<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;'+(i>0?'border-top:1px solid var(--border);':'')+'">';
+    h+='<label style="display:flex;align-items:flex-start;gap:8px;flex:1;min-width:0;cursor:'+(already?'default':'pointer')+';opacity:'+(already?'.5':'1')+'">'
       +'<input type="checkbox" class="gp-import-chk" data-idx="'+i+'" '+(already?'disabled':'checked')+' style="width:16px;height:16px;flex-shrink:0;margin-top:2px">'
-      +'<span style="font-size:13px;flex:1">'
+      +'<span style="font-size:13px;flex:1;min-width:0">'
       +'<span style="font-weight:600">'+escapeHtml(item.titel)+'</span>'
       +(item.onduidelijkeDatum?' <span style="font-size:10px;background:var(--amber);color:#fff;border-radius:8px;padding:1px 6px;margin-left:4px">'+tMap({nl:'onduidelijk',en:'unclear',es:'no claro'})+'</span>':'')
       +'<br><span style="color:var(--text3);font-size:12px">'+escapeHtml(dateTxt)+(item.tijd?' · '+item.tijd:'')+(item.verantwoordelijke?' · '+escapeHtml(item.verantwoordelijke):'')+'</span>'
       +(already?' <span style="color:var(--text3)">&middot; '+tMap({nl:'al toegevoegd',en:'already added',es:'ya añadido'})+'</span>':'')
       +'</span></label>';
+    if(!already){
+      h+='<div class="gp-mode-toggle" data-idx="'+i+'" style="display:flex;flex-shrink:0;gap:3px;margin-top:2px">'
+        +'<button type="button" data-mode-btn="days" onclick="gpSetRowMode('+i+',true)" style="'+gpModeBtnStyle(showInDays)+'">'+dayLbl+'</button>'
+        +'<button type="button" data-mode-btn="footnote" onclick="gpSetRowMode('+i+',false)" style="'+gpModeBtnStyle(!showInDays)+'">'+footLbl+'</button>'
+        +'</div>';
+    }
+    h+='</div>';
   });
   h+='</div>';
   h+='<div style="display:flex;gap:8px;margin-top:16px">';
@@ -23021,6 +23056,7 @@ function confirmGemeentePlanningImportReview(){
       datumEind:item.datumEind,
       tijd:item.tijd,
       onduidelijkeDatum:!!item.onduidelijkeDatum,
+      showInDays:(_gpReviewShowInDays&&_gpReviewShowInDays[i]===false)?false:true,
       bron:'pdf-import'
     };
     touch(rec);
@@ -23028,29 +23064,89 @@ function confirmGemeentePlanningImportReview(){
     added++;
   });
   _gpReviewItems=null;
+  _gpReviewShowInDays=null;
   save();
   showImportResult('✓ '+added+' '+tMap({nl:'planningsregel(s) toegevoegd aan de kalender!',en:'schedule row(s) added to the calendar!',es:'fila(s) de planificación añadidas al calendario!'}));
 }
-// Returns every gemeentePlanning item whose date range covers ds (a
-// yyyy-mm-dd string) - used by the calendar's day/month/year rendering to
-// show these as a distinct, non-hour-counted marker alongside real entries
-// and planned activities. Respects the two display toggles added after
-// user feedback that a big PDF import floods the calendar: "show gemeente
-// planning at all" and, within that, "show the absence/holiday rows too"
-// (auto-detected by keyword - see gpIsAbsence). Both default to on/visible
-// when the setting is unset, so existing users see no change until they
-// deliberately turn something off.
-function gemeentePlanningForDay(ds){
-  if(!ds||!db.gemeentePlanning)return[];
+// Applies the two global display toggles (show gemeente planning at all,
+// and within that, show colleagues' absence rows) to the raw
+// db.gemeentePlanning array. Shared base for both the per-day view
+// (gemeentePlanningForDay) and the per-month footnote view
+// (gemeentePlanningFootnotesForMonth) so a setting change affects both
+// consistently. Both toggles default to on/visible when unset, so existing
+// users see no change until they deliberately turn something off.
+function gpVisibleAll(){
+  if(!db.gemeentePlanning)return[];
   if(db.settings&&db.settings.showGemeentePlanning===false)return[];
   var hideAbs=db.settings&&db.settings.showGpAbsences===false;
   return db.gemeentePlanning.filter(function(g){
-    if(!g.datumStart)return false;
-    var end=g.datumEind||g.datumStart;
-    if(ds<g.datumStart||ds>end)return false;
     if(hideAbs&&gpIsAbsence(g))return false;
     return true;
   });
+}
+// Returns every visible gemeentePlanning item whose date range covers ds (a
+// yyyy-mm-dd string) AND is flagged to show on the day itself (showInDays
+// !== false) - used by the calendar's day/month/year rendering to show
+// these as a distinct, non-hour-counted marker alongside real entries and
+// planned activities. Items flagged showInDays===false (chosen at import,
+// or flipped later from the detail popup) are deliberately excluded here -
+// they only appear in the monthly footnote list instead, to keep individual
+// days uncluttered while still surfacing the info (see
+// gemeentePlanningFootnotesForMonth).
+function gemeentePlanningForDay(ds){
+  if(!ds)return[];
+  return gpVisibleAll().filter(function(g){
+    if(!g.datumStart)return false;
+    var end=g.datumEind||g.datumStart;
+    if(ds<g.datumStart||ds>end)return false;
+    if(g.showInDays===false)return false;
+    return true;
+  });
+}
+// The footnote counterpart of gemeentePlanningForDay: every visible item
+// flagged showInDays===false whose range overlaps the given month (mo is
+// 0-indexed, matching JS Date). These render in a compact list attached to
+// the month itself (month view, Home's mini calendar, a tap-through summary
+// in year view) instead of inside individual day cells.
+function gemeentePlanningFootnotesForMonth(yr,mo){
+  var monthStart=yr+'-'+String(mo+1).padStart(2,'0')+'-01';
+  var monthEnd=ymdLocal(new Date(yr,mo+1,0));
+  return gpVisibleAll().filter(function(g){
+    if(g.showInDays!==false)return false;
+    if(!g.datumStart)return false;
+    var end=g.datumEind||g.datumStart;
+    return end>=monthStart&&g.datumStart<=monthEnd;
+  }).sort(function(a,b){return (a.datumStart||'').localeCompare(b.datumStart||'');});
+}
+function gpFootnoteDateLabel(item){
+  if(!item||!item.datumStart)return'';
+  try{
+    var s=parseLocalDate(item.datumStart).toLocaleDateString(getLocale(),{day:'numeric',month:'short'});
+    if(item.datumEind&&item.datumEind!==item.datumStart){
+      var e=parseLocalDate(item.datumEind).toLocaleDateString(getLocale(),{day:'numeric',month:'short'});
+      return s+'–'+e;
+    }
+    return s;
+  }catch(e){return item.datumStart;}
+}
+// Compact "this month's church planning" block - the footnote counterpart
+// of the per-day dots/chips. Renders nothing when there's nothing to show
+// (empty string), so callers can just concatenate it without an extra
+// length check.
+function renderGpFootnoteBlock(yr,mo){
+  var items=gemeentePlanningFootnotesForMonth(yr,mo);
+  if(!items.length)return'';
+  var h='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)">';
+  h+='<div style="font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px">'+tMap({nl:'Gemeente-planning deze maand',en:'Church schedule this month',es:'Planificación de iglesia este mes',fr:'Planning de l’église ce mois-ci',de:'Gemeindeplan diesen Monat',ro:'Planificarea bisericii luna aceasta',hu:'Gyülekezeti terv ebben a hónapban',ru:'Расписание церкви в этом месяце',it:'Pianificazione della chiesa questo mese',pt:'Programação da igreja este mês'})+'</div>';
+  items.forEach(function(item){
+    h+='<div onclick="openGemeentePlanningDetail('+item.id+')" style="display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer">';
+    h+='<div style="width:8px;height:8px;border-radius:50%;background:'+gpItemColor(item)+';flex-shrink:0"></div>';
+    h+='<div style="font-size:12.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:'+(item.accented?'var(--text)':'var(--text3)')+'">'+escapeHtml(item.titel)+'</div>';
+    h+='<div style="font-size:11px;color:var(--text3);flex-shrink:0">'+gpFootnoteDateLabel(item)+'</div>';
+    h+='</div>';
+  });
+  h+='</div>';
+  return h;
 }
 // Keyword-based detection of "someone else's absence" rows (vacation/leave/
 // sick) within the imported planning, so the "hide colleagues' absences"
@@ -23085,6 +23181,19 @@ function toggleGpAccent(id){
   openGemeentePlanningDetail(id);
   if(typeof rerenderCurrentScreen==='function')rerenderCurrentScreen();
 }
+// Moves an already-imported item between "shown on the calendar day" and
+// "footnote only under the month" after the fact - same toggle idiom as
+// toggleGpAccent, mirrors the per-row choice offered at import time.
+function toggleGpShowInDays(id){
+  var item=(db.gemeentePlanning||[]).find(function(g){return g.id==id;});
+  if(!item)return;
+  item.showInDays=item.showInDays===false;
+  touch(item);
+  save();
+  openGemeentePlanningDetail(id);
+  if(typeof rerenderCurrentScreen==='function')rerenderCurrentScreen();
+  if(typeof fcRefreshFull==='function')fcRefreshFull();
+}
 function openGemeentePlanningDetail(id){
   var item=(db.gemeentePlanning||[]).find(function(g){return g.id==id;});
   if(!item)return;
@@ -23100,6 +23209,9 @@ function openGemeentePlanningDetail(id){
   h+='<div style="font-size:11px;color:var(--text3);margin-bottom:14px">'+tMap({nl:'Uit een geïmporteerde gemeente-planning - telt niet mee als gewerkte uren.',en:'From an imported church schedule - does not count as worked hours.',es:'De una planificación de iglesia importada - no cuenta como horas trabajadas.'})+'</div>';
   var pinLbl=item.accented?tMap({nl:'Niet meer laten opvallen',en:'Unpin (make gray again)',es:'Dejar de destacar'}):tMap({nl:'Laten opvallen in de kalender',en:'Pin - make it stand out',es:'Destacar en el calendario'});
   h+='<button class="btn" onclick="toggleGpAccent('+item.id+')" style="width:100%;margin-bottom:8px'+(item.accented?';background:var(--brand-light);color:var(--brand);border-color:var(--brand)':'')+'"><svg width="14" height="14" style="margin-right:4px;vertical-align:-2px"><use href="#ico-pin"/></svg>'+pinLbl+'</button>';
+  var isFootnote=item.showInDays===false;
+  var modeLbl=isFootnote?tMap({nl:'Toon op de kalenderdag',en:'Show on the calendar day',es:'Mostrar en el día del calendario'}):tMap({nl:'Verplaats naar voetnoot (niet op de dag)',en:'Move to footnote (not on the day)',es:'Mover a nota (no en el día)'});
+  h+='<button class="btn" onclick="toggleGpShowInDays('+item.id+')" style="width:100%;margin-bottom:8px"><svg width="14" height="14" style="margin-right:4px;vertical-align:-2px"><use href="#ico-calendar"/></svg>'+modeLbl+'</button>';
   h+='<button class="btn" onclick="deleteGemeentePlanningItem('+item.id+')" style="width:100%;color:var(--danger)">'+t('delete_btn')+'</button>';
   showModal(h);
 }
@@ -26069,6 +26181,15 @@ function renderHomeCalendar(){
   h+='<div class="cal-month-label" onclick="openMonthPicker()" style="cursor:pointer;display:flex;align-items:center;gap:4px">'+monthLabel+' <svg width="11" height="11" style="opacity:.5"><use href="#ico-chevron-down"/></svg></div>';
   h+='<button class="cal-nav-btn" onclick="calNext();renderHomeCalendar()">\u203a</button>';
   h+='</div>';
+  // Same quick Gemeente on/off as the full-screen calendar header
+  // (fcToggleGpVisibility) - shares db.settings.showGemeentePlanning, so
+  // this stays visible and works from the dashboard's small calendar too,
+  // not just in full-screen mode.
+  var homeGpOn=db.settings.showGemeentePlanning!==false;
+  var homeGpLbl=tMap({nl:'Gemeente',en:'Church',es:'Iglesia',fr:'\u00c9glise',de:'Gemeinde',ro:'Biseric\u0103',hu:'Gy\u00fclekezet',ru:'\u0426\u0435\u0440\u043a\u043e\u0432\u044c',it:'Chiesa',pt:'Igreja'});
+  h+='<div style="padding:0 0 6px;display:flex;justify-content:flex-end">';
+  h+='<button type="button" class="btn sm" onclick="homeToggleGpVisibility()" style="padding:4px 8px;font-size:11px;display:flex;align-items:center;gap:5px;'+(homeGpOn?'':'opacity:.5')+'"><span style="width:7px;height:7px;border-radius:50%;background:'+GEMEENTE_PLANNING_COLOR+';flex-shrink:0"></span>'+homeGpLbl+'</button>';
+  h+='</div>';
   h+='<div class="cal-grid">';
   dayNames.forEach(function(d){h+='<div class="cal-header">'+d+'</div>';});
   for(var i=0;i<startDow;i++)h+='<div></div>';
@@ -26097,6 +26218,7 @@ function renderHomeCalendar(){
     h+='</div>';
   }
   h+='</div>';
+  h+=renderGpFootnoteBlock(calYear,calMonth);
   if(dayPanelTarget){
     // Redirected case (kantoor's right column): the grid gets its own
     // closed card and is flushed to #home-calendar-grid right away, then h
@@ -26284,6 +26406,14 @@ function fcToggleGpVisibility(){
   db.settings.showGemeentePlanning=db.settings.showGemeentePlanning===false;
   save();
   fcRefreshFull();
+}
+// Same toggle as fcToggleGpVisibility but for the Home dashboard's small
+// calendar, which isn't inside #full-cal-overlay so it re-renders itself
+// directly instead of going through fcRefreshFull().
+function homeToggleGpVisibility(){
+  db.settings.showGemeentePlanning=db.settings.showGemeentePlanning===false;
+  save();
+  renderHomeCalendar();
 }
 function fcToggleSearch(){
   fcSearchOpen=!fcSearchOpen;
@@ -26523,6 +26653,7 @@ function renderFcMonthSection(yr,mo){
     h+='</div>';
   }
   h+='</div>'; // /cal-grid
+  h+=renderGpFootnoteBlock(yr,mo);
   h+='<div class="fc-day-detail-slot" data-for-month="'+yr+'-'+mo+'">';
   if(fcSelectedDate){
     var sp=fcSelectedDate.split('-');
@@ -26737,7 +26868,17 @@ function renderFcYearSection(yr){
   h+='<div class="fc-year-months-grid" style="box-sizing:border-box;width:100%">';
   for(var m=0;m<12;m++){
     h+='<div onclick="fcJumpMonth('+m+','+yr+')" data-fc-month="'+m+'" style="cursor:pointer;min-width:0">';
-    h+='<div class="fc-month-title" style="color:'+((yr===now.getFullYear()&&m===now.getMonth())?'var(--brand)':'var(--text)')+'">'+MONTHS_FULL[m]+'</div>';
+    h+='<div class="fc-month-title" style="display:flex;align-items:center;gap:5px;color:'+((yr===now.getFullYear()&&m===now.getMonth())?'var(--brand)':'var(--text)')+'"><span>'+MONTHS_FULL[m]+'</span>';
+    // Footnote-only items don't get a day dot in the mini grid (that's the
+    // point - they're deliberately off the day cells), so the mini-month is
+    // otherwise silent about them. Too cramped here for the full text list
+    // renderGpFootnoteBlock builds for month/Home view, so instead: a small
+    // tappable count badge that opens a popup with that month's list.
+    var yrFootnotes=gemeentePlanningFootnotesForMonth(yr,m);
+    if(yrFootnotes.length){
+      h+='<span onclick="event.stopPropagation();fcOpenMonthFootnotesPopup('+yr+','+m+')" style="font-size:9px;font-weight:700;background:var(--surface2);color:var(--text3);border-radius:8px;padding:1px 5px;cursor:pointer">'+yrFootnotes.length+'</span>';
+    }
+    h+='</div>';
     h+=renderMiniMonthGrid(yr,m);
     h+='</div>';
   }
@@ -26802,6 +26943,26 @@ function renderMiniMonthGrid(yr,mo){
   return h;
 }
 function fcJumpMonth(m,yr){fcMonth=m;fcYear=yr||fcYear;fcView='month';fcSelectedDate=null;fcLoadedMonths=null;fcRefreshFull();}
+// Compact year-view equivalent of renderGpFootnoteBlock - the mini-month
+// grid has no room for a text list, so this is a popup reached by tapping
+// the small count badge next to a month's name (see renderFcYearSection).
+function fcOpenMonthFootnotesPopup(yr,mo){
+  var items=gemeentePlanningFootnotesForMonth(yr,mo);
+  var h='<div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>';
+  h+='<div style="font-size:14px;font-weight:700;margin-bottom:10px">'+MONTHS_FULL[mo]+' '+yr+'</div>';
+  if(!items.length){
+    h+='<div style="font-size:13px;color:var(--text3)">'+tMap({nl:'Geen extra info deze maand.',en:'No extra info this month.',es:'Sin información adicional este mes.'})+'</div>';
+  }else{
+    items.forEach(function(item,i){
+      h+='<div onclick="openGemeentePlanningDetail('+item.id+')" style="display:flex;align-items:center;gap:8px;padding:7px 0;'+(i>0?'border-top:1px solid var(--border);':'')+'cursor:pointer">'
+        +'<div style="width:8px;height:8px;border-radius:50%;background:'+gpItemColor(item)+';flex-shrink:0"></div>'
+        +'<div style="font-size:13px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:'+(item.accented?'var(--text)':'var(--text3)')+'">'+escapeHtml(item.titel)+'</div>'
+        +'<div style="font-size:11px;color:var(--text3);flex-shrink:0">'+gpFootnoteDateLabel(item)+'</div>'
+        +'</div>';
+    });
+  }
+  showModal(h);
+}
 
 
 function renderAgendaCalStrip(){
@@ -27592,7 +27753,11 @@ function showModal(content){
   if(existing) existing.remove();
   var overlay = document.createElement('div');
   overlay.id = 'plan-modal-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:flex;align-items:flex-end;justify-content:center';
+  // If a full-screen overlay (e.g. #full-cal-overlay, z-index:9999) is open,
+  // this modal needs to render above it - same stacking issue documented at
+  // fcOpenYearDayPopup and presenter mode's customize popup.
+  var aboveFullscreen = document.getElementById('full-cal-overlay') ? 10000 : 200;
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:'+aboveFullscreen+';display:flex;align-items:flex-end;justify-content:center';
   overlay.innerHTML = '<div style="background:var(--surface);border-radius:16px 16px 0 0;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:20px">' + content + '</div>';
   overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
   document.body.appendChild(overlay);
@@ -27608,7 +27773,8 @@ function showModalCentered(content){
   if(existing) existing.remove();
   var overlay = document.createElement('div');
   overlay.id = 'plan-modal-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto';
+  var aboveFullscreen = document.getElementById('full-cal-overlay') ? 10000 : 200;
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:'+aboveFullscreen+';display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto';
   overlay.innerHTML = '<div style="background:var(--surface);border-radius:16px;width:100%;max-width:420px;max-height:calc(100vh - 32px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:20px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">' + content + '</div>';
   overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
   document.body.appendChild(overlay);
