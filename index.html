@@ -23141,39 +23141,119 @@ function gpSetRowMode(idx,showInDays){
   if(daysBtn)daysBtn.style.cssText=gpModeBtnStyle(showInDays);
   if(footBtn)footBtn.style.cssText=gpModeBtnStyle(!showInDays);
 }
+// Groups rows that share the exact same title (trimmed/case-normalized) -
+// a weekly recurring item like "Bidstond arbeiders via Zoom" or
+// "Bestuursvergadering via Zoom" otherwise floods a full-year import with
+// dozens of near-identical rows. A group is collapsed by default; a title
+// that only appears once renders as a normal standalone row, unchanged.
+function gpReviewGroupKey(item){
+  return (item.titel||'').trim().toLowerCase().replace(/\s+/g,' ');
+}
+function gpBuildReviewGroups(items){
+  var order=[],map={};
+  (items||[]).forEach(function(item,i){
+    var key=gpReviewGroupKey(item);
+    if(!map[key]){map[key]={indices:[],titel:item.titel};order.push(key);}
+    map[key].indices.push(i);
+  });
+  return order.map(function(key){return map[key];});
+}
+// Shared row markup, reused for both standalone rows and rows nested inside
+// a collapsed group - includes the Dag/Voetnoot toggle plus, on rows not
+// already imported, small Edit/Split icon buttons. Those exist because PDF
+// table extraction sometimes misjudges where one row ends and the next
+// begins (a wrapped continuation line gets glued onto the wrong row), which
+// can silently merge two real agenda items into one garbled title - editing
+// lets the person fix that on the spot instead of the import being wrong or
+// blocked entirely.
+function gpReviewRowHtml(item,i,already){
+  var dateTxt=gpFormatRange(item);
+  var showInDays=_gpReviewShowInDays[i];
+  var dayLbl=tMap({nl:'Dag',en:'Day',es:'Día'});
+  var footLbl=tMap({nl:'Voetnoot',en:'Footnote',es:'Nota'});
+  var editLbl=tMap({nl:'Bewerken',en:'Edit',es:'Editar'});
+  var splitLbl=tMap({nl:'Splitsen - 2 gebeurtenissen samengevoegd?',en:'Split - two events merged?',es:'Dividir - ¿dos eventos combinados?'});
+  var h='<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0">';
+  h+='<label style="display:flex;align-items:flex-start;gap:8px;flex:1;min-width:0;cursor:'+(already?'default':'pointer')+';opacity:'+(already?'.5':'1')+'">'
+    +'<input type="checkbox" class="gp-import-chk" data-idx="'+i+'" '+(already?'disabled':'checked')+' style="width:16px;height:16px;flex-shrink:0;margin-top:2px">'
+    +'<span style="font-size:13px;flex:1;min-width:0">'
+    +'<span style="font-weight:600">'+escapeHtml(item.titel)+'</span>'
+    +(item.onduidelijkeDatum?' <span style="font-size:10px;background:var(--amber);color:#fff;border-radius:8px;padding:1px 6px;margin-left:4px">'+tMap({nl:'onduidelijk',en:'unclear',es:'no claro'})+'</span>':'')
+    +'<br><span style="color:var(--text3);font-size:12px">'+escapeHtml(dateTxt)+(item.tijd?' · '+item.tijd:'')+(item.verantwoordelijke?' · '+escapeHtml(item.verantwoordelijke):'')+'</span>'
+    +(already?' <span style="color:var(--text3)">&middot; '+tMap({nl:'al toegevoegd',en:'already added',es:'ya añadido'})+'</span>':'')
+    +'</span></label>';
+  if(!already){
+    h+='<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;margin-top:2px">';
+    h+='<div class="gp-mode-toggle" data-idx="'+i+'" style="display:flex;gap:3px">'
+      +'<button type="button" data-mode-btn="days" onclick="gpSetRowMode('+i+',true)" style="'+gpModeBtnStyle(showInDays)+'">'+dayLbl+'</button>'
+      +'<button type="button" data-mode-btn="footnote" onclick="gpSetRowMode('+i+',false)" style="'+gpModeBtnStyle(!showInDays)+'">'+footLbl+'</button>'
+      +'</div>';
+    h+='<div style="display:flex;gap:8px">'
+      +'<button type="button" onclick="gpEditReviewRow('+i+')" title="'+editLbl+'" style="border:none;background:none;color:var(--text3);cursor:pointer;padding:2px;display:flex"><svg width="13" height="13"><use href="#ico-edit"/></svg></button>'
+      +'<button type="button" onclick="gpSplitReviewRow('+i+')" title="'+splitLbl+'" style="border:none;background:none;color:var(--text3);cursor:pointer;padding:2px;display:flex"><svg width="13" height="13"><use href="#ico-copy"/></svg></button>'
+      +'</div>';
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+// Which groups are currently expanded - keyed by position in the groups
+// array (stable within one render pass), reset fresh each time the review
+// screen is opened for a new import.
+var _gpReviewOpenGroups={};
 function openGemeentePlanningImportReview(items){
   _gpReviewItems=items;
   _gpReviewShowInDays=items.map(function(item){return !gpIsAbsence(item);});
+  _gpReviewOpenGroups={};
+  gpRenderReviewModal();
+}
+function gpRenderReviewModal(){
+  var items=_gpReviewItems||[];
   var existing={};
   (db.gemeentePlanning||[]).forEach(function(g){existing[gpDedupKey(g)]=true;});
+  var groups=gpBuildReviewGroups(items);
   var titleLbl=tMap({nl:'Gemeente-planning gevonden',en:'Church schedule found',es:'Planificación de iglesia encontrada'});
-  var subLbl=tMap({nl:items.length+' regel(s) gevonden. Vink aan wat je wilt toevoegen aan de kalender, en kies per regel Dag (op de kalenderdag) of Voetnoot (alleen als info onder de maand). Dit telt niet mee als gewerkte uren - het is alleen ter info voor iedereen.',en:items.length+' row(s) found. Check what you want to add to the calendar, and pick Day (shown on the calendar day) or Footnote (info only, listed under the month) for each row. This does not count as worked hours - awareness only, for everyone.',es:items.length+' fila(s) encontradas. Marca lo que quieras añadir al calendario, y elige Día (se muestra en el día del calendario) o Nota (solo información, debajo del mes) para cada fila. Esto no cuenta como horas trabajadas - es solo informativo para todos.'});
+  var subLbl=tMap({nl:items.length+' regel(s) gevonden. Vink aan wat je wilt toevoegen, en kies per regel Dag (op de kalenderdag) of Voetnoot (alleen als info onder de maand). Terugkerende activiteiten staan gegroepeerd - tik om te openen. Zijn 2 gebeurtenissen per ongeluk samengevoegd in 1 regel? Bewerk (potlood) of splits (kopieer) de regel. Dit telt niet mee als gewerkte uren.',en:items.length+' row(s) found. Check what you want to add, and pick Day (shown on the calendar day) or Footnote (info only, listed under the month) for each row. Recurring activities are grouped - tap to open. Did two events accidentally merge into one row? Edit (pencil) or split (copy) the row. This does not count as worked hours.',es:items.length+' fila(s) encontradas. Marca lo que quieras añadir, y elige Día (se muestra en el día del calendario) o Nota (solo información, debajo del mes) para cada fila. Las actividades recurrentes están agrupadas - toca para abrir. ¿Se combinaron 2 eventos por error en una fila? Edita (lápiz) o divide (copiar) la fila. Esto no cuenta como horas trabajadas.'});
+  var selAllLbl=tMap({nl:'Alles',en:'All',es:'Todo'});
+  var selFutureLbl=tMap({nl:'Alleen toekomstige',en:'Only upcoming',es:'Solo futuros'});
   var dayLbl=tMap({nl:'Dag',en:'Day',es:'Día'});
   var footLbl=tMap({nl:'Voetnoot',en:'Footnote',es:'Nota'});
+  var groupLbl=tMap({nl:'Groep:',en:'Group:',es:'Grupo:'});
   var h='<div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>';
   h+='<div style="font-size:15px;font-weight:700;margin-bottom:4px">'+titleLbl+'</div>';
-  h+='<div style="font-size:12px;color:var(--text2);margin-bottom:12px">'+subLbl+'</div>';
+  h+='<div style="font-size:12px;color:var(--text2);margin-bottom:10px">'+subLbl+'</div>';
+  h+='<div style="display:flex;gap:6px;margin-bottom:10px">'
+    +'<button type="button" onclick="gpSelectAllReview()" style="font-size:11px;font-weight:600;padding:4px 9px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer">'+selAllLbl+'</button>'
+    +'<button type="button" onclick="gpSelectFutureReview()" style="font-size:11px;font-weight:600;padding:4px 9px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer">'+selFutureLbl+'</button>'
+    +'</div>';
   h+='<div style="max-height:50vh;overflow-y:auto;border:1px solid var(--border);border-radius:10px;padding:4px 10px">';
-  items.forEach(function(item,i){
-    var already=existing[gpDedupKey(item)];
-    var dateTxt=gpFormatRange(item);
-    var showInDays=_gpReviewShowInDays[i];
-    h+='<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;'+(i>0?'border-top:1px solid var(--border);':'')+'">';
-    h+='<label style="display:flex;align-items:flex-start;gap:8px;flex:1;min-width:0;cursor:'+(already?'default':'pointer')+';opacity:'+(already?'.5':'1')+'">'
-      +'<input type="checkbox" class="gp-import-chk" data-idx="'+i+'" '+(already?'disabled':'checked')+' style="width:16px;height:16px;flex-shrink:0;margin-top:2px">'
-      +'<span style="font-size:13px;flex:1;min-width:0">'
-      +'<span style="font-weight:600">'+escapeHtml(item.titel)+'</span>'
-      +(item.onduidelijkeDatum?' <span style="font-size:10px;background:var(--amber);color:#fff;border-radius:8px;padding:1px 6px;margin-left:4px">'+tMap({nl:'onduidelijk',en:'unclear',es:'no claro'})+'</span>':'')
-      +'<br><span style="color:var(--text3);font-size:12px">'+escapeHtml(dateTxt)+(item.tijd?' · '+item.tijd:'')+(item.verantwoordelijke?' · '+escapeHtml(item.verantwoordelijke):'')+'</span>'
-      +(already?' <span style="color:var(--text3)">&middot; '+tMap({nl:'al toegevoegd',en:'already added',es:'ya añadido'})+'</span>':'')
-      +'</span></label>';
-    if(!already){
-      h+='<div class="gp-mode-toggle" data-idx="'+i+'" style="display:flex;flex-shrink:0;gap:3px;margin-top:2px">'
-        +'<button type="button" data-mode-btn="days" onclick="gpSetRowMode('+i+',true)" style="'+gpModeBtnStyle(showInDays)+'">'+dayLbl+'</button>'
-        +'<button type="button" data-mode-btn="footnote" onclick="gpSetRowMode('+i+',false)" style="'+gpModeBtnStyle(!showInDays)+'">'+footLbl+'</button>'
-        +'</div>';
+  groups.forEach(function(group,gi){
+    var borderTop=gi>0?'border-top:1px solid var(--border);':'';
+    if(group.indices.length===1){
+      var i=group.indices[0];
+      var already=existing[gpDedupKey(items[i])];
+      h+='<div style="'+borderTop+'">'+gpReviewRowHtml(items[i],i,already)+'</div>';
+      return;
     }
+    var isOpen=!!_gpReviewOpenGroups[gi];
+    h+='<div style="'+borderTop+'">';
+    h+='<div style="display:flex;align-items:center;gap:8px;padding:8px 0;cursor:pointer" onclick="gpToggleReviewGroup('+gi+')">';
+    h+='<input type="checkbox" class="gp-group-all" data-group-idx="'+gi+'" checked onclick="event.stopPropagation();gpToggleReviewGroupAll('+gi+',this.checked)" style="width:16px;height:16px;flex-shrink:0">';
+    h+='<span style="flex:1;min-width:0;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escapeHtml(group.titel)+'</span>';
+    h+='<span style="font-size:10px;font-weight:700;background:var(--surface2);color:var(--text3);border-radius:8px;padding:2px 6px;flex-shrink:0">&times;'+group.indices.length+'</span>';
+    h+='<span id="gp-group-chev-'+gi+'" class="acc-chevron" style="'+(isOpen?'transform:rotate(180deg)':'')+'">⌄</span>';
     h+='</div>';
+    h+='<div style="padding:0 0 8px 24px;display:flex;align-items:center;gap:6px">'
+      +'<span style="font-size:10px;color:var(--text3)">'+groupLbl+'</span>'
+      +'<button type="button" onclick="gpBulkSetGroupMode('+gi+',true)" style="'+gpModeBtnStyle(false)+'">'+dayLbl+'</button>'
+      +'<button type="button" onclick="gpBulkSetGroupMode('+gi+',false)" style="'+gpModeBtnStyle(false)+'">'+footLbl+'</button>'
+      +'</div>';
+    h+='<div class="gp-group-body" data-group-idx="'+gi+'" style="display:'+(isOpen?'block':'none')+';padding-left:24px">';
+    group.indices.forEach(function(i){
+      var already=existing[gpDedupKey(items[i])];
+      h+=gpReviewRowHtml(items[i],i,already);
+    });
+    h+='</div></div>';
   });
   h+='</div>';
   h+='<div style="display:flex;gap:8px;margin-top:16px">';
@@ -23181,6 +23261,105 @@ function openGemeentePlanningImportReview(items){
   h+='<button class="btn primary" onclick="confirmGemeentePlanningImportReview()" style="flex:1">'+tMap({nl:'Toevoegen',en:'Add',es:'Añadir'})+'</button>';
   h+='</div>';
   showModal(h);
+}
+function gpToggleReviewGroup(gi){
+  _gpReviewOpenGroups[gi]=!_gpReviewOpenGroups[gi];
+  var body=document.querySelector('.gp-group-body[data-group-idx="'+gi+'"]');
+  var chev=document.getElementById('gp-group-chev-'+gi);
+  if(body)body.style.display=_gpReviewOpenGroups[gi]?'block':'none';
+  if(chev)chev.style.transform=_gpReviewOpenGroups[gi]?'rotate(180deg)':'';
+}
+function gpToggleReviewGroupAll(gi,checked){
+  var body=document.querySelector('.gp-group-body[data-group-idx="'+gi+'"]');
+  if(!body)return;
+  Array.prototype.slice.call(body.querySelectorAll('.gp-import-chk:not(:disabled)')).forEach(function(b){b.checked=checked;});
+}
+function gpBulkSetGroupMode(gi,showInDays){
+  var groups=gpBuildReviewGroups(_gpReviewItems||[]);
+  var group=groups[gi];
+  if(!group)return;
+  var existing={};
+  (db.gemeentePlanning||[]).forEach(function(g){existing[gpDedupKey(g)]=true;});
+  group.indices.forEach(function(i){
+    if(existing[gpDedupKey(_gpReviewItems[i])])return;
+    gpSetRowMode(i,showInDays);
+  });
+}
+// Quick bulk-select shortcuts above the list - importing a full year of a
+// recurring schedule means dozens of rows, and picking through them one by
+// one (or wanting only the ones still ahead) is tedious otherwise.
+function gpSelectAllReview(){
+  Array.prototype.slice.call(document.querySelectorAll('.gp-import-chk:not(:disabled)')).forEach(function(b){b.checked=true;});
+}
+function gpSelectFutureReview(){
+  var today=ymdLocal();
+  Array.prototype.slice.call(document.querySelectorAll('.gp-import-chk:not(:disabled)')).forEach(function(b){
+    var idx=parseInt(b.getAttribute('data-idx'),10);
+    var item=_gpReviewItems&&_gpReviewItems[idx];
+    var d=item&&(item.datumEind||item.datumStart);
+    b.checked=!!(d&&d>=today);
+  });
+}
+// Lets the person fix a garbled/merged row before it's ever written to
+// db.gemeentePlanning - see the comment on gpReviewRowHtml for why this can
+// happen. Cancel and Save both return to the review list unchanged in
+// structure (gpRenderReviewModal rebuilds from the current, possibly-edited
+// _gpReviewItems/_gpReviewShowInDays state).
+function gpEditReviewRow(idx){
+  var item=_gpReviewItems&&_gpReviewItems[idx];
+  if(!item)return;
+  var titleLbl=tMap({nl:'Regel bewerken',en:'Edit row',es:'Editar fila'});
+  var titelLbl=tMap({nl:'Titel',en:'Title',es:'Título'});
+  var fromLbl=tMap({nl:'Van',en:'From',es:'Desde'});
+  var toLbl=tMap({nl:'Tot (optioneel)',en:'Through (optional)',es:'Hasta (opcional)'});
+  var tijdLbl=tMap({nl:'Tijd (optioneel)',en:'Time (optional)',es:'Hora (opcional)'});
+  var verLbl=tMap({nl:'Verantwoordelijke (optioneel)',en:'Responsible (optional)',es:'Responsable (opcional)'});
+  var hintLbl=tMap({nl:'Kwam dit als één regel binnen terwijl het eigenlijk 2 losse gebeurtenissen zijn? Sluit dit venster en tik in de lijst op het kopieer-icoon om de regel te splitsen.',en:'Did this come in as one row while it\'s actually 2 separate events? Close this and tap the copy icon on the row to split it.',es:'¿Llegó como una sola fila cuando en realidad son 2 eventos distintos? Cierra esto y toca el icono de copiar en la fila para dividirla.'});
+  var inputStyle='width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;box-sizing:border-box';
+  var h='<div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>';
+  h+='<div style="font-size:15px;font-weight:700;margin-bottom:10px">'+titleLbl+'</div>';
+  h+='<div style="font-size:11px;color:var(--text3);background:var(--surface2);border-radius:8px;padding:8px 10px;margin-bottom:12px;line-height:1.4">'+hintLbl+'</div>';
+  h+='<div style="display:flex;flex-direction:column;gap:10px">';
+  h+='<div><label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px">'+titelLbl+'</label><input type="text" id="gpedit-titel" value="'+escapeHtml(item.titel||'')+'" style="'+inputStyle+'"></div>';
+  h+='<div style="display:flex;gap:8px">';
+  h+='<div style="flex:1"><label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px">'+fromLbl+'</label><input type="date" id="gpedit-from" value="'+(item.datumStart||'')+'" style="'+inputStyle+'"></div>';
+  h+='<div style="flex:1"><label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px">'+toLbl+'</label><input type="date" id="gpedit-to" value="'+(item.datumEind||'')+'" style="'+inputStyle+'"></div>';
+  h+='</div>';
+  h+='<div><label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px">'+tijdLbl+'</label><input type="text" id="gpedit-tijd" placeholder="HH:MM" value="'+escapeHtml(item.tijd||'')+'" style="'+inputStyle+'"></div>';
+  h+='<div><label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px">'+verLbl+'</label><input type="text" id="gpedit-ver" value="'+escapeHtml(item.verantwoordelijke||'')+'" style="'+inputStyle+'"></div>';
+  h+='</div>';
+  h+='<div style="display:flex;gap:8px;margin-top:16px">';
+  h+='<button class="btn" onclick="gpRenderReviewModal()" style="flex:1">'+t('cancel_btn')+'</button>';
+  h+='<button class="btn primary" onclick="gpSaveReviewRowEdit('+idx+')" style="flex:1">'+t('save_btn')+'</button>';
+  h+='</div>';
+  showModal(h);
+}
+function gpSaveReviewRowEdit(idx){
+  var item=_gpReviewItems&&_gpReviewItems[idx];
+  if(!item)return;
+  var titelEl=document.getElementById('gpedit-titel');
+  var fromEl=document.getElementById('gpedit-from');
+  var toEl=document.getElementById('gpedit-to');
+  var tijdEl=document.getElementById('gpedit-tijd');
+  var verEl=document.getElementById('gpedit-ver');
+  var titel=titelEl&&titelEl.value.trim();
+  if(titel)item.titel=titel;
+  if(fromEl&&fromEl.value)item.datumStart=fromEl.value;
+  item.datumEind=(toEl&&toEl.value)?toEl.value:item.datumStart;
+  item.tijd=tijdEl?tijdEl.value.trim():item.tijd;
+  item.verantwoordelijke=verEl?verEl.value.trim():item.verantwoordelijke;
+  item.onduidelijkeDatum=false;
+  gpRenderReviewModal();
+}
+// Splits a merged row: duplicates it in place and jumps straight into
+// editing the new copy, so the person can trim the original down to event 1
+// and retitle/redate the copy as event 2 (or vice versa).
+function gpSplitReviewRow(idx){
+  if(!_gpReviewItems||!_gpReviewItems[idx])return;
+  var copy=Object.assign({},_gpReviewItems[idx]);
+  _gpReviewItems.splice(idx+1,0,copy);
+  if(_gpReviewShowInDays)_gpReviewShowInDays.splice(idx+1,0,_gpReviewShowInDays[idx]);
+  gpEditReviewRow(idx+1);
 }
 function confirmGemeentePlanningImportReview(){
   var checked=Array.prototype.slice.call(document.querySelectorAll('.gp-import-chk:checked'));
@@ -23279,8 +23458,17 @@ function gpFootnoteDateLabel(item){
 function renderGpFootnoteBlock(yr,mo){
   var items=gemeentePlanningFootnotesForMonth(yr,mo);
   if(!items.length)return'';
-  var h='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)">';
-  h+='<div style="font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px">'+tMap({nl:'Gemeente-planning deze maand',en:'Church schedule this month',es:'Planificación de iglesia este mes',fr:'Planning de l’église ce mois-ci',de:'Gemeindeplan diesen Monat',ro:'Planificarea bisericii luna aceasta',hu:'Gyülekezeti terv ebben a hónapban',ru:'Расписание церкви в этом месяце',it:'Pianificazione della chiesa questo mese',pt:'Programação da igreja este mês'})+'</div>';
+  // Own bordered box (not just a dashed top rule) so this reads as a
+  // distinct block instead of blending into whatever card sits right below
+  // it (e.g. the day-detail panel) - and an accordion, reusing the app's
+  // standard .cal-acc/toggleCalAcc pattern, so a long list of activities
+  // doesn't force everyone to scroll past it. Starts open: this is a small,
+  // directly-relevant list (this month only), not a long personal list like
+  // To-do/Gebedslijst, so collapsing it by default would just hide
+  // information people came here to see.
+  var h='<div class="cal-acc acc-open" style="margin-top:10px;border:1px solid var(--border);border-radius:10px;padding:10px 12px">';
+  h+='<div class="acc-header" onclick="toggleCalAcc(this)" style="cursor:pointer;padding:0;margin-bottom:0"><span class="acc-title"><span style="font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.03em">'+tMap({nl:'Gemeente-planning deze maand',en:'Church schedule this month',es:'Planificación de iglesia este mes',fr:'Planning de l’église ce mois-ci',de:'Gemeindeplan diesen Monat',ro:'Planificarea bisericii luna aceasta',hu:'Gyülekezeti terv ebben a hónapban',ru:'Расписание церкви в этом месяце',it:'Pianificazione della chiesa questo mese',pt:'Programação da igreja este mês'})+'</span></span><span class="acc-chevron">⌄</span></div>';
+  h+='<div class="acc-body">';
   items.forEach(function(item){
     h+='<div onclick="openGemeentePlanningDetail('+item.id+')" style="display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer">';
     h+='<div style="width:8px;height:8px;border-radius:50%;background:'+gpItemColor(item)+';flex-shrink:0"></div>';
@@ -23288,7 +23476,7 @@ function renderGpFootnoteBlock(yr,mo){
     h+='<div style="font-size:11px;color:var(--text3);flex-shrink:0">'+gpFootnoteDateLabel(item)+'</div>';
     h+='</div>';
   });
-  h+='</div>';
+  h+='</div></div>';
   return h;
 }
 // Keyword-based detection of "someone else's absence" rows (vacation/leave/
