@@ -1670,7 +1670,10 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
           <span class="acc-title"><span class="acc-icon"><svg><use href="#ico-database"/></svg></span><span data-i18n="data_card">Gegevens</span></span><span class="acc-chevron">⌄</span>
         </div>
         <div class="settings-item-body">
-        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:6px" data-i18n="import_card">Gegevens importeren</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)" data-i18n="import_card">Gegevens importeren</div>
+          <button type="button" onclick="openImportInfoModal()" title="?" style="border:none;background:var(--surface2);color:var(--text3);width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;flex-shrink:0"><svg width="10" height="10"><use href="#ico-info"/></svg></button>
+        </div>
         <div style="font-size:13px;color:var(--text3);margin-bottom:12px" data-i18n="import_hint">Sleep een CSV of JSON bestand hierin.</div>
         <div class="import-drop" id="import-drop"
           onclick="document.getElementById('import-file').click()"
@@ -22080,6 +22083,34 @@ function toggleDayCard(id){
 }
 
 // IMPORT / EXPORT
+// The (i) button next to "Gegevens importeren" - the dropzone silently
+// recognizes a growing pile of very different file shapes (this app's own
+// backup, a colleague's shared contact, the secretary's schedule export, an
+// old GK/GC report, an Excel activity export, a Bijbelstudies "Dossier"
+// workbook, a PDF member list or church schedule...), which isn't obvious
+// just from looking at the box. This spells out what it actually accepts so
+// people don't have to guess-and-check.
+function openImportInfoModal(){
+  var title=tMap({nl:'Wat kun je importeren?',en:'What can you import?',es:'¿Qué puedes importar?'});
+  var intro=tMap({nl:'De app herkent het bestandstype automatisch - je hoeft alleen te slepen of te kiezen. Wat je bijvoorbeeld kunt importeren:',en:'The app automatically recognizes the file type - just drag or pick it. What you can import, for example:',es:'La app reconoce automáticamente el tipo de archivo - solo tienes que arrastrarlo o elegirlo. Por ejemplo, puedes importar:'});
+  var rows=[
+    {icoLbl:'CSV',nl:'Je eigen geëxporteerde activiteitenlijst, of een Excel-export van je eerdere gegevens (bijv. een oud maandrapport aan het districtscomité).',en:'Your own exported activity list, or an Excel export of your earlier data (e.g. an old monthly report to the district committee).',es:'Tu propia lista de actividades exportada, o una exportación de Excel de tus datos anteriores (p. ej. un antiguo informe mensual al comité de distrito).'},
+    {icoLbl:'CSV',nl:'Een ledenlijst of "Dossier Bijbelstudies"-werkboek als contacten, met studiegeschiedenis.',en:'A member roster or "Bible Studies Dossier" workbook as contacts, with study history.',es:'Una lista de miembros o un libro de "Dosier de Estudios Bíblicos" como contactos, con historial de estudio.'},
+    {icoLbl:'JSON',nl:'Een volledige back-up (van jezelf), een contact dat een collega met je deelde, of een gemeente-planning die de secretaris/secretaresse exporteerde.',en:'A full backup (your own), a contact a colleague shared with you, or a church schedule exported by the secretary.',es:'Una copia de seguridad completa (propia), un contacto que un compañero compartió contigo, o una planificación de la iglesia exportada por el secretario/a.'},
+    {icoLbl:'PDF',nl:'Een gemeente-planning (activiteitenoverzicht) van de secretaris, of een PDF met ledennamen.',en:'A church schedule (activity overview) from the secretary, or a PDF with member names.',es:'Una planificación de la iglesia (calendario de actividades) del secretario, o un PDF con nombres de miembros.'}
+  ];
+  var h='<div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>';
+  h+='<div style="font-size:15px;font-weight:700;margin-bottom:8px">'+title+'</div>';
+  h+='<div style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.5">'+intro+'</div>';
+  rows.forEach(function(r,i){
+    h+='<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;'+(i>0?'border-top:1px solid var(--border);':'')+'">'
+      +'<span style="font-size:10px;font-weight:700;background:var(--surface2);color:var(--text3);border-radius:6px;padding:2px 6px;flex-shrink:0;margin-top:1px">'+r.icoLbl+'</span>'
+      +'<span style="font-size:13px;color:var(--text2);line-height:1.5">'+tMap(r)+'</span>'
+      +'</div>';
+  });
+  h+='<button class="btn full" style="margin-top:14px" onclick="closeModals()">'+t('close_btn')+'</button>';
+  showModal(h);
+}
 function handleImportDrop(e){e.preventDefault();document.getElementById('import-drop').classList.remove('over');const files=Array.prototype.slice.call(e.dataTransfer.files||[]);if(files.length)processImportFileList(files);}
 function handleImportFile(e){const files=Array.prototype.slice.call(e.target.files||[]);if(files.length)processImportFileList(files);}
 // Only the first of possibly several selected/dropped files used to ever get
