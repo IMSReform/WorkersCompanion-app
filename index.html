@@ -23311,6 +23311,8 @@ function openGemeentePlanningExportPicker(){
   h+='<button class="btn" onclick="closeModals()" style="flex:1">'+t('cancel_btn')+'</button>';
   h+='<button class="btn primary" onclick="confirmGemeentePlanningExport()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px"><svg width="14" height="14"><use href="#ico-share-ios"/></svg>'+tMap({nl:'Exporteren',en:'Export',es:'Exportar',fr:'Exporter',de:'Exportieren',ro:'Exportă',hu:'Exportálás',ru:'Экспорт',it:'Esporta',pt:'Exportar'})+'</button>';
   h+='</div>';
+  h+='<button class="btn full" style="margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px" onclick="confirmGemeentePlanningPdfExport()"><svg width="14" height="14"><use href="#ico-send"/></svg>'+tMap({nl:'Exporteren als PDF',en:'Export as PDF',es:'Exportar como PDF',fr:'Exporter en PDF',de:'Als PDF exportieren',ro:'Exportă ca PDF',hu:'Exportálás PDF-ként',ru:'Экспортировать как PDF',it:'Esporta come PDF',pt:'Exportar como PDF'})+'</button>';
+  h+='<div style="font-size:11px;color:var(--text3);margin-top:6px;text-align:center;line-height:1.4">'+tMap({nl:'Een leesbaar, gestileerd document met het logo — handig om te versturen.',en:'A readable, styled document with the logo — handy to send to people.',es:'Un documento legible y con estilo, con el logo — ideal para enviar a las personas.',fr:'Un document lisible et stylisé avec le logo — pratique à envoyer.',de:'Ein lesbares, gestaltetes Dokument mit Logo — praktisch zum Versenden.',ro:'Un document lizibil și stilizat cu sigla — ușor de trimis.',hu:'Olvasható, stílusos dokumentum a logóval — könnyen elküldhető.',ru:'Читаемый, оформленный документ с логотипом — удобно отправлять.',it:'Un documento leggibile e stilizzato con il logo — comodo da inviare.',pt:'Um documento legível e estilizado com o logótipo — fácil de enviar.'})+'</div>';
   showModal(h);
 }
 function confirmGemeentePlanningExport(){
@@ -23369,6 +23371,137 @@ function triggerGemeentePlanningExport(shareData,from,to){
     }
   }catch(e){}
   fallbackDownload();
+}
+// PDF variant of the schedule export above - same date-range/filter logic,
+// but instead of a structured JSON file for another zda app to import, this
+// produces a readable, letterhead-styled document (grouped by month, like
+// the reference planning PDFs the office already sends out) that the
+// secretary can print or share as-is. Renders in the app's own active
+// LANG (see orgHeaderHtml/ORG_NAME_LINES_BY_LANG - the logo+org-name block
+// already supports all 10 app languages), unlike the GC report which is
+// deliberately pinned to en/es regardless of LANG - this one is meant for
+// the secretary's own local audience, so it should read in whatever
+// language she already has the app set to.
+function confirmGemeentePlanningPdfExport(){
+  var fromEl=document.getElementById('gpexp-from');
+  var toEl=document.getElementById('gpexp-to');
+  if(!fromEl||!toEl||!fromEl.value||!toEl.value)return;
+  var from=fromEl.value,to=toEl.value;
+  if(to<from){var tmp=from;from=to;to=tmp;}
+  ensurePlanned();
+  var inRange=(db.planned||[]).filter(function(p){
+    return !p.completed&&!p.skipped&&p.datum&&p.datum>=from&&p.datum<=to;
+  });
+  var collapsed=collapseMultiDaySpans(inRange);
+  var items=collapsed.map(function(p){
+    return{
+      titel:activityTitle(p),
+      verantwoordelijke:(db.settings&&db.settings.naam)||'',
+      datumStart:p._multiDayFrom||p.datum,
+      datumEind:p._multiDayTo||p.datum,
+      tijd:p.time||''
+    };
+  }).sort(function(a,b){return (a.datumStart||'')<(b.datumStart||'')?-1:((a.datumStart||'')>(b.datumStart||'')?1:0);});
+  closeModals();
+  if(!items.length){
+    showImportResult(tMap({nl:'Geen geplande activiteiten gevonden in deze periode.',en:'No planned activities found in this period.',es:'No se encontraron actividades planificadas en este período.'}),true);
+    return;
+  }
+  triggerGemeentePlanningPdfExport(items,from,to);
+}
+function _gpPdfCapFirst(s){return s?s.charAt(0).toUpperCase()+s.slice(1):s;}
+// One row's date cell: a single day shows as "Weekday d MMMM" (plus a second
+// line with the time, if set); a collapsed multi-day span shows as a plain
+// "d MMM - d MMM" range with no weekday, matching how the reference PDF
+// distinguishes one-off dated items from vacation/absence-style ranges.
+function _gpPdfDateCell(item){
+  var sD=parseLocalDate(item.datumStart);
+  if(isNaN(sD.getTime()))return item.datumStart||'';
+  if(item.datumEind&&item.datumEind!==item.datumStart){
+    var eD=parseLocalDate(item.datumEind);
+    var sShort=sD.toLocaleDateString(getLocale(),{day:'numeric',month:'short'});
+    var eShort=eD.toLocaleDateString(getLocale(),{day:'numeric',month:'short'});
+    return _gpPdfCapFirst(sShort)+' - '+eShort;
+  }
+  var wday=_gpPdfCapFirst(sD.toLocaleDateString(getLocale(),{weekday:'long'}));
+  var dm=sD.toLocaleDateString(getLocale(),{day:'numeric',month:'long'});
+  var out=wday+' '+dm;
+  if(item.tijd)out+='<br><span style="font-size:7.5pt;color:#667">'+item.tijd+'</span>';
+  return out;
+}
+function triggerGemeentePlanningPdfExport(items,from,to){
+  var lang=(typeof LANG!=='undefined')?LANG:'nl';
+  var churchName=(db.settings&&db.settings.gemeente)||'';
+  var titleMain=tMap({nl:'Cronograma',en:'Schedule',es:'Cronograma',fr:'Planning',de:'Zeitplan',ro:'Program',hu:'Beosztás',ru:'Расписание',it:'Programma',pt:'Agenda'});
+  // "Cronograma" is the Spanish term the secretary asked for specifically
+  // (see the CHANGELOG/tip rename), so keep the Spanish title word as-is
+  // rather than the generic "Planificación" a literal per-language map
+  // would otherwise produce for es.
+  if(churchName)titleMain+=' '+churchName;
+  var fromD=parseLocalDate(from),toD=parseLocalDate(to);
+  var yrFrom=fromD.getFullYear(),yrTo=toD.getFullYear();
+  var titleSub=(yrFrom===yrTo)?String(yrFrom):(yrFrom+' - '+yrTo);
+  var colActiviteit=tMap({nl:'Activiteit',en:'Activity',es:'Actividad',fr:'Activité',de:'Aktivität',ro:'Activitate',hu:'Tevékenység',ru:'Мероприятие',it:'Attività',pt:'Atividade'});
+  var colVerantw=tMap({nl:'Verantwoordelijk',en:'Responsible',es:'Responsable',fr:'Responsable',de:'Verantwortlich',ro:'Responsabil',hu:'Felelős',ru:'Ответственный',it:'Responsabile',pt:'Responsável'});
+  var generatedOn=tMap({nl:'Gegenereerd op',en:'Generated on',es:'Generado el',fr:'Généré le',de:'Erstellt am',ro:'Generat la',hu:'Létrehozva',ru:'Сформировано',it:'Generato il',pt:'Gerado em'});
+  var today=new Date();
+  var dateStr=today.toLocaleDateString(getLocale(),{year:'numeric',month:'long',day:'numeric'});
+  // Group items by calendar month (of their start date) in chronological
+  // order, one table per month - same visual pattern as the reference
+  // "Planning Nederlands Veld" PDF (month header row, Activiteit +
+  // Verantwoordelijk columns).
+  var byMonth={};
+  var monthOrder=[];
+  items.forEach(function(item){
+    var d=parseLocalDate(item.datumStart);
+    var key=isNaN(d.getTime())?'?':(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
+    if(!byMonth[key]){byMonth[key]=[];monthOrder.push(key);}
+    byMonth[key].push(item);
+  });
+  monthOrder.sort();
+  var tablesHtml='';
+  monthOrder.forEach(function(key){
+    var rows=byMonth[key];
+    var sampleD=parseLocalDate(rows[0].datumStart);
+    var monthLbl=isNaN(sampleD.getTime())?key:_gpPdfCapFirst(sampleD.toLocaleDateString(getLocale(),{month:'long',year:'numeric'}));
+    tablesHtml+='<table class="gp-tbl"><thead><tr><th class="gp-th-date">'+monthLbl+'</th><th>'+colActiviteit+'</th><th>'+colVerantw+'</th></tr></thead><tbody>';
+    rows.forEach(function(item){
+      tablesHtml+='<tr><td class="gp-td-date">'+_gpPdfDateCell(item)+'</td><td>'+(item.titel||'')+'</td><td>'+(item.verantwoordelijke||'')+'</td></tr>';
+    });
+    tablesHtml+='</tbody></table>';
+  });
+  var style=''
+    +'@page{size:A4;margin:14mm}'
+    +'*{box-sizing:border-box}'
+    +'*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}'
+    +agenorFontFaceCss()
+    +'body{font-family:Arial,Helvetica,sans-serif;color:#1a2733;margin:0;padding:0;font-size:9pt}'
+    +'.page-wrap{max-width:182mm;margin:0 auto;padding:0 4mm;box-sizing:border-box}'
+    +'.gp-title{font-size:19pt;font-weight:700;color:#1B5FA8;text-align:center;margin:10mm 0 2mm;line-height:1.3}'
+    +'.gp-sub{font-size:19pt;font-weight:700;color:#1B5FA8;text-align:center;margin:0 0 10mm}'
+    +'.gp-meta{font-size:8pt;color:#667;text-align:center;margin-bottom:10mm}'
+    +'.gp-tbl{width:100%;border-collapse:collapse;font-size:9pt;margin-bottom:8mm;table-layout:fixed}'
+    +'.gp-tbl th{background:#8DA6D6;color:#12233F;font-weight:700;text-align:left;padding:5px 7px;border:1px solid #12233F22;font-size:9.5pt}'
+    +'.gp-th-date{width:26%}'
+    +'.gp-tbl td{padding:5px 7px;border:1px solid #d8dee8;vertical-align:top;word-wrap:break-word}'
+    +'.gp-td-date{font-weight:600;white-space:normal}'
+    +'.gp-footer-logo{margin:14mm 0 4mm;display:flex;justify-content:center}'
+    +'.print-btn{margin:6mm auto 0;display:block;padding:7px 16px;background:#335781;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:11px}'
+    +'@media print{.print-btn{display:none}}';
+  var printLbl=tMap({nl:'Print/Exporteer PDF',en:'Print/Export PDF',es:'Imprimir/Exportar PDF',fr:'Imprimer/Exporter PDF',de:'Drucken/PDF exportieren',ro:'Tipărește/Exportă PDF',hu:'Nyomtatás/PDF exportálása',ru:'Печать/Экспорт PDF',it:'Stampa/Esporta PDF',pt:'Imprimir/Exportar PDF'});
+  var docTitle=titleMain+' '+titleSub;
+  var _printFrame=_gcCreatePrintFrameWorker();
+  var w=_printFrame.contentWindow;
+  w.document.write('<html><head><title>'+docTitle+'</title><style>'+style+'</style></head><body><div class="page-wrap">');
+  w.document.write('<div class="gp-title">'+titleMain+'</div><div class="gp-sub">'+titleSub+'</div>');
+  w.document.write('<div class="gp-meta">'+generatedOn+' '+dateStr+'</div>');
+  w.document.write(tablesHtml);
+  w.document.write('<div class="gp-footer-logo">'+orgHeaderHtml(11,lang)+'</div>');
+  w.document.write('<button class="print-btn" onclick="window.print()">'+printLbl+'</button>');
+  w.document.write('<script>(function(){setTimeout(function(){try{window.print();}catch(e){}},150);})();<\/script>');
+  w.document.write('</div></body></html>');
+  w.document.close();
+  _gcArmPrintFrameCleanupWorker(_printFrame);
 }
 var _gpReviewItems=null;
 // Review step: same "checkbox per candidate row, already-imported rows
