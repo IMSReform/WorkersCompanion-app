@@ -6127,16 +6127,30 @@ function showDailyTipBar(){
   // the way down. A tip is meant to be seen, so it gets prime real estate
   // right under the header instead.
   var bar=document.getElementById('home-tip-bar-top');
-  if(!bar||document.getElementById('app-tip-bar'))return;
-  if(db.settings.tipsEnabled===false)return;
+  if(!bar)return;
+  var existing=document.getElementById('app-tip-bar');
+  // #home-tip-bar-top lives in the static screen shell, not inside the part
+  // of Home that gets rebuilt (dash.innerHTML) on every renderHome() call -
+  // so the old code's "already exists -> do nothing" guard meant the tip
+  // element, once created, was NEVER touched again: not on a language
+  // change, not even when the day rolled over and ensureDailyTip() should
+  // have picked a new tip (that call was skipped too, since it sat after
+  // the same early return). Now the existing element's content is always
+  // refreshed in place instead of being left stale, so it can't get stuck
+  // showing yesterday's tip - or a tip in whatever language happened to be
+  // active the very first time it was ever created (often Dutch, before a
+  // saved language setting even had a chance to load).
+  if(db.settings.tipsEnabled===false){if(existing)existing.remove();return;}
   // Must run BEFORE the dismissed check below: this is what clears
   // tipsBarDismissed on a new calendar day. Checking dismissed first would
   // permanently lock the bar off after the very first dismissal, since
   // nothing else ever resets that flag back to false.
   ensureDailyTip();
-  if(db.settings.tipsBarDismissed)return;
+  if(db.settings.tipsBarDismissed){if(existing)existing.remove();return;}
   var tip=TIPS[db.settings.tipsLastIndex]||TIPS[0];
-  if(!tip)return;
+  if(!tip){if(existing)existing.remove();return;}
+  var innerHtml='<span style="display:flex;align-items:flex-start;gap:6px"><svg width="14" height="14" style="flex-shrink:0;margin-top:1px"><use href="#ico-info"/></svg><span>'+tMap(tip)+'</span></span><button onclick="dismissTipBar()" style="border:none;background:none;color:rgba(74,46,0,.75);cursor:pointer;font-size:16px;flex-shrink:0;line-height:1">&times;</button>';
+  if(existing){existing.innerHTML=innerHtml;return;}
   var d=document.createElement('div');
   d.id='app-tip-bar';
   d.className='reminder-bar';
@@ -6146,7 +6160,7 @@ function showDailyTipBar(){
   // (white read fine on the darker #B8860B but would wash out against this
   // lighter, more saturated yellow).
   d.style.cssText='background:#FFE990;color:#4A2E00;padding:8px 14px;border-radius:8px;margin-bottom:6px;font-size:12.5px;line-height:1.4;display:flex;justify-content:space-between;align-items:flex-start;gap:8px';
-  d.innerHTML='<span style="display:flex;align-items:flex-start;gap:6px"><svg width="14" height="14" style="flex-shrink:0;margin-top:1px"><use href="#ico-info"/></svg><span>'+tMap(tip)+'</span></span><button onclick="dismissTipBar()" style="border:none;background:none;color:rgba(74,46,0,.75);cursor:pointer;font-size:16px;flex-shrink:0;line-height:1">&times;</button>';
+  d.innerHTML=innerHtml;
   bar.appendChild(d);
 }
 // Settings > Tips section - rebuilt fresh (via tMap, not the static
