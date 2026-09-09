@@ -12883,6 +12883,30 @@ function toggleAccordionByKey(key,btnEl){
     if(svg)svg.style.transform=open?'rotate(180deg)':'rotate(0deg)';
   }
 }
+// #984: To-do and Prayer list sit side by side on Home as two independent
+// accordions, closed by default. That used to mean if one card had content
+// and got opened while the other (empty that day) stayed closed, the closed
+// card just looked blank/empty rather than "not opened yet" - easy to read
+// as "nothing happening there" and never think to tap it. Opening either
+// one now also opens the other (if it wasn't already), so both are always
+// visible together once you've looked at either; closing one still only
+// closes that one, since nothing asked for them to close together too.
+function toggleTodoOrPrayerAccordion(key,btnEl){
+  toggleAccordionByKey(key,btnEl);
+  if(!getAccState(key))return; // just closed - leave the other card alone
+  var otherKey=key==='home-todo'?'home-prayer':'home-todo';
+  if(getAccState(otherKey))return; // already open
+  var otherCard=document.querySelector('.card[data-acc-key="'+otherKey+'"]');
+  if(!otherCard||otherCard.classList.contains('acc-open'))return;
+  otherCard.classList.add('acc-open');
+  setAccState(otherKey,true);
+  var otherHeader=otherCard.previousElementSibling;
+  var otherBtn=otherHeader&&otherHeader.querySelector?otherHeader.querySelector('.acc-toggle-btn'):null;
+  if(otherBtn){
+    var svg=otherBtn.querySelector('svg');
+    if(svg)svg.style.transform='rotate(180deg)';
+  }
+}
 function toggleCalAcc(headerEl){
   var wrap=headerEl.closest('.cal-acc');
   if(wrap)wrap.classList.toggle('acc-open');
@@ -13488,7 +13512,7 @@ function _renderHomeInner(){
   // .dash-2col-wrap (does nothing below that breakpoint, so mobile is
   // unaffected).
   h+='<div class="dash-2col-wrap" style="margin-top:-8px"><div>';
-  h+='<div class="settings-section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer" onclick="toggleAccordionByKey(\'home-todo\',this.querySelector(\'.acc-toggle-btn\'));syncTodoPrayerHeightDeferred()">';
+  h+='<div class="settings-section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer" onclick="toggleTodoOrPrayerAccordion(\'home-todo\',this.querySelector(\'.acc-toggle-btn\'));syncTodoPrayerHeightDeferred()">';
   // Chevron sits right next to the "To do" label itself (not next to
   // "Geschiedenis" on the far right) - it's the accordion toggle for this
   // whole section, and grouping it with the History link made it read as
@@ -13496,7 +13520,7 @@ function _renderHomeInner(){
   // looks it belongs to geschiedenis, but it's from to do").
   h+='<div style="display:flex;align-items:center;gap:6px">';
   h+='<span>'+t('todo_title')+'</span>';
-  h+='<button type="button" class="acc-toggle-btn" onclick="event.stopPropagation();toggleAccordionByKey(\'home-todo\',this);syncTodoPrayerHeightDeferred()" title="'+t('todo_title')+'" style="background:none;border:none;padding:4px;margin:-4px;cursor:pointer;display:flex;color:var(--text3)"><svg width="14" height="14" style="transition:transform .2s'+(getAccState('home-todo')?';transform:rotate(180deg)':'')+'"><use href="#ico-chevron-down"/></svg></button>';
+  h+='<button type="button" class="acc-toggle-btn" onclick="event.stopPropagation();toggleTodoOrPrayerAccordion(\'home-todo\',this);syncTodoPrayerHeightDeferred()" title="'+t('todo_title')+'" style="background:none;border:none;padding:4px;margin:-4px;cursor:pointer;display:flex;color:var(--text3)"><svg width="14" height="14" style="transition:transform .2s'+(getAccState('home-todo')?';transform:rotate(180deg)':'')+'"><use href="#ico-chevron-down"/></svg></button>';
   h+='</div>';
   h+='<a href="#" onclick="event.stopPropagation();openTodoHistory();return false" style="font-size:12px;color:var(--brand);text-decoration:none;font-weight:500">'+t('todo_history')+'</a>';
   h+='</div>';
@@ -13519,12 +13543,12 @@ function _renderHomeInner(){
   // it resets automatically the next day so it keeps coming back until the
   // user explicitly deletes it. Also collapsed by default.
   h+='<div>';
-  h+='<div class="settings-section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer" onclick="toggleAccordionByKey(\'home-prayer\',this.querySelector(\'.acc-toggle-btn\'));syncTodoPrayerHeightDeferred()">';
+  h+='<div class="settings-section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer" onclick="toggleTodoOrPrayerAccordion(\'home-prayer\',this.querySelector(\'.acc-toggle-btn\'));syncTodoPrayerHeightDeferred()">';
   // Same reasoning as the To-do header above - chevron grouped with the
   // label it actually toggles, not with the History link.
   h+='<div style="display:flex;align-items:center;gap:6px">';
   h+='<span>'+t('prayer_title')+'</span>';
-  h+='<button type="button" class="acc-toggle-btn" onclick="event.stopPropagation();toggleAccordionByKey(\'home-prayer\',this);syncTodoPrayerHeightDeferred()" title="'+t('prayer_title')+'" style="background:none;border:none;padding:4px;margin:-4px;cursor:pointer;display:flex;color:var(--text3)"><svg width="14" height="14" style="transition:transform .2s'+(getAccState('home-prayer')?';transform:rotate(180deg)':'')+'"><use href="#ico-chevron-down"/></svg></button>';
+  h+='<button type="button" class="acc-toggle-btn" onclick="event.stopPropagation();toggleTodoOrPrayerAccordion(\'home-prayer\',this);syncTodoPrayerHeightDeferred()" title="'+t('prayer_title')+'" style="background:none;border:none;padding:4px;margin:-4px;cursor:pointer;display:flex;color:var(--text3)"><svg width="14" height="14" style="transition:transform .2s'+(getAccState('home-prayer')?';transform:rotate(180deg)':'')+'"><use href="#ico-chevron-down"/></svg></button>';
   h+='</div>';
   h+='<a href="#" onclick="event.stopPropagation();openPrayerHistory();return false" style="font-size:12px;color:var(--brand);text-decoration:none;font-weight:500">'+t('prayer_history')+'</a>';
   h+='</div>';
