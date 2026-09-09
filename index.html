@@ -26307,12 +26307,26 @@ function openPlanModal(planId, prefillDate){
     var calSentLbl=tMap({nl:'Toegevoegd aan agenda-app (Apple/Google/Windows)',en:'Added to Calendar app (Apple/Google/Windows)',es:'Añadido a la app de calendario (Apple/Google/Windows)',fr:"Ajouté à l'app calendrier (Apple/Google/Windows)",de:'Zur Kalender-App hinzugefügt (Apple/Google/Windows)',ro:'Adăugat în aplicația de calendar (Apple/Google/Windows)',hu:'Hozzáadva a naptár alkalmazáshoz (Apple/Google/Windows)',ru:'Добавлено в приложение календаря (Apple/Google/Windows)',it:"Aggiunto all'app calendario (Apple/Google/Windows)",pt:'Adicionado à app de calendário (Apple/Google/Windows)'});
     h += '<label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;margin:10px 0 4px;line-height:1.4"><input type="checkbox" id="plan-cal-sent" '+(p.calExported?'checked':'')+' onchange="togglePlanCalExport('+ssIdArg(p.id)+',this)" style="width:16px;height:16px;flex-shrink:0;margin-top:1px">'+calSentLbl+'</label>';
   }
-  h += '<div style="display:flex;gap:8px;margin-top:14px">';
+  h += '<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">';
   if(p){
     h += '<button class="btn danger sm" onclick="agendaDelete('+ssIdArg(p.id)+');closeModals()" style="flex:0 0 auto">'+t('delete_btn')+'</button>';
   }
-  h += '<button class="btn" onclick="closeModals()" style="flex:1">'+t('cancel_btn')+'</button>';
-  h += '<button class="btn primary" onclick="savePlanModal('+(p?ssIdArg(p.id):'null')+')" style="flex:1">'+t('save_btn')+'</button>';
+  h += '<button class="btn" onclick="closeModals()" style="flex:1 1 auto;min-width:80px">'+t('cancel_btn')+'</button>';
+  if(p){
+    // "Save as new" (task #975): editing a planned (future) activity from
+    // the calendar previously only offered Save (overwrite this plan in
+    // place) or Delete - there was no way to spin off what's currently
+    // filled into the form as a separate new plan while leaving the
+    // original untouched (e.g. tweaking the date/time for a second
+    // occurrence instead of just moving the one being edited). Reuses
+    // savePlanModal() itself but passes planId=null, so it takes the
+    // "else" (new-plan) branch and pushes a fresh planned item instead of
+    // overwriting db.planned[idx] - the plan being edited is left exactly
+    // as it was before this modal opened.
+    var planSaveAsNewLbl=tMap({nl:'Opslaan als nieuw',en:'Save as new',es:'Guardar como nuevo',fr:'Enregistrer comme nouveau',de:'Als neu speichern',ro:'Salvează ca nou',hu:'Mentés újként',ru:'Сохранить как новое',it:'Salva come nuovo',pt:'Salvar como novo'});
+    h += '<button class="btn sm" onclick="savePlanModal(null)" style="flex:1 1 auto;min-width:110px">'+planSaveAsNewLbl+'</button>';
+  }
+  h += '<button class="btn primary" onclick="savePlanModal('+(p?ssIdArg(p.id):'null')+')" style="flex:1 1 auto;min-width:80px">'+t('save_btn')+'</button>';
   h += '</div>';
   h += '</div>';
   showModal(h);
