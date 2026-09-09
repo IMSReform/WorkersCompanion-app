@@ -5933,6 +5933,9 @@ const DRIVE_FILE_NAME='ZDA_Urenregistratie_'+new Date().getFullYear()+'.json';
 // Keep entries short and in plain language (what changed / where to find
 // it), not commit messages.
 const CHANGELOG=[
+  {date:'2026-09-09',items:[
+    {nl:'Nieuw: bij "Gegevens importeren" kun je nu ook een PDF met de gemeente-planning (activiteitenoverzicht) van de secretaris importeren. De app herkent de datums, activiteiten en verantwoordelijken uit de tabel, laat je vooraf aanvinken wat je wilt toevoegen, en zet ze als aparte informatiepuntjes in de kalender (herkenbaar aan een paarse stip) — dit telt niet mee als gewerkte uren, het is puur ter info voor iedereen in de gemeente.',en:'New: under "Import data" you can now also import a PDF of the secretary\'s church schedule (activity planning). The app recognizes the dates, activities and responsible people from the table, lets you check off beforehand what to add, and places them as separate awareness markers on the calendar (shown with a purple dot) — this does not count as worked hours, it\'s purely informational for everyone in the church.',es:'Nuevo: en "Importar datos" ahora también puedes importar un PDF con la planificación de la iglesia (calendario de actividades) del secretario. La app reconoce las fechas, actividades y responsables de la tabla, te deja marcar de antemano qué añadir, y los coloca como puntos informativos aparte en el calendario (con un punto morado) — esto no cuenta como horas trabajadas, es puramente informativo para todos en la iglesia.'}
+  ]},
   {date:'2026-09-01',items:[
     {nl:'Nieuw: bij elke notitie/opmerking (in de wizard, bij het bewerken van een activiteit, en in het dagoverzicht) staat nu een vinkje "Delen met voorzitter". Een notitie gaat alleen mee in het PDF/JSON-rapport als dat vinkje voor die specifieke notitie is aangezet — standaard staat het uit, dus je persoonlijke aantekeningen blijven privé tenzij je ze zelf deelt. De oude algemene "Persoonlijke notities"-instelling bij het exporteren is hierdoor vervallen.',en:'New: every note/comment (in the wizard, when editing an activity, and in the daily overview) now has a "Share with president" checkbox next to it. A note only goes into the PDF/JSON report if that checkbox was turned on for that specific note — it\'s off by default, so your personal notes stay private unless you choose to share them. The old blanket "Personal notes" export setting has been removed since it\'s no longer needed.',es:'Nuevo: cada nota/comentario (en el asistente, al editar una actividad, y en el resumen diario) ahora tiene una casilla "Compartir con el presidente" junto a él. Una nota solo se incluye en el informe PDF/JSON si esa casilla se activó para esa nota en concreto — está desactivada por defecto, así que tus notas personales permanecen privadas a menos que elijas compartirlas. El antiguo ajuste general de exportación "Notas personales" ha sido eliminado por ya no ser necesario.',fr:'Nouveau : chaque note/commentaire (dans l\'assistant, lors de la modification d\'une activité, et dans l\'aperçu quotidien) a désormais une case « Partager avec le président » à côté. Une note n\'est incluse dans le rapport PDF/JSON que si cette case a été cochée pour cette note précise — elle est désactivée par défaut, donc vos notes personnelles restent privées sauf si vous choisissez de les partager. L\'ancien réglage général d\'export « Notes personnelles » a été supprimé car il n\'est plus nécessaire.',de:'Neu: Bei jeder Notiz/Bemerkung (im Assistenten, beim Bearbeiten einer Aktivität und in der Tagesübersicht) gibt es jetzt ein Kontrollkästchen „Mit dem Vorsitzenden teilen". Eine Notiz gelangt nur dann in den PDF-/JSON-Bericht, wenn dieses Kästchen für diese bestimmte Notiz aktiviert wurde — standardmäßig ist es aus, sodass Ihre persönlichen Notizen privat bleiben, sofern Sie sie nicht selbst teilen. Die alte allgemeine Export-Einstellung „Persönliche Notizen" wurde entfernt, da sie nicht mehr nötig ist.',ro:'Nou: fiecare notiță/comentariu (în asistent, la editarea unei activități și în prezentarea zilnică) are acum o casetă „Distribuie președintelui" alături. O notiță ajunge în raportul PDF/JSON doar dacă acea casetă a fost bifată pentru notița respectivă — este dezactivată implicit, deci notițele tale personale rămân private dacă nu alegi să le distribui. Vechea setare generală de export „Notițe personale" a fost eliminată, nemaifiind necesară.',hu:'Új: minden jegyzet/megjegyzés mellett (a varázslóban, egy tevékenység szerkesztésekor és a napi áttekintésben) mostantól megjelenik egy „Megosztás az elnökkel" jelölőnégyzet. Egy jegyzet csak akkor kerül be a PDF/JSON-jelentésbe, ha ez a jelölőnégyzet be lett kapcsolva az adott jegyzethez — alapértelmezetten ki van kapcsolva, így a személyes jegyzeteid privátak maradnak, hacsak nem döntesz a megosztásuk mellett. A régi, általános „Személyes jegyzetek" exportbeállítás megszűnt, mivel már nincs rá szükség.',ru:'Новое: рядом с каждой заметкой/комментарием (в мастере, при редактировании действия и в ежедневном обзоре) теперь есть флажок «Поделиться с президентом». Заметка попадает в отчёт PDF/JSON, только если этот флажок был установлен именно для этой заметки — по умолчанию он выключен, поэтому ваши личные заметки остаются приватными, если вы сами не решите ими поделиться. Старая общая настройка экспорта «Личные заметки» удалена, так как больше не нужна.',it:'Novità: ogni nota/commento (nella procedura guidata, durante la modifica di un\'attività e nella panoramica giornaliera) ha ora una casella "Condividi con il presidente" accanto. Una nota viene inclusa nel report PDF/JSON solo se quella casella è stata attivata per quella nota specifica — è disattivata per impostazione predefinita, quindi le tue note personali restano private a meno che tu non scelga di condividerle. La vecchia impostazione generale di esportazione "Note personali" è stata rimossa perché non più necessaria.',pt:'Novo: cada nota/comentário (no assistente, ao editar uma atividade, e na visão geral diária) agora tem uma caixa "Partilhar com o presidente" ao lado. Uma nota só vai para o relatório PDF/JSON se essa caixa foi ativada para essa nota específica — está desativada por predefinição, para que as suas notas pessoais permaneçam privadas a menos que escolha partilhá-las. A antiga definição geral de exportação "Notas pessoais" foi removida por já não ser necessária.'}
   ]},
@@ -10456,7 +10459,7 @@ const LS_KEY='zda_v4_'+new Date().getFullYear();
 // Not year-scoped like LS_KEY on purpose - which screen the user was last on
 // should keep working across a year rollover too.
 const LAST_SCREEN_KEY='zda_last_screen';
-let db={entries:[],cursisten:[],todos:[],prayers:[],customStudies:[],tombstones:[],approvals:[],settings:{reminderOn:false,interval:60,reminderText:'',naam:'',gemeente:'ZDAreformatie',goalStudies:0,goalEvang:0,goalUrenWeek:40,goalFollowup:0,workRole:'bijbelwerker',workRoleTouched:false,approvalCode:'',gcInfra:{workers:0,pastors:0,missionhouses:0,buildings:0}}};
+let db={entries:[],cursisten:[],todos:[],prayers:[],customStudies:[],tombstones:[],approvals:[],gemeentePlanning:[],settings:{reminderOn:false,interval:60,reminderText:'',naam:'',gemeente:'ZDAreformatie',goalStudies:0,goalEvang:0,goalUrenWeek:40,goalFollowup:0,workRole:'bijbelwerker',workRoleTouched:false,approvalCode:'',gcInfra:{workers:0,pastors:0,missionhouses:0,buildings:0}}};
 // Every entry-creation site used to just do id:Date.now(), which can collide
 // when two entries are created within the same millisecond — e.g. the wizard
 // creating a main entry plus its auto-travel entry back-to-back, or a fast
@@ -11603,7 +11606,7 @@ function isDriveAuthError(e){
   var code = e.status || (e.result && e.result.error && e.result.error.code);
   return code===401||code===403;
 }
-async function syncToDrive(forceOverwrite){if(!useGoogleDrive||!accessToken){saveLocal();pulseSsSaveStatus('ok',(LANG==='en'?'Saved locally · ':LANG==='es'?'Guardado localmente · ':LANG==='fr'?'Enregistré localement · ':LANG==='de'?'Lokal gespeichert · ':LANG==='ru'?'Сохранено локально · ':'Lokaal opgeslagen · ')+new Date().toLocaleTimeString(getLocale(),{hour:'2-digit',minute:'2-digit'}));return;}setSyncStatus('info',LANG==='en'?'Saving…':LANG==='es'?'Guardando…':LANG==='fr'?'Sauvegarde…':LANG==='de'?'Speichern…':LANG==='ru'?'Сохранение…':'Opslaan…',true);try{await pullEncMetaFromDrive();if(!driveFileId){const l=await gapi.client.drive.files.list({spaces:'appDataFolder',q:`name='${DRIVE_FILE_NAME}'`,fields:'files(id)'});const f=l.result.files;if(f&&f.length)driveFileId=f[0].id;}if(driveFileId&&!forceOverwrite){var _pullOk=false;try{const rres=await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,{headers:{'Authorization':'Bearer '+accessToken}});if(rres.ok){const rdata=await deserializeDb(await rres.text());_pullOk=true;if(rdata&&rdata.entries){db.tombstones=mergeTombstones(db.tombstones,rdata.tombstones||[]);var _tE=tombIdsFor('entries',db.tombstones),_tP=tombIdsFor('planned',db.tombstones),_tT=tombIdsFor('todos',db.tombstones),_tPr=tombIdsFor('prayers',db.tombstones),_tCs=tombIdsFor('customStudies',db.tombstones),_tCu=tombIdsFor('cursisten',db.tombstones);db.entries=mergeArraysById(db.entries,rdata.entries,_tE);db.cursisten=mergeArraysById(db.cursisten,rdata.cursisten||[],_tCu);db.churches=mergeArraysByValue(db.churches,rdata.churches||[]);db.planned=mergeArraysById(db.planned,rdata.planned||[],_tP);db.vacationDays=mergeArraysByValue(db.vacationDays,rdata.vacationDays||[]);db.todos=mergeArraysById(db.todos,rdata.todos||[],_tT);db.prayers=mergeArraysById(db.prayers,rdata.prayers||[],_tPr);db.customStudies=mergeArraysById(db.customStudies,rdata.customStudies||[],_tCs);db.approvals=mergeArraysById(db.approvals,rdata.approvals||[]);if(rdata.settings){var _ldm=db.settings.darkMode,_lat=db.settings.appTheme,_lts=db.settings.textSize,_cc=db.settings.customCategories,_clo=db.settings.categoryLabelOverrides,_nm=db.settings.naam,_gm=db.settings.gemeente,_em=db.settings.email,_tl=db.settings.tel,_gb=db.settings.geboortedatum,_ad=db.settings.myAdres,_adp=db.settings.myAdresPostcode,_adc=db.settings.myAdresCity,_adco=db.settings.myAdresCountry,_lg=db.settings.lang,_gf=db.settings.groupFrequency,_ddg=db.settings.dismissedDupeGroups,_wr=db.settings.workRole,_wrT=!!db.settings.workRoleTouched,_gci=db.settings.gcInfra,_cr=db.settings.churchRole,_crs=db.settings.churchRoles;Object.assign(db.settings,rdata.settings);if(_ldm!==undefined)db.settings.darkMode=_ldm;if(_lat!==undefined)db.settings.appTheme=_lat;if(_lts!==undefined)db.settings.textSize=_lts;if(_cc)db.settings.customCategories=_cc;if(_clo)db.settings.categoryLabelOverrides=_clo;if(_nm)db.settings.naam=_nm;if(_gm)db.settings.gemeente=_gm;if(_em)db.settings.email=_em;if(_tl)db.settings.tel=_tl;if(_gb)db.settings.geboortedatum=_gb;if(_ad)db.settings.myAdres=_ad;if(_adp)db.settings.myAdresPostcode=_adp;if(_adc)db.settings.myAdresCity=_adc;if(_adco)db.settings.myAdresCountry=_adco;if(_lg)db.settings.lang=_lg;
+async function syncToDrive(forceOverwrite){if(!useGoogleDrive||!accessToken){saveLocal();pulseSsSaveStatus('ok',(LANG==='en'?'Saved locally · ':LANG==='es'?'Guardado localmente · ':LANG==='fr'?'Enregistré localement · ':LANG==='de'?'Lokal gespeichert · ':LANG==='ru'?'Сохранено локально · ':'Lokaal opgeslagen · ')+new Date().toLocaleTimeString(getLocale(),{hour:'2-digit',minute:'2-digit'}));return;}setSyncStatus('info',LANG==='en'?'Saving…':LANG==='es'?'Guardando…':LANG==='fr'?'Sauvegarde…':LANG==='de'?'Speichern…':LANG==='ru'?'Сохранение…':'Opslaan…',true);try{await pullEncMetaFromDrive();if(!driveFileId){const l=await gapi.client.drive.files.list({spaces:'appDataFolder',q:`name='${DRIVE_FILE_NAME}'`,fields:'files(id)'});const f=l.result.files;if(f&&f.length)driveFileId=f[0].id;}if(driveFileId&&!forceOverwrite){var _pullOk=false;try{const rres=await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,{headers:{'Authorization':'Bearer '+accessToken}});if(rres.ok){const rdata=await deserializeDb(await rres.text());_pullOk=true;if(rdata&&rdata.entries){db.tombstones=mergeTombstones(db.tombstones,rdata.tombstones||[]);var _tE=tombIdsFor('entries',db.tombstones),_tP=tombIdsFor('planned',db.tombstones),_tT=tombIdsFor('todos',db.tombstones),_tPr=tombIdsFor('prayers',db.tombstones),_tCs=tombIdsFor('customStudies',db.tombstones),_tCu=tombIdsFor('cursisten',db.tombstones),_tGp=tombIdsFor('gemeentePlanning',db.tombstones);db.entries=mergeArraysById(db.entries,rdata.entries,_tE);db.cursisten=mergeArraysById(db.cursisten,rdata.cursisten||[],_tCu);db.churches=mergeArraysByValue(db.churches,rdata.churches||[]);db.planned=mergeArraysById(db.planned,rdata.planned||[],_tP);db.vacationDays=mergeArraysByValue(db.vacationDays,rdata.vacationDays||[]);db.todos=mergeArraysById(db.todos,rdata.todos||[],_tT);db.prayers=mergeArraysById(db.prayers,rdata.prayers||[],_tPr);db.customStudies=mergeArraysById(db.customStudies,rdata.customStudies||[],_tCs);db.approvals=mergeArraysById(db.approvals,rdata.approvals||[]);db.gemeentePlanning=mergeArraysById(db.gemeentePlanning||[],rdata.gemeentePlanning||[],_tGp);if(rdata.settings){var _ldm=db.settings.darkMode,_lat=db.settings.appTheme,_lts=db.settings.textSize,_cc=db.settings.customCategories,_clo=db.settings.categoryLabelOverrides,_nm=db.settings.naam,_gm=db.settings.gemeente,_em=db.settings.email,_tl=db.settings.tel,_gb=db.settings.geboortedatum,_ad=db.settings.myAdres,_adp=db.settings.myAdresPostcode,_adc=db.settings.myAdresCity,_adco=db.settings.myAdresCountry,_lg=db.settings.lang,_gf=db.settings.groupFrequency,_ddg=db.settings.dismissedDupeGroups,_wr=db.settings.workRole,_wrT=!!db.settings.workRoleTouched,_gci=db.settings.gcInfra,_cr=db.settings.churchRole,_crs=db.settings.churchRoles;Object.assign(db.settings,rdata.settings);if(_ldm!==undefined)db.settings.darkMode=_ldm;if(_lat!==undefined)db.settings.appTheme=_lat;if(_lts!==undefined)db.settings.textSize=_lts;if(_cc)db.settings.customCategories=_cc;if(_clo)db.settings.categoryLabelOverrides=_clo;if(_nm)db.settings.naam=_nm;if(_gm)db.settings.gemeente=_gm;if(_em)db.settings.email=_em;if(_tl)db.settings.tel=_tl;if(_gb)db.settings.geboortedatum=_gb;if(_ad)db.settings.myAdres=_ad;if(_adp)db.settings.myAdresPostcode=_adp;if(_adc)db.settings.myAdresCity=_adc;if(_adco)db.settings.myAdresCountry=_adco;if(_lg)db.settings.lang=_lg;
       // #970b: same gap as loadFromDrive (see the workRole/gcInfra comment
       // there) but here it's more consequential, since syncToDrive() runs on
       // EVERY save() - so unlike loadFromDrive (an explicit user action),
@@ -11659,7 +11662,7 @@ async function syncToDrive(forceOverwrite){if(!useGoogleDrive||!accessToken){sav
   // once the pull can actually succeed.
   if(!forceOverwrite&&!_pullOk)throw new Error('Drive pull failed before upload - aborting to avoid overwriting remote changes');
   }const body=await serializeDb(db);if(driveFileId){await driveUploadBody(driveFileId,body);}else{const m=await gapi.client.drive.files.create({resource:{name:DRIVE_FILE_NAME,parents:['appDataFolder']},fields:'id'});driveFileId=m.result.id;await driveUploadBody(driveFileId,body);}lastSyncTime=new Date();setSyncStatus('ok',(LANG==='en'?'Saved to Drive · ':LANG==='es'?'Guardado en Drive · ':LANG==='fr'?'Enregistré dans Drive · ':LANG==='de'?'In Drive gespeichert · ':LANG==='ru'?'Сохранено в Drive · ':'Opgeslagen in Drive · ')+lastSyncTime.toLocaleTimeString(getLocale(),{hour:'2-digit',minute:'2-digit'}));maybeCreateDailySnapshot();}catch(e){if(isDriveAuthError(e)){accessToken=null;}saveLocal();setSyncStatus('err',LANG==='en'?'Drive error — saved locally':LANG==='es'?'Error Drive — guardado local':LANG==='fr'?'Erreur Drive — sauvegarde locale':LANG==='de'?'Drive-Fehler — lokal gespeichert':LANG==='ru'?'Ошибка Drive — сохранено локально':'Drive fout — lokaal opgeslagen');}}
-async function loadFromDrive(){setSyncStatus('info',LANG==='en'?'Loading from Drive…':LANG==='es'?'Cargando de Drive…':LANG==='fr'?'Chargement Drive…':LANG==='de'?'Laden von Drive…':LANG==='ru'?'Загрузка с Drive…':'Laden van Drive…',true);try{await pullEncMetaFromDrive();const l=await gapi.client.drive.files.list({spaces:'appDataFolder',q:`name='${DRIVE_FILE_NAME}'`,fields:'files(id)'});const f=l.result.files;if(f&&f.length){driveFileId=f[0].id;const res=await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,{headers:{'Authorization':'Bearer '+accessToken}});if(!res.ok){var _e=new Error('Drive load failed: '+res.status);_e.driveStatus=res.status;throw _e;}const data=await deserializeDb(await res.text());if(data.entries){db.tombstones=mergeTombstones(db.tombstones,data.tombstones||[]);var _tE2=tombIdsFor('entries',db.tombstones),_tP2=tombIdsFor('planned',db.tombstones),_tT2=tombIdsFor('todos',db.tombstones),_tPr2=tombIdsFor('prayers',db.tombstones),_tCs2=tombIdsFor('customStudies',db.tombstones),_tCu2=tombIdsFor('cursisten',db.tombstones);db.entries=mergeArraysById(db.entries,data.entries,_tE2);db.cursisten=mergeArraysById(db.cursisten,data.cursisten||[],_tCu2);db.churches=mergeArraysByValue(db.churches,data.churches||[]);db.planned=mergeArraysById(db.planned,data.planned||[],_tP2);db.vacationDays=mergeArraysByValue(db.vacationDays,data.vacationDays||[]);db.todos=mergeArraysById(db.todos,data.todos||[],_tT2);db.prayers=mergeArraysById(db.prayers,data.prayers||[],_tPr2);db.customStudies=mergeArraysById(db.customStudies,data.customStudies||[],_tCs2);db.approvals=mergeArraysById(db.approvals,data.approvals||[]);if(data.settings){var _ldm2=db.settings.darkMode,_lat2=db.settings.appTheme,_lts2=db.settings.textSize,_cc2=db.settings.customCategories,_clo2=db.settings.categoryLabelOverrides,_nm2=db.settings.naam,_gm2=db.settings.gemeente,_em2=db.settings.email,_tl2=db.settings.tel,_gb2=db.settings.geboortedatum,_ad2=db.settings.myAdres,_adp2=db.settings.myAdresPostcode,_adc2=db.settings.myAdresCity,_adco2=db.settings.myAdresCountry,_lg2=db.settings.lang,_gf2=db.settings.groupFrequency,_ddg2=db.settings.dismissedDupeGroups,_wr2=db.settings.workRole,_wrT2=!!db.settings.workRoleTouched,_gci2=db.settings.gcInfra,_cr2=db.settings.churchRole,_crs2=db.settings.churchRoles;Object.assign(db.settings,data.settings);if(_ldm2!==undefined)db.settings.darkMode=_ldm2;if(_lat2!==undefined)db.settings.appTheme=_lat2;if(_lts2!==undefined)db.settings.textSize=_lts2;if(_cc2)db.settings.customCategories=_cc2;if(_clo2)db.settings.categoryLabelOverrides=_clo2;if(_nm2)db.settings.naam=_nm2;if(_gm2)db.settings.gemeente=_gm2;if(_em2)db.settings.email=_em2;if(_tl2)db.settings.tel=_tl2;if(_gb2)db.settings.geboortedatum=_gb2;if(_ad2)db.settings.myAdres=_ad2;if(_adp2)db.settings.myAdresPostcode=_adp2;if(_adc2)db.settings.myAdresCity=_adc2;if(_adco2)db.settings.myAdresCountry=_adco2;if(_lg2)db.settings.lang=_lg2;
+async function loadFromDrive(){setSyncStatus('info',LANG==='en'?'Loading from Drive…':LANG==='es'?'Cargando de Drive…':LANG==='fr'?'Chargement Drive…':LANG==='de'?'Laden von Drive…':LANG==='ru'?'Загрузка с Drive…':'Laden van Drive…',true);try{await pullEncMetaFromDrive();const l=await gapi.client.drive.files.list({spaces:'appDataFolder',q:`name='${DRIVE_FILE_NAME}'`,fields:'files(id)'});const f=l.result.files;if(f&&f.length){driveFileId=f[0].id;const res=await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,{headers:{'Authorization':'Bearer '+accessToken}});if(!res.ok){var _e=new Error('Drive load failed: '+res.status);_e.driveStatus=res.status;throw _e;}const data=await deserializeDb(await res.text());if(data.entries){db.tombstones=mergeTombstones(db.tombstones,data.tombstones||[]);var _tE2=tombIdsFor('entries',db.tombstones),_tP2=tombIdsFor('planned',db.tombstones),_tT2=tombIdsFor('todos',db.tombstones),_tPr2=tombIdsFor('prayers',db.tombstones),_tCs2=tombIdsFor('customStudies',db.tombstones),_tCu2=tombIdsFor('cursisten',db.tombstones),_tGp2=tombIdsFor('gemeentePlanning',db.tombstones);db.entries=mergeArraysById(db.entries,data.entries,_tE2);db.cursisten=mergeArraysById(db.cursisten,data.cursisten||[],_tCu2);db.churches=mergeArraysByValue(db.churches,data.churches||[]);db.planned=mergeArraysById(db.planned,data.planned||[],_tP2);db.vacationDays=mergeArraysByValue(db.vacationDays,data.vacationDays||[]);db.todos=mergeArraysById(db.todos,data.todos||[],_tT2);db.prayers=mergeArraysById(db.prayers,data.prayers||[],_tPr2);db.customStudies=mergeArraysById(db.customStudies,data.customStudies||[],_tCs2);db.approvals=mergeArraysById(db.approvals,data.approvals||[]);db.gemeentePlanning=mergeArraysById(db.gemeentePlanning||[],data.gemeentePlanning||[],_tGp2);if(data.settings){var _ldm2=db.settings.darkMode,_lat2=db.settings.appTheme,_lts2=db.settings.textSize,_cc2=db.settings.customCategories,_clo2=db.settings.categoryLabelOverrides,_nm2=db.settings.naam,_gm2=db.settings.gemeente,_em2=db.settings.email,_tl2=db.settings.tel,_gb2=db.settings.geboortedatum,_ad2=db.settings.myAdres,_adp2=db.settings.myAdresPostcode,_adc2=db.settings.myAdresCity,_adco2=db.settings.myAdresCountry,_lg2=db.settings.lang,_gf2=db.settings.groupFrequency,_ddg2=db.settings.dismissedDupeGroups,_wr2=db.settings.workRole,_wrT2=!!db.settings.workRoleTouched,_gci2=db.settings.gcInfra,_cr2=db.settings.churchRole,_crs2=db.settings.churchRoles;Object.assign(db.settings,data.settings);if(_ldm2!==undefined)db.settings.darkMode=_ldm2;if(_lat2!==undefined)db.settings.appTheme=_lat2;if(_lts2!==undefined)db.settings.textSize=_lts2;if(_cc2)db.settings.customCategories=_cc2;if(_clo2)db.settings.categoryLabelOverrides=_clo2;if(_nm2)db.settings.naam=_nm2;if(_gm2)db.settings.gemeente=_gm2;if(_em2)db.settings.email=_em2;if(_tl2)db.settings.tel=_tl2;if(_gb2)db.settings.geboortedatum=_gb2;if(_ad2)db.settings.myAdres=_ad2;if(_adp2)db.settings.myAdresPostcode=_adp2;if(_adc2)db.settings.myAdresCity=_adc2;if(_adco2)db.settings.myAdresCountry=_adco2;if(_lg2)db.settings.lang=_lg2;
       // #970: workRole and gcInfra are per-worker/office setup, not
       // per-device display prefs, but they were missing from this
       // already-established "keep local, don't let a Drive pull silently
@@ -12142,7 +12145,7 @@ function receiptPhotoRerender(widgetId){
 // with forceOverwrite (skips the pull+merge step) so what actually lands
 // on Drive is the restored state, not a merge of old-and-restored.
 async function applyRestoredBackupData(data){
-  var ID_COLLS=['entries','cursisten','planned','todos','prayers'];
+  var ID_COLLS=['entries','cursisten','planned','todos','prayers','gemeentePlanning'];
   var oldIds={};
   ID_COLLS.forEach(function(coll){
     oldIds[coll]={};
@@ -12155,6 +12158,7 @@ async function applyRestoredBackupData(data){
   db.vacationDays=data.vacationDays||[];
   db.todos=data.todos||[];
   db.prayers=data.prayers||[];
+  db.gemeentePlanning=data.gemeentePlanning||[];
   ID_COLLS.forEach(function(coll){
     var newIds={};
     (db[coll]||[]).forEach(function(rec){ if(rec&&rec.id!=null) newIds[rec.id]=true; });
@@ -12814,11 +12818,11 @@ function loadDemoData_legacy1(){
 // state is what actually lands there instead of being merged away.
 async function confirmClear(){
   if(!confirm(tMap({nl:'Weet je zeker dat je ALLE gegevens wilt wissen? Dit kan niet ongedaan worden gemaakt.',en:'Are you sure you want to delete ALL data? This cannot be undone.',es:'¿Seguro que quieres borrar TODOS los datos? Esto no se puede deshacer.',fr:'Voulez-vous vraiment supprimer TOUTES les données ? Cette action est irréversible.',de:'Möchten Sie wirklich ALLE Daten löschen? Dies kann nicht rückgängig gemacht werden.',ro:'Sigur doriți să ștergeți TOATE datele? Această acțiune nu poate fi anulată.',hu:'Biztosan törli az ÖSSZES adatot? Ez nem vonható vissza.',ru:'Вы уверены, что хотите удалить ВСЕ данные? Это действие нельзя отменить.',it:'Sei sicuro di voler eliminare TUTTI i dati? Questa azione non può essere annullata.',pt:'Tem certeza de que deseja excluir TODOS os dados? Esta ação não pode ser desfeita.'})))return;
-  ['entries','planned','todos','prayers','customStudies','cursisten'].forEach(function(coll){
+  ['entries','planned','todos','prayers','customStudies','cursisten','gemeentePlanning'].forEach(function(coll){
     (db[coll]||[]).forEach(function(rec){ if(rec&&rec.id!=null) recordTombstone(coll,rec.id); });
   });
   var _keepDark=db.settings.darkMode,_keepTheme=db.settings.appTheme,_keepTextSize=db.settings.textSize;
-  db.entries=[];db.cursisten=[];db.todos=[];db.prayers=[];db.customStudies=[];db.approvals=[];db.planned=[];db.vacationDays=[];db.churches=[];
+  db.entries=[];db.cursisten=[];db.todos=[];db.prayers=[];db.customStudies=[];db.approvals=[];db.planned=[];db.vacationDays=[];db.churches=[];db.gemeentePlanning=[];
   db.settings={reminderOn:false,interval:60,reminderText:'',naam:'',gemeente:'ZDAreformatie',goalStudies:0,goalEvang:0,goalUrenWeek:40,goalFollowup:0,workRole:'bijbelwerker',workRoleTouched:false,approvalCode:'',gcInfra:{workers:0,pastors:0,missionhouses:0,buildings:0}};
   if(_keepDark!==undefined)db.settings.darkMode=_keepDark;
   if(_keepTheme!==undefined)db.settings.appTheme=_keepTheme;
@@ -16920,6 +16924,7 @@ function fcOpenYearDayPopup(ds,anchorEl){
   ensurePlanned();
   var plans=db.planned.filter(function(p){return p.datum===ds&&!p.completed&&!p.skipped;});
   var totU=ents.reduce(function(t,e){return t+entryUren(e);},0);
+  var gpItems=gemeentePlanningForDay(ds);
 
   var h='<div style="display:flex;align-items:baseline;gap:8px;padding:12px 14px 8px">';
   h+='<div style="font-size:14px;font-weight:700">'+d.getDate()+' '+MONTHS_FULL[d.getMonth()]+'</div>';
@@ -16944,7 +16949,7 @@ function fcOpenYearDayPopup(ds,anchorEl){
   var fcYdListMaxH=Math.max(120,Math.min(420,window.innerHeight-140));
   h+='<div style="padding:0 14px 12px;overflow-y:auto;max-height:'+fcYdListMaxH+'px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch">';
 
-  if(!ents.length&&!plans.length){
+  if(!ents.length&&!plans.length&&!gpItems.length){
     h+='<div style="text-align:center;color:var(--text3);padding:14px 0;font-size:13px">'+fcLbl('no_activities')+'</div>';
   }else{
     var rows=plans.map(function(p){return {item:p,isPlanned:true};}).concat(ents.map(function(e){return {item:e,isPlanned:false};}));
@@ -16974,6 +16979,21 @@ function fcOpenYearDayPopup(ds,anchorEl){
       h+='</div>';
       h+='</div>'; // detail
       h+='</div></div></div>'; // ac-body, activity-card-inner, activity-card
+    });
+  }
+  // Gemeente-planning rows (#982/#983) - shown separately since they're not
+  // hour-counted entries or plans, just awareness info from an imported
+  // church schedule. Tapping one opens the small read-only detail popup
+  // instead of the entry/plan edit flow.
+  if(gpItems.length){
+    h+='<div style="font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.03em;margin:10px 0 4px">'+tMap({nl:'Gemeente-planning',en:'Church schedule',es:'Planificación de iglesia'})+'</div>';
+    gpItems.forEach(function(item){
+      h+='<div class="activity-card" onclick="closeFcYdPopup();openGemeentePlanningDetail('+item.id+')"><div class="activity-card-inner">';
+      h+='<div class="ac-stripe" style="background:'+GEMEENTE_PLANNING_COLOR+'"></div>';
+      h+='<div class="ac-body" style="cursor:pointer">';
+      h+='<div class="ac-top"><div class="ac-who">'+escapeHtml(item.titel)+'</div></div>';
+      h+='<div class="ac-cat">'+(item.tijd?item.tijd+' · ':'')+(item.verantwoordelijke?escapeHtml(item.verantwoordelijke):'')+'</div>';
+      h+='</div></div></div>';
     });
   }
   h+='</div>';
@@ -22592,6 +22612,338 @@ function extractPdfTextLines(file){
     return all;
   });
 }
+// ── Gemeente-planning PDF importer (#982/#983) ──────────────────────────
+// Church secretaries hand out a season's activity schedule as a PDF table
+// (columns: date/period | activity | responsible person), one section per
+// month. Every worker imports this same file into their own copy of the
+// app so everyone sees what's happening church-wide - so unlike the
+// member-roster PDF import above (which adds contacts one is asked to
+// confirm), this adds every row regardless of whose name is on it, into
+// its own db.gemeentePlanning array that's never counted toward hours or
+// reports (see the default db initializer + syncToDrive/loadFromDrive).
+//
+// Layout notes this was built against (structural patterns only - no real
+// dates/names/events from any actual planning PDF are hardcoded here):
+// each month section starts with a header row "<MAAND> Activiteit
+// Verantwoordelijk" that reliably marks the 3 columns' x-positions; the
+// date cells are hand-typed Dutch text with real-world variation -
+// weekday-name prefixes, "Sabbat" used as a Saturday day-name, "t/m"/
+// "tot en met"/dash/"en"-conjunction range separators, a "Weekend N-M
+// maand" shorthand, "??" for a not-yet-known day, and an "Aanvang HH:MM
+// uur" time suffix that sometimes wraps onto its own line within the same
+// table cell.
+var MONTHS_NL_LOOKUP={januari:1,februari:2,maart:3,april:4,mei:5,juni:6,juli:7,augustus:8,september:9,oktober:10,november:11,december:12};
+var GEMEENTE_PLANNING_HEADER_RE=/Activiteit\s+Verantwoordelijk/i;
+function gpStripWeekdayPrefix(s){
+  return (s||'').replace(/^(maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag|zondag|sabbat|weekend)[,]?\s*/i,'').trim();
+}
+function gpFindMonthInText(s){
+  var m=(s||'').match(/\b(januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)\b/i);
+  return m?MONTHS_NL_LOOKUP[m[1].toLowerCase()]:null;
+}
+function gpParseSingleDatePart(part,ctxMonth){
+  part=(part||'').trim();
+  if(!part)return null;
+  var unclear=/\?\?/.test(part);
+  var dayMatch=part.match(/(\d{1,2})/);
+  var day=dayMatch?parseInt(dayMatch[1],10):null;
+  var month=gpFindMonthInText(part)||ctxMonth;
+  if(unclear&&!day)day=1;
+  if(day==null||month==null)return null;
+  return{day:day,month:month,unclear:unclear};
+}
+// Parses one Dutch planning-table date cell into an ISO start/end date
+// pair. ctxMonth/ctxYear are the month section this cell was found under -
+// used as a fallback when the cell text itself doesn't repeat the month or
+// year (most don't - they inherit it from their section header).
+function parseDutchDateCell(raw,ctxMonth,ctxYear){
+  if(!raw)return null;
+  var text=raw.replace(/\n/g,' ').replace(/\s+/g,' ').trim();
+  if(!text)return null;
+  var timeMatch=text.match(/Aanvang\s+(\d{1,2})[:.](\d{2})\s*uur/i);
+  var time=timeMatch?String(timeMatch[1]).padStart(2,'0')+':'+timeMatch[2]:null;
+  text=text.replace(/Aanvang\s+\d{1,2}[:.]\d{2}\s*uur/i,'').trim();
+  var yearMatch=text.match(/\b(20\d{2})\b/);
+  var year=yearMatch?parseInt(yearMatch[1],10):ctxYear;
+  text=text.replace(/\b20\d{2}\b/,'').trim();
+  var unclearOverall=/\?\?/.test(text);
+  var partsRaw=null;
+  var rangeMatch=text.match(/^(.*?)\s*(?:t\/m|tot en met)\s*(.*)$/i);
+  if(rangeMatch){
+    partsRaw=[rangeMatch[1].trim(),rangeMatch[2].trim()];
+  }else{
+    var weekendMatch=text.match(/^weekend\s+(\d{1,2})\s*-\s*(\d{1,2})\s+([a-zà-ÿ]+)/i);
+    if(weekendMatch)partsRaw=[weekendMatch[1]+' '+weekendMatch[3],weekendMatch[2]+' '+weekendMatch[3]];
+    else{
+      var dashMatch=text.match(/^(\d{1,2})\s*-\s*(\d{1,2})\s+([a-zà-ÿ]+)/i);
+      if(dashMatch)partsRaw=[dashMatch[1]+' '+dashMatch[3],dashMatch[2]+' '+dashMatch[3]];
+      else{
+        var enMatch=text.match(/^(.*\d.*?)\s+en\s+(.*\d.*)$/i);
+        if(enMatch)partsRaw=[enMatch[1].trim(),enMatch[2].trim()];
+        else partsRaw=[text];
+      }
+    }
+  }
+  partsRaw=partsRaw.map(gpStripWeekdayPrefix);
+  var p1=gpParseSingleDatePart(partsRaw[0],ctxMonth);
+  var p2=partsRaw.length>1?gpParseSingleDatePart(partsRaw[1],(p1?p1.month:ctxMonth)):null;
+  var openStart=false;
+  if(!p1&&p2){p1=p2;p2=null;openStart=true;}
+  if(!p1)return null;
+  var endYear=year;
+  var end=p2||p1;
+  if(p2&&p2.month<p1.month)endYear=year+1;
+  var startISO=year+'-'+String(p1.month).padStart(2,'0')+'-'+String(p1.day).padStart(2,'0');
+  var endISO=(p2?endYear:year)+'-'+String(end.month).padStart(2,'0')+'-'+String(end.day).padStart(2,'0');
+  return{startISO:startISO,endISO:endISO,time:time,unclear:!!(unclearOverall||p1.unclear||(p2&&p2.unclear)),openStart:openStart};
+}
+function gpIsRowStartText(s){
+  s=(s||'').trim();
+  if(!s)return false;
+  return /^(maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag|zondag|sabbat|weekend|t\/m|\?\?|\d)/i.test(s);
+}
+// Like extractPdfTextLines, but keeps each text run's x-position instead of
+// joining a whole visual line into one string - a member-roster PDF (plain
+// name lines) doesn't need that, but a 3-column activity table does, since
+// a naive line-join would interleave the date/activity/responsible columns
+// into one unreadable string.
+function extractPdfPositionedLines(file){
+  return loadPdfJs().then(function(pdfjsLib){
+    return file.arrayBuffer();
+  }).then(function(buf){
+    return loadPdfJs().then(function(pdfjsLib){return pdfjsLib.getDocument({data:buf}).promise;});
+  }).then(function(pdf){
+    var pagePromises=[];
+    for(var i=1;i<=pdf.numPages;i++){
+      pagePromises.push(pdf.getPage(i).then(function(page){
+        return page.getTextContent().then(function(tc){
+          var rowsByY={};
+          tc.items.forEach(function(item){
+            var y=Math.round(item.transform[5]);
+            if(!rowsByY[y])rowsByY[y]=[];
+            rowsByY[y].push({x:item.transform[4],str:item.str});
+          });
+          return Object.keys(rowsByY).sort(function(a,b){return b-a;}).map(function(y){
+            return rowsByY[y].sort(function(a,b){return a.x-b.x;});
+          });
+        });
+      }));
+    }
+    return Promise.all(pagePromises);
+  }).then(function(pagesLines){
+    var all=[];
+    pagesLines.forEach(function(lines){all=all.concat(lines);});
+    return all; // array of lines, each an array of {x,str} sorted left-to-right
+  });
+}
+// Detects the "<MAAND> Activiteit Verantwoordelijk" header that marks the
+// start of a month's table section, returning the x-position of the
+// Activiteit/Verantwoordelijk columns (everything left of Activiteit is
+// the date column) plus the month it names, for the date parser's
+// ctxMonth fallback.
+function gpDetectHeaderLine(items){
+  var joined=items.map(function(it){return it.str;}).join(' ');
+  if(!GEMEENTE_PLANNING_HEADER_RE.test(joined))return null;
+  var actIdx=-1,verIdx=-1;
+  for(var i=0;i<items.length;i++){
+    if(/^activiteit$/i.test(items[i].str))actIdx=i;
+    if(/^verantwoordelijk/i.test(items[i].str))verIdx=i;
+  }
+  if(actIdx<0||verIdx<0)return null;
+  return{col1X:items[actIdx].x,col2X:items[verIdx].x,month:gpFindMonthInText(joined)};
+}
+function gpBucketLine(items,bounds){
+  var col0='',col1='',col2='';
+  items.forEach(function(it){
+    var s=it.str||'';
+    if(!s.trim())return;
+    if(it.x<bounds.col1X-2)col0+=(col0?' ':'')+s;
+    else if(it.x<bounds.col2X-2)col1+=(col1?' ':'')+s;
+    else col2+=(col2?' ':'')+s;
+  });
+  return{col0:col0.trim(),col1:col1.trim(),col2:col2.trim()};
+}
+// Turns the positioned lines of the whole PDF into raw table rows (a
+// wrapped continuation line - e.g. an "Aanvang HH:MM uur" suffix or a long
+// activity description on its own line - gets merged onto the previous row
+// instead of becoming a row of its own; see gpIsRowStartText).
+function parseGemeentePlanningRows(pagesOfLines,defaultYear){
+  var rows=[];
+  var bounds=null,ctxMonth=null,ctxYear=defaultYear,current=null;
+  pagesOfLines.forEach(function(items){
+    if(!items.length)return;
+    var hdr=gpDetectHeaderLine(items);
+    if(hdr){
+      bounds=hdr;
+      if(hdr.month){
+        if(ctxMonth!=null&&hdr.month<ctxMonth)ctxYear=ctxYear+1;
+        ctxMonth=hdr.month;
+      }
+      current=null;
+      return;
+    }
+    if(!bounds)return; // nothing before the first header is table data
+    var buck=gpBucketLine(items,bounds);
+    if(!buck.col0&&!buck.col1&&!buck.col2)return;
+    if(!current||gpIsRowStartText(buck.col0)){
+      current={datumRaw:buck.col0,titel:buck.col1,verantwoordelijke:buck.col2,ctxMonth:ctxMonth,ctxYear:ctxYear};
+      rows.push(current);
+    }else{
+      if(buck.col0)current.datumRaw+=(current.datumRaw?'\n':'')+buck.col0;
+      if(buck.col1)current.titel+=(current.titel?' ':'')+buck.col1;
+      if(buck.col2)current.verantwoordelijke+=(current.verantwoordelijke?' ':'')+buck.col2;
+    }
+  });
+  return rows;
+}
+function buildGemeentePlanningItems(rows){
+  var items=[];
+  rows.forEach(function(row){
+    var titel=(row.titel||'').trim();
+    if(!titel)return; // no activity text - not a usable row
+    var parsed=parseDutchDateCell(row.datumRaw,row.ctxMonth,row.ctxYear);
+    items.push({
+      titel:titel,
+      verantwoordelijke:(row.verantwoordelijke||'').trim(),
+      datumRaw:(row.datumRaw||'').trim(),
+      datumStart:parsed?parsed.startISO:null,
+      datumEind:parsed?parsed.endISO:null,
+      tijd:parsed?parsed.time:null,
+      onduidelijkeDatum:!parsed||parsed.unclear||parsed.openStart
+    });
+  });
+  return items;
+}
+function isGemeentePlanningPdfLines(lines){
+  return (lines||[]).some(function(l){return GEMEENTE_PLANNING_HEADER_RE.test(l);});
+}
+function processGemeentePlanningPdfFile(file){
+  showImportResult(tMap({nl:'Planning wordt gelezen...',en:'Reading schedule...',es:'Leyendo planificación...'}));
+  extractPdfPositionedLines(file).then(function(pagesOfLines){
+    var defaultYear=new Date().getFullYear();
+    var rows=parseGemeentePlanningRows(pagesOfLines,defaultYear);
+    var items=buildGemeentePlanningItems(rows);
+    if(!items.length){
+      showImportResult(tMap({nl:'Geen planningsregels gevonden in deze PDF.',en:'No schedule rows found in this PDF.',es:'No se encontraron filas de planificación en este PDF.'}),true);
+      return;
+    }
+    openGemeentePlanningImportReview(items);
+  }).catch(function(err){
+    showImportResult((tMap({nl:'Fout bij lezen PDF: ',en:'Error reading PDF: ',es:'Error al leer el PDF: '}))+(err&&err.message||err),true);
+  });
+}
+function gpDedupKey(item){
+  return ((item.titel||'')+'|'+(item.datumStart||'')+'|'+(item.datumEind||'')).toLowerCase();
+}
+function gpFormatRange(item){
+  if(!item.datumStart)return item.datumRaw||'?';
+  var s=formatDateShortYear(item.datumStart);
+  var e=(item.datumEind&&item.datumEind!==item.datumStart)?(' - '+formatDateShortYear(item.datumEind)):'';
+  return s+e;
+}
+var _gpReviewItems=null;
+// Review step: same "checkbox per candidate row, already-imported rows
+// disabled" pattern as openPdfImportReview (member-roster import) above -
+// nothing reaches db.gemeentePlanning until confirmed here. Rows whose date
+// couldn't be parsed with confidence are flagged "onduidelijk" rather than
+// silently guessed, so the person doing the import can decide whether to
+// still include them.
+function openGemeentePlanningImportReview(items){
+  _gpReviewItems=items;
+  var existing={};
+  (db.gemeentePlanning||[]).forEach(function(g){existing[gpDedupKey(g)]=true;});
+  var titleLbl=tMap({nl:'Gemeente-planning gevonden',en:'Church schedule found',es:'Planificación de iglesia encontrada'});
+  var subLbl=tMap({nl:items.length+' regel(s) gevonden. Vink aan wat je wilt toevoegen aan de kalender. Dit telt niet mee als gewerkte uren - het is alleen ter info voor iedereen.',en:items.length+' row(s) found. Check what you want to add to the calendar. This does not count as worked hours - awareness only, for everyone.',es:items.length+' fila(s) encontradas. Marca lo que quieras añadir al calendario. Esto no cuenta como horas trabajadas - es solo informativo para todos.'});
+  var h='<div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>';
+  h+='<div style="font-size:15px;font-weight:700;margin-bottom:4px">'+titleLbl+'</div>';
+  h+='<div style="font-size:12px;color:var(--text2);margin-bottom:12px">'+subLbl+'</div>';
+  h+='<div style="max-height:50vh;overflow-y:auto;border:1px solid var(--border);border-radius:10px;padding:4px 10px">';
+  items.forEach(function(item,i){
+    var already=existing[gpDedupKey(item)];
+    var dateTxt=gpFormatRange(item);
+    h+='<label style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;'+(i>0?'border-top:1px solid var(--border);':'')+'cursor:'+(already?'default':'pointer')+';opacity:'+(already?'.5':'1')+'">'
+      +'<input type="checkbox" class="gp-import-chk" data-idx="'+i+'" '+(already?'disabled':'checked')+' style="width:16px;height:16px;flex-shrink:0;margin-top:2px">'
+      +'<span style="font-size:13px;flex:1">'
+      +'<span style="font-weight:600">'+escapeHtml(item.titel)+'</span>'
+      +(item.onduidelijkeDatum?' <span style="font-size:10px;background:var(--amber);color:#fff;border-radius:8px;padding:1px 6px;margin-left:4px">'+tMap({nl:'onduidelijk',en:'unclear',es:'no claro'})+'</span>':'')
+      +'<br><span style="color:var(--text3);font-size:12px">'+escapeHtml(dateTxt)+(item.tijd?' · '+item.tijd:'')+(item.verantwoordelijke?' · '+escapeHtml(item.verantwoordelijke):'')+'</span>'
+      +(already?' <span style="color:var(--text3)">&middot; '+tMap({nl:'al toegevoegd',en:'already added',es:'ya añadido'})+'</span>':'')
+      +'</span></label>';
+  });
+  h+='</div>';
+  h+='<div style="display:flex;gap:8px;margin-top:16px">';
+  h+='<button class="btn" onclick="closeModals()" style="flex:1">'+t('cancel_btn')+'</button>';
+  h+='<button class="btn primary" onclick="confirmGemeentePlanningImportReview()" style="flex:1">'+tMap({nl:'Toevoegen',en:'Add',es:'Añadir'})+'</button>';
+  h+='</div>';
+  showModal(h);
+}
+function confirmGemeentePlanningImportReview(){
+  var checked=Array.prototype.slice.call(document.querySelectorAll('.gp-import-chk:checked'));
+  var idxs=checked.map(function(el){return parseInt(el.getAttribute('data-idx'),10);});
+  closeModals();
+  if(!idxs.length||!_gpReviewItems)return;
+  var added=0;
+  idxs.forEach(function(i){
+    var item=_gpReviewItems[i];
+    if(!item)return;
+    var rec={
+      id:genUniqueId(db.gemeentePlanning),
+      titel:item.titel,
+      verantwoordelijke:item.verantwoordelijke,
+      datumStart:item.datumStart,
+      datumEind:item.datumEind,
+      tijd:item.tijd,
+      onduidelijkeDatum:!!item.onduidelijkeDatum,
+      bron:'pdf-import'
+    };
+    touch(rec);
+    db.gemeentePlanning.push(rec);
+    added++;
+  });
+  _gpReviewItems=null;
+  save();
+  showImportResult('✓ '+added+' '+tMap({nl:'planningsregel(s) toegevoegd aan de kalender!',en:'schedule row(s) added to the calendar!',es:'fila(s) de planificación añadidas al calendario!'}));
+}
+// Returns every gemeentePlanning item whose date range covers ds (a
+// yyyy-mm-dd string) - used by the calendar's day/month/year rendering to
+// show these as a distinct, non-hour-counted marker alongside real entries
+// and planned activities.
+function gemeentePlanningForDay(ds){
+  if(!ds||!db.gemeentePlanning)return[];
+  return db.gemeentePlanning.filter(function(g){
+    if(!g.datumStart)return false;
+    var end=g.datumEind||g.datumStart;
+    return ds>=g.datumStart&&ds<=end;
+  });
+}
+var GEMEENTE_PLANNING_COLOR='#6D4FC2';
+function openGemeentePlanningDetail(id){
+  var item=(db.gemeentePlanning||[]).find(function(g){return g.id==id;});
+  if(!item)return;
+  var h='<div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>';
+  h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">';
+  h+='<div style="width:10px;height:10px;border-radius:50%;background:'+GEMEENTE_PLANNING_COLOR+';flex-shrink:0"></div>';
+  h+='<div style="font-size:15px;font-weight:700">'+escapeHtml(item.titel)+'</div>';
+  h+='</div>';
+  h+='<div style="font-size:13px;color:var(--text2);margin-bottom:4px">'+escapeHtml(gpFormatRange(item))+(item.tijd?' · '+item.tijd:'')+'</div>';
+  if(item.verantwoordelijke)h+='<div style="font-size:13px;color:var(--text2);margin-bottom:4px">'+tMap({nl:'Verantwoordelijke: ',en:'Responsible: ',es:'Responsable: '})+escapeHtml(item.verantwoordelijke)+'</div>';
+  if(item.onduidelijkeDatum)h+='<div style="font-size:12px;color:var(--amber);margin-bottom:4px">'+tMap({nl:'Let op: de datum in de PDF was niet helemaal duidelijk.',en:'Note: the date in the PDF wasn\'t entirely clear.',es:'Nota: la fecha en el PDF no estaba del todo clara.'})+'</div>';
+  h+='<div style="font-size:11px;color:var(--text3);margin-bottom:14px">'+tMap({nl:'Uit een geïmporteerde gemeente-planning - telt niet mee als gewerkte uren.',en:'From an imported church schedule - does not count as worked hours.',es:'De una planificación de iglesia importada - no cuenta como horas trabajadas.'})+'</div>';
+  h+='<button class="btn" onclick="deleteGemeentePlanningItem('+item.id+')" style="width:100%;color:var(--danger)">'+t('delete_btn')+'</button>';
+  showModal(h);
+}
+function deleteGemeentePlanningItem(id){
+  if(!confirm(t('confirm_delete')||'Weet je het zeker?'))return;
+  var idx=(db.gemeentePlanning||[]).findIndex(function(g){return g.id==id;});
+  if(idx>=0){
+    recordTombstone('gemeentePlanning',db.gemeentePlanning[idx].id);
+    db.gemeentePlanning.splice(idx,1);
+  }
+  save();
+  closeModals();
+  if(typeof closeFcYdPopup==='function')closeFcYdPopup();
+  if(typeof fcRefreshFull==='function')fcRefreshFull();
+}
 // Heuristic filter: keep lines that look like a person's name (2+ words,
 // mostly letters, reasonable length) and drop obvious noise (page numbers,
 // pure headers like "LEDENLIJST", email/phone-only lines, empty lines).
@@ -22614,6 +22966,16 @@ function looksLikeNameLine(line){
 function processPdfImportFile(file){
   showImportResult(tMap({nl:'PDF wordt gelezen...',en:'Reading PDF...',es:'Leyendo PDF...'}));
   extractPdfTextLines(file).then(function(lines){
+    // A church activity-schedule PDF has a distinct, reliably-detectable
+    // "<Maand> Activiteit Verantwoordelijk" table header - route those to
+    // the planning importer (adds to the calendar, not to Contacts)
+    // instead of falling into the member-name-line heuristic below, which
+    // would otherwise misread every activity/responsible-person cell as a
+    // candidate "contact name".
+    if(isGemeentePlanningPdfLines(lines)){
+      processGemeentePlanningPdfFile(file);
+      return;
+    }
     var seen={};
     var candidates=lines.filter(looksLikeNameLine).filter(function(l){
       var k=l.toLowerCase();
@@ -25924,6 +26286,7 @@ function renderFcMonthSection(yr,mo){
     var ds=yr+'-'+String(mo+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     var isSel=fcSelectedDate===ds;
     var items=(byDay[d]||[]).concat(byDayPlan[d]||[]).sort(sortByTimeAsc);
+    var gpItems=gemeentePlanningForDay(ds);
     var chips='';
     items.slice(0,3).forEach(function(item){
       var cat=findCatByLabel(item.categorie);
@@ -25931,7 +26294,10 @@ function renderFcMonthSection(yr,mo){
       var label=item.cursistNaam||activityTitle(item);
       chips+='<div style="font-size:9.5px;background:'+col+';color:#fff;border-radius:3px;padding:1px 4px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+label+'</div>';
     });
-    var extra=items.length-3;
+    gpItems.slice(0,Math.max(0,3-items.length)).forEach(function(item){
+      chips+='<div style="font-size:9.5px;background:'+GEMEENTE_PLANNING_COLOR+';color:#fff;border-radius:3px;padding:1px 4px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escapeHtml(item.titel)+'</div>';
+    });
+    var extra=items.length+gpItems.length-3;
     // Same small anchored popover as year view (fcOpenYearDayPopup), instead
     // of expanding an inline panel below the grid - gives month view the
     // tap-to-see-activities + tap-to-expand-detail behavior the user liked
@@ -26059,13 +26425,14 @@ function renderFcDayDetail(ds){
   ensurePlanned();
   var plans=db.planned.filter(function(p){return p.datum===ds&&!p.completed&&!p.skipped;});
   var totU=ents.reduce(function(t,e){return t+entryUren(e);},0);
+  var gpItems=gemeentePlanningForDay(ds);
   var h='<div class="cal-day-panel" style="margin-top:10px">';
   h+='<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px">';
   h+='<div style="font-size:16px;font-weight:700">'+d.getDate()+' '+MONTHS_FULL[d.getMonth()]+'</div>';
   h+='<div style="font-size:12px;color:var(--text3)">'+wday+'</div>';
   if(totU>0)h+='<div style="margin-left:auto;font-size:12px;font-weight:600;background:var(--border);color:var(--text2);padding:2px 9px;border-radius:20px">'+totU.toFixed(1)+'u</div>';
   h+='</div>';
-  if(!ents.length&&!plans.length){
+  if(!ents.length&&!plans.length&&!gpItems.length){
     h+='<div style="text-align:center;color:var(--text3);padding:12px 0;font-size:13px">'+fcLbl('no_activities')+'</div>';
   }else{
     plans.concat(ents).sort(sortByTimeAsc).forEach(function(item){
@@ -26079,6 +26446,14 @@ function renderFcDayDetail(ds){
       h+='<div class="ac-top"><div class="ac-who" style="cursor:pointer;color:var(--brand)" onclick="openEditEntryModal('+idArg+')">'+titleTxt+'</div>';
       h+='<div class="ac-hours">'+(item.uren||0)+t('hours_abbr')+(item.km?' · '+item.km+distUnit():'')+'</div></div>';
       h+='<div class="ac-cat">'+(item.tijd?formatTimeDisplay(item.tijd)+' · ':'')+getCatLabel(item.categorie)+'</div>';
+      h+='</div></div></div>';
+    });
+    gpItems.forEach(function(item){
+      h+='<div class="activity-card" style="margin-bottom:6px" onclick="openGemeentePlanningDetail('+item.id+')"><div class="activity-card-inner">';
+      h+='<div class="ac-stripe" style="background:'+GEMEENTE_PLANNING_COLOR+'"></div>';
+      h+='<div class="ac-body" style="cursor:pointer">';
+      h+='<div class="ac-top"><div class="ac-who">'+escapeHtml(item.titel)+'</div></div>';
+      h+='<div class="ac-cat">'+(item.tijd?item.tijd+' · ':'')+(item.verantwoordelijke?escapeHtml(item.verantwoordelijke):'')+'</div>';
       h+='</div></div></div>';
     });
   }
@@ -26105,7 +26480,8 @@ function renderFullCalWeek(){
     var ents=db.entries.filter(function(e){return e.categorie&&e.datum===ds;});
     ensurePlanned();
     var plans=db.planned.filter(function(p){return p.datum===ds&&!p.completed&&!p.skipped;});
-    if(!ents.length&&!plans.length)return;
+    var gpItems=gemeentePlanningForDay(ds);
+    if(!ents.length&&!plans.length&&!gpItems.length)return;
     any=true;
     h+='<div style="padding:12px 2px 4px;font-size:12px;font-weight:700;color:var(--text3);text-transform:capitalize">'+d.toLocaleDateString(getLocale(),{weekday:'long',day:'numeric',month:'short'})+'</div>';
     plans.concat(ents).sort(sortByTimeAsc).forEach(function(item){
@@ -26117,6 +26493,13 @@ function renderFullCalWeek(){
       h+='<div style="width:8px;height:8px;border-radius:50%;background:'+col+';flex-shrink:0"></div>';
       h+='<div style="font-size:13px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)">'+label+'</div>';
       if(item.tijd)h+='<div style="font-size:11px;color:var(--text3)">'+formatTimeDisplay(item.tijd)+'</div>';
+      h+='</div>';
+    });
+    gpItems.forEach(function(item){
+      h+='<div onclick="openGemeentePlanningDetail('+item.id+')" style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid var(--border);cursor:pointer">';
+      h+='<div style="width:8px;height:8px;border-radius:50%;background:'+GEMEENTE_PLANNING_COLOR+';flex-shrink:0"></div>';
+      h+='<div style="font-size:13px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)">'+escapeHtml(item.titel)+'</div>';
+      if(item.tijd)h+='<div style="font-size:11px;color:var(--text3)">'+item.tijd+'</div>';
       h+='</div>';
     });
   });
@@ -26183,6 +26566,10 @@ function renderMiniMonthGrid(yr,mo){
     });
     if(plans.length&&dotCount<4)dots+='<span class="fc-year-dot" style="border-radius:50%;background:var(--amber);display:inline-block"></span>';
     var dateStr=yr+'-'+String(mo+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    // Gemeente-planning items (#982/#983) get their own dot color, always
+    // shown even if the 4-dot cap from real entries is already hit - a
+    // church-wide event is worth knowing about even on a busy day.
+    if(gemeentePlanningForDay(dateStr).length)dots+='<span class="fc-year-dot" style="border-radius:50%;background:'+GEMEENTE_PLANNING_COLOR+';display:inline-block"></span>';
     // Own click target per day, with stopPropagation, so tapping a single
     // day opens that day's activities in a popup instead of the whole
     // month wrapper's onclick (fcJumpMonth) firing and navigating away to
