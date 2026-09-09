@@ -15433,6 +15433,77 @@ function autoFillKmInWizard(){
   });
 }
 
+// Return-trip (retour) km support - a single trip's km field is normally
+// "one way" (see calcKmDistance's own comment above: "user does return trip
+// themselves"), which meant anyone who actually drove there AND back had to
+// either double the number in their head or under-report it. This gives
+// every km field in the app (wizard, quick-repeat, confirm-activity, plan
+// modal, contact quick-study, edit-entry) an optional "+ Retour toevoegen"
+// link that reveals a second input for the return leg. The PRIMARY km input
+// keeps holding the outbound (heen) leg; kmRetourBlockHtml/toggleKmRetour/
+// readKmWithRetour are shared by every prefix (id="<prefix>-km" + a
+// generated "<prefix>-retour-wrap"/"<prefix>-km-retour"/"<prefix>-retour-
+// link" trio). readKmWithRetour returns the COMBINED total (what entry.km
+// has always meant everywhere else in the app - Logboek rows, Rapport
+// totals, the spreadsheet km column, PDF export - so none of that code needs
+// to change) plus the kmHeen/kmRetour breakdown for entry points that want
+// to show/re-edit the two legs separately (edit-entry modal, entry detail
+// popup).
+function kmRetourAddLbl(){return tMap({nl:'+ Retour toevoegen',en:'+ Add return trip',es:'+ Añadir viaje de vuelta',fr:'+ Ajouter le trajet retour',de:'+ Rückfahrt hinzufügen',ro:'+ Adaugă drumul de întoarcere',hu:'+ Visszaút hozzáadása',ru:'+ Добавить обратный путь',it:'+ Aggiungi viaggio di ritorno',pt:'+ Adicionar viagem de volta'});}
+function kmRetourRemoveLbl(){return tMap({nl:'– Retour verwijderen',en:'– Remove return trip',es:'– Quitar viaje de vuelta',fr:'– Retirer le trajet retour',de:'– Rückfahrt entfernen',ro:'– Elimină drumul de întoarcere',hu:'– Visszaút eltávolítása',ru:'– Убрать обратный путь',it:'– Rimuovi viaggio di ritorno',pt:'– Remover viagem de volta'});}
+function kmRetourFieldLbl(){return tMap({nl:'Retour (km)',en:'Return (km)',es:'Vuelta (km)',fr:'Retour (km)',de:'Rückfahrt (km)',ro:'Întoarcere (km)',hu:'Visszaút (km)',ru:'Обратно (км)',it:'Ritorno (km)',pt:'Volta (km)'});}
+function kmRetourWordLbl(){return tMap({nl:'retour',en:'return',es:'vuelta',fr:'retour',de:'Rückfahrt',ro:'întoarcere',hu:'vissza',ru:'обратно',it:'ritorno',pt:'volta'});}
+function kmRetourBlockHtml(prefix,kmRetourVal){
+  var has=kmRetourVal!=null&&parseFloat(kmRetourVal)>0;
+  var h='<div id="'+prefix+'-retour-wrap" style="display:'+(has?'block':'none')+';margin-top:6px">';
+  h+='<span class="form-label" style="font-size:11px">'+kmRetourFieldLbl()+'</span>';
+  h+='<input type="number" id="'+prefix+'-km-retour" min="0" step="1" placeholder="0" value="'+(has?kmRetourVal:'')+'">';
+  h+='</div>';
+  h+='<div style="margin-top:4px"><a href="javascript:void(0)" id="'+prefix+'-retour-link" onclick="toggleKmRetour(\''+prefix+'\')" style="font-size:12px;color:var(--brand);text-decoration:none;font-weight:600">'+(has?kmRetourRemoveLbl():kmRetourAddLbl())+'</a></div>';
+  return h;
+}
+function toggleKmRetour(prefix){
+  var wrap=document.getElementById(prefix+'-retour-wrap');
+  var link=document.getElementById(prefix+'-retour-link');
+  var retourInput=document.getElementById(prefix+'-km-retour');
+  var kmInput=document.getElementById(prefix+'-km');
+  if(!wrap||!link)return;
+  var showing=wrap.style.display!=='none';
+  if(showing){
+    wrap.style.display='none';
+    link.textContent=kmRetourAddLbl();
+    if(retourInput)retourInput.value='';
+  }else{
+    wrap.style.display='block';
+    link.textContent=kmRetourRemoveLbl();
+    if(retourInput&&!retourInput.value&&kmInput&&kmInput.value)retourInput.value=kmInput.value;
+    if(retourInput)retourInput.focus();
+  }
+}
+// Reads "<prefix>-km" + (if the retour block is open) "<prefix>-km-retour",
+// returning {km:<combined total>, kmHeen, kmRetour}. kmHeen/kmRetour are
+// null when the retour block was never opened (or is empty) - callers use
+// that to decide whether to store the breakdown on the entry at all, so a
+// plain single-leg trip stays exactly as before (just entry.km, no extra
+// fields).
+function readKmWithRetour(prefix){
+  var kmEl=document.getElementById(prefix+'-km');
+  var wrap=document.getElementById(prefix+'-retour-wrap');
+  var retourEl=document.getElementById(prefix+'-km-retour');
+  var heen=kmEl?(parseFloat(kmEl.value)||0):0;
+  var retourActive=wrap&&wrap.style.display!=='none';
+  var retour=retourActive&&retourEl?(parseFloat(retourEl.value)||0):0;
+  if(retourActive&&retour>0)return {km:heen+retour,kmHeen:heen,kmRetour:retour};
+  return {km:heen,kmHeen:null,kmRetour:null};
+}
+// Small " (12 + 12 retour)" suffix for anywhere that already prints a km
+// number and wants to show the heen/retour breakdown alongside the total -
+// entry detail popup, edit-entry summary, planned-item detail.
+function kmBreakdownSuffix(kmHeen,kmRetour){
+  if(kmHeen==null||kmRetour==null)return '';
+  return ' ('+Math.round(kmHeen)+' + '+Math.round(kmRetour)+' '+kmRetourWordLbl()+')';
+}
+
 // Reuses the spreadsheet's free-text suggestion dropdown (ssOpenCellSuggest)
 // on the step wizard's own free-text fields (description/notes), so typing
 // there surfaces matching past entries the same way the spreadsheet does —
@@ -15542,8 +15613,9 @@ function renderWiz(){
           <div><span class="form-label">${t('wizard_travel_hours')}</span><select id="w-reisuren" class="hour-picker">${buildHourOptions(draft.reisUren||draft._autoTravelUren||0)}</select></div>
           <div>
             <span class="form-label">${distLabel()}</span>
-            <input type="number" id="w-km" min="0" step="1" placeholder="0" value="${draft.km||draft._autoTravelKm||''}">
+            <input type="number" id="w-km" min="0" step="1" placeholder="0" value="${draft.kmHeen!=null?draft.kmHeen:(draft.km||draft._autoTravelKm||'')}">
             ${(db.settings&&db.settings.myAdres&&draft.cursistId&&db.cursisten.find(c=>c.id==draft.cursistId)?.adres)?`<button type="button" onclick="autoFillKmInWizard()" style="margin-top:6px;width:100%;padding:6px;font-size:12px;border:1px dashed var(--brand);border-radius:6px;background:var(--brand-light);color:var(--brand);cursor:pointer">📍 ${t('calc_km_auto')||'Km automatisch berekenen'}</button><div id="km-auto-info" style="font-size:11px;color:var(--text3);margin-top:4px"></div>`:''}
+            ${kmRetourBlockHtml('w',draft.kmRetour)}
           </div>
         </div>
         <div style="margin-top:10px">
@@ -15554,7 +15626,7 @@ function renderWiz(){
         </div>
       </div>
       <div style="font-size:12px;color:var(--text3);margin-top:8px">${t('wizard_no_travel')}</div>
-      <div class="btn-row"><button class="btn" onclick="wBack()">${t('wizard_back')}</button><button class="btn" onclick="wQuickSave()">${t('save_btn')}</button><button class="btn primary" onclick="wSet('reisUren','w-reisuren');wSet('km','w-km');wSet('kosten','w-kosten');wNext()">${t('wizard_next')}</button></div>`;
+      <div class="btn-row"><button class="btn" onclick="wBack()">${t('wizard_back')}</button><button class="btn" onclick="wQuickSave()">${t('save_btn')}</button><button class="btn primary" onclick="wSet('reisUren','w-reisuren');wSetKm();wSet('kosten','w-kosten');wNext()">${t('wizard_next')}</button></div>`;
     }else if(draft.allowKm){
       // Category has no dedicated Reistijd travel-time category to link to
       // (travelLabel is null - e.g. Vergaderen, task #973: a meeting can be
@@ -15566,14 +15638,15 @@ function renderWiz(){
       <div class="travel-box">
         <div>
           <span class="form-label">${distLabel()}</span>
-          <input type="number" id="w-km" min="0" step="1" placeholder="0" value="${draft.km||''}">
+          <input type="number" id="w-km" min="0" step="1" placeholder="0" value="${draft.kmHeen!=null?draft.kmHeen:(draft.km||'')}">
+          ${kmRetourBlockHtml('w',draft.kmRetour)}
         </div>
         <div style="margin-top:10px">
           <input type="number" id="w-kosten" min="0" step="0.01" placeholder="0.00 (${currencySymbol()})" value="${draft.kosten||''}">
           ${receiptPhotoFieldHtml()}
         </div>
       </div>
-      <div class="btn-row"><button class="btn" onclick="wBack()">${t('wizard_back')}</button><button class="btn" onclick="wQuickSave()">${t('save_btn')}</button><button class="btn primary" onclick="wSet('km','w-km');wSet('kosten','w-kosten');wNext()">${t('wizard_next')}</button></div>`;
+      <div class="btn-row"><button class="btn" onclick="wBack()">${t('wizard_back')}</button><button class="btn" onclick="wQuickSave()">${t('save_btn')}</button><button class="btn primary" onclick="wSetKm();wSet('kosten','w-kosten');wNext()">${t('wizard_next')}</button></div>`;
     }else{
       c.innerHTML=`<div class="wiz-q">${t('wizard_expense_label')}</div>
       <div class="wiz-hint" style="margin-bottom:0">${t('wizard_expense_hint')}</div>
@@ -15813,6 +15886,16 @@ function wSetGemeente(){
   }
 }
 function wSet(key,id){const el=document.getElementById(id);if(el)draft[key]=el.value;}
+// Reads w-km + (if opened) w-km-retour via the shared readKmWithRetour
+// helper - draft.km always ends up as the combined total (same as every
+// other wSet('km',...) call site used to write), with kmHeen/kmRetour only
+// present on the draft when a return leg was actually entered.
+function wSetKm(){
+  var r=readKmWithRetour('w');
+  draft.km=r.km;
+  if(r.kmHeen!=null){draft.kmHeen=r.kmHeen;draft.kmRetour=r.kmRetour;}
+  else{delete draft.kmHeen;delete draft.kmRetour;}
+}
 function wSetCursist(){
   var el=document.getElementById('w-cursist');
   if(!el)return;
@@ -16061,7 +16144,7 @@ function wQuickSave(){
   else if(s==='details'){wSet('omschrijving','w-desc');wSet('datum','w-date');wSet('tijd','w-time');wSetMultiDay();}
   else if(s==='tijd')wSet('uren','w-uren');
   else if(s==='travelRelated')wSetTravelRelated();
-  else if(s==='travel'){wSet('reisUren','w-reisuren');wSet('km','w-km');wSet('kosten','w-kosten');}
+  else if(s==='travel'){wSet('reisUren','w-reisuren');wSetKm();wSet('kosten','w-kosten');}
   else if(s==='cursist')wSetCursist();
   else if(s==='thema_details')wSetThema();
   // Saving mid-flow (before reaching the final step's own "add to calendar"
@@ -16968,7 +17051,7 @@ function buildEntryDetailInnerHtml(e){
 
   h+='<div style="display:flex;gap:16px;flex-wrap:wrap">';
   h+='<div><div class="form-label" style="margin-bottom:2px">'+t('hours_abbr')+'</div><div style="font-size:14px;font-weight:600">'+(parseFloat(anchor.uren)||0)+'</div></div>';
-  if(parseFloat(anchor.km)>0)h+='<div><div class="form-label" style="margin-bottom:2px">'+distUnit()+'</div><div style="font-size:14px;font-weight:600">'+Math.round(anchor.km)+'</div></div>';
+  if(parseFloat(anchor.km)>0)h+='<div><div class="form-label" style="margin-bottom:2px">'+distUnit()+'</div><div style="font-size:14px;font-weight:600">'+Math.round(anchor.km)+(anchor.kmHeen!=null?'<span style="font-size:11px;font-weight:400;color:var(--text3)">'+kmBreakdownSuffix(anchor.kmHeen,anchor.kmRetour)+'</span>':'')+'</div></div>';
   if(parseFloat(anchor.kosten)>0)h+='<div><div class="form-label" style="margin-bottom:2px">'+costLbl+'</div><div style="font-size:14px;font-weight:600">'+currencySymbol()+parseFloat(anchor.kosten).toFixed(2).replace('.',',')+'</div></div>';
   h+='</div>';
 
@@ -17102,7 +17185,7 @@ function buildPlanDetailInnerHtml(p){
   if(p.thema&&p.themacode!=='Vrij onderwerp')h+='<div><div class="form-label" style="margin-bottom:2px">'+t('wizard_theme')+'</div><div style="font-size:14px">'+p.themacode+'</div></div>';
   h+='<div style="display:flex;gap:16px;flex-wrap:wrap">';
   if(parseFloat(p.uren)>0)h+='<div><div class="form-label" style="margin-bottom:2px">'+t('hours_abbr')+'</div><div style="font-size:14px;font-weight:600">'+parseFloat(p.uren)+'</div></div>';
-  if(parseFloat(p.km)>0)h+='<div><div class="form-label" style="margin-bottom:2px">'+distUnit()+'</div><div style="font-size:14px;font-weight:600">'+Math.round(p.km)+'</div></div>';
+  if(parseFloat(p.km)>0)h+='<div><div class="form-label" style="margin-bottom:2px">'+distUnit()+'</div><div style="font-size:14px;font-weight:600">'+Math.round(p.km)+(p.kmHeen!=null?'<span style="font-size:11px;font-weight:400;color:var(--text3)">'+kmBreakdownSuffix(p.kmHeen,p.kmRetour)+'</span>':'')+'</div></div>';
   h+='</div>';
   if(p.opmerking)h+='<div><div class="form-label" style="margin-bottom:2px">'+notesLbl+'</div><div style="font-size:13px;white-space:pre-wrap">'+p.opmerking+'</div></div>';
   h+='</div>';
@@ -17402,7 +17485,8 @@ function openQuickRepeatModal(last, prefillDate){
   h+=themaBlock;
   h+=qrMultiHtml;
   h+='<span class="form-label">'+t('wizard_travel_hours')+'</span><select id="qr-reisuren" class="hour-picker" style="margin-bottom:8px">'+buildHourOptions(last.reisUren||0)+'</select>';
-  h+='<span class="form-label">Km</span><input type="number" id="qr-km" value="'+(last.km||'')+'" min="0" placeholder="0" style="margin-bottom:8px">';
+  h+='<span class="form-label">Km</span><input type="number" id="qr-km" value="'+(last.kmHeen!=null?last.kmHeen:(last.km||''))+'" min="0" placeholder="0" style="margin-bottom:8px">';
+  h+=kmRetourBlockHtml('qr',last.kmRetour);
   h+='<span class="form-label">'+t('wizard_note')+'</span>';
   h+='<textarea id="qr-opmerking" placeholder="'+(t('wizard_notes_ph')||'Notities...')+'" style="height:60px"></textarea>';
   h+='</div>';
@@ -17589,7 +17673,12 @@ function saveQuickRepeat(sourceEntryId){
       .filter(function(id){return id!==String(newEntry.cursistId);});
   }
   if(reisuren)newEntry.reisUren=parseFloat(reisuren.value)||0;
-  if(km)newEntry.km=parseFloat(km.value)||0;
+  if(km){
+    var kmR=readKmWithRetour('qr');
+    newEntry.km=kmR.km;
+    if(kmR.kmHeen!=null){newEntry.kmHeen=kmR.kmHeen;newEntry.kmRetour=kmR.kmRetour;}
+    else{delete newEntry.kmHeen;delete newEntry.kmRetour;}
+  }
   // A repeated entry dated in the future isn't something that already
   // happened - it's a plan. Same auto-classification the main wizard uses
   // (isFutureDateTime/wizardDraftIsFuture/saveDraftAsPlanned): route it into
@@ -17623,6 +17712,8 @@ function saveQuickRepeat(sourceEntryId){
       themaCompleted:newEntry.themaCompleted!==false,
       uren:newEntry.uren||0,
       km:newEntry.km||0,
+      kmHeen:newEntry.kmHeen,
+      kmRetour:newEntry.kmRetour,
       kosten:newEntry.kosten||0,
       reisUren:newEntry.reisUren||0,
       gemeente:newEntry.gemeente||'',
@@ -19287,7 +19378,7 @@ function openCursistDetail(id){
     +'<div><span class="form-label">'+t('wizard_hours')+'</span><input type="number" id="cs-uren" min="0" step="0.25" value="1" style="width:100%"></div>'
     +'</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'
-    +'<div><span class="form-label">Km</span><input type="number" id="cs-km" min="0" value="0" style="width:100%"></div>'
+    +'<div><span class="form-label">Km</span><input type="number" id="cs-km" min="0" value="0" style="width:100%">'+kmRetourBlockHtml('cs',null)+'</div>'
     +'<div><span class="form-label">'+t('wizard_travel_hours')+'</span><select id="cs-reisuren" class="hour-picker" style="width:100%">'+buildHourOptions(0)+'</select></div>'
     +'</div>'
     +'<div style="margin-bottom:8px"><span class="form-label">'+t('wizard_cat')+'</span>'
@@ -19572,7 +19663,7 @@ function openLidDetail(id){
     +'<div><span class="form-label">'+t('wizard_hours')+'</span><input type="number" id="cs-uren" min="0" step="0.25" value="1" style="width:100%"></div>'
     +'</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'
-    +'<div><span class="form-label">Km</span><input type="number" id="cs-km" min="0" value="0" style="width:100%"></div>'
+    +'<div><span class="form-label">Km</span><input type="number" id="cs-km" min="0" value="0" style="width:100%">'+kmRetourBlockHtml('cs',null)+'</div>'
     +'<div><span class="form-label">'+t('wizard_travel_hours')+'</span><select id="cs-reisuren" class="hour-picker" style="width:100%">'+buildHourOptions(0)+'</select></div>'
     +'</div>'
     +'<div style="margin-bottom:8px"><span class="form-label">'+t('wizard_cat')+'</span>'
@@ -27827,7 +27918,8 @@ function openPlanModal(planId, prefillDate){
   h += '<div id="plan-thema-completed-wrap" style="display:'+(planThemaCode?'block':'none')+';margin-bottom:8px">';
   h += '<label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer"><input id="plan-thema-completed" type="checkbox" '+(p&&p.themaCompleted===false?'':'checked')+' style="width:16px;height:16px;flex-shrink:0;margin-top:2px"><span><span style="font-size:13px;display:block">'+t('thema_completed_lbl')+'</span><span style="font-size:11px;color:var(--text3)">'+t('thema_completed_hint')+'</span></span></label>';
   h += '</div>';
-  h += '<span class="form-label">'+(t('wizard_km')||'Km')+'</span><input type="number" id="plan-km" value="'+(p&&p.km?p.km:'')+'" min="0" placeholder="0" style="margin-bottom:8px">';
+  h += '<span class="form-label">'+(t('wizard_km')||'Km')+'</span><input type="number" id="plan-km" value="'+(p&&p.kmHeen!=null?p.kmHeen:(p&&p.km?p.km:''))+'" min="0" placeholder="0" style="margin-bottom:8px">';
+  h += kmRetourBlockHtml('plan',p&&p.kmRetour);
   h += '<span class="form-label">'+t('wizard_note')+'</span>';
   h += '<textarea id="plan-opmerking" placeholder="'+(t('wizard_notes_ph')||'Notities...')+'" style="height:60px">'+(p&&p.opmerking?p.opmerking:'')+'</textarea>';
   if(!p){
@@ -28711,7 +28803,9 @@ function savePlanModal(planId){
     themacode: planThemaCode,
     themaCompleted: themaCompletedCb ? themaCompletedCb.checked : true,
     uren: parseFloat(uren&&uren.value)||0,
-    km: parseFloat(km&&km.value)||0,
+    km: (km?readKmWithRetour('plan').km:0),
+    kmHeen: (km?readKmWithRetour('plan').kmHeen:null),
+    kmRetour: (km?readKmWithRetour('plan').kmRetour:null),
     opmerking: opm?opm.value:'',
     completed: false, skipped: false, reminded: false
   };
@@ -28942,7 +29036,7 @@ function agendaComplete(planId){
   h += '<div id="confirm-more-fields" style="display:'+(hasExtra?'block':'none')+';margin-bottom:8px">';
   h += '<div class="field-row">';
   h += '<div><span class="form-label">'+t('wizard_travel_hours')+'</span><select id="confirm-reisuren" class="hour-picker">'+buildHourOptions(p.reisUren||0)+'</select></div>';
-  h += '<div><span class="form-label">'+distLabel()+'</span><input type="number" id="confirm-km" min="0" step="1" placeholder="0" value="'+(p.km||'')+'"></div>';
+  h += '<div><span class="form-label">'+distLabel()+'</span><input type="number" id="confirm-km" min="0" step="1" placeholder="0" value="'+(p.kmHeen!=null?p.kmHeen:(p.km||''))+'">'+kmRetourBlockHtml('confirm',p.kmRetour)+'</div>';
   h += '</div>';
   h += '<div style="margin-top:8px"><span class="form-label">'+t('wizard_expense_label')+'</span><input type="number" id="confirm-kosten" min="0" step="0.01" placeholder="0.00 ('+currencySymbol()+')" value="'+(p.kosten||'')+'"></div>';
   h += '</div>';
@@ -28971,6 +29065,7 @@ function agendaConfirmSave(planId){
   var kostenEl = document.getElementById('confirm-kosten');
   var reisEl = document.getElementById('confirm-reisuren');
   var completedEl = document.getElementById('confirm-thema-completed');
+  var confirmKmR = kmEl?readKmWithRetour('confirm'):null;
   var newEntry = {
     id: Date.now(),
     datum: p.datum,
@@ -28981,7 +29076,9 @@ function agendaConfirmSave(planId){
     themacode: p.themacode||'',
     themaCompleted: completedEl?completedEl.checked:(p.themaCompleted!==false),
     uren: parseFloat(urenEl&&urenEl.value)||p.uren||0,
-    km: kmEl?(parseFloat(kmEl.value)||0):(p.km||0),
+    km: confirmKmR?confirmKmR.km:(p.km||0),
+    kmHeen: confirmKmR?confirmKmR.kmHeen:(p.kmHeen||undefined),
+    kmRetour: confirmKmR?confirmKmR.kmRetour:(p.kmRetour||undefined),
     kosten: kostenEl?(parseFloat(kostenEl.value)||0):(p.kosten||0),
     reisUren: reisEl?(parseFloat(reisEl.value)||0):(p.reisUren||0),
     cursistId: p.cursistId||'',
@@ -34220,7 +34317,9 @@ function saveStudyEntry(cursistId){
     cursistNaam:cu.naam,
     gemeente:cu.gemeente||'',
     uren:parseFloat(uren&&uren.value)||1,
-    km:parseFloat(km&&km.value)||0,
+    km:(km?readKmWithRetour('cs').km:0),
+    kmHeen:(km?readKmWithRetour('cs').kmHeen:null),
+    kmRetour:(km?readKmWithRetour('cs').kmRetour:null),
     reisUren:parseFloat(reisuren&&reisuren.value)||0,
     opmerking:opm?opm.value:'',
     isManual:true
@@ -34289,7 +34388,7 @@ function openEditEntryModal(entryId,skipSummary){
   eeSumRow(t('wizard_date'), formatDate(e.datum));
   if(e.tijd)eeSumRow(t('wizard_time'), formatTimeDisplay(e.tijd));
   if(parseFloat(e.uren)>0)eeSumRow(t('wizard_hours'), parseFloat(e.uren)+t('hours_abbr'));
-  if(parseFloat(e.km)>0)eeSumRow('Km', Math.round(parseFloat(e.km))+distUnit());
+  if(parseFloat(e.km)>0)eeSumRow('Km', Math.round(parseFloat(e.km))+distUnit()+kmBreakdownSuffix(e.kmHeen,e.kmRetour));
   if(parseFloat(e.reisUren)>0)eeSumRow(t('wizard_travel_hours'), parseFloat(e.reisUren)+t('hours_abbr'));
   if(parseFloat(e.kosten)>0)eeSumRow(t('col_kosten'), currencySymbol()+parseFloat(e.kosten).toFixed(2).replace('.',','));
   var eePhotos=entryPhotos(e);
@@ -34320,7 +34419,7 @@ function openEditEntryModal(entryId,skipSummary){
   h+='</div>';
   h+='<div style="margin-bottom:8px"><span class="form-label">'+t('wizard_time')+' <span style="font-size:11px;color:var(--text3);font-weight:400">('+(t('optional')||'opt.')+')</span></span>'+renderTimePicker('ee-tijd',e.tijd||'')+'</div>';
   h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">';
-  h+='<div><span class="form-label">Km</span><input type="number" id="ee-km" min="0" value="'+(e.km||0)+'" style="width:100%"></div>';
+  h+='<div><span class="form-label">Km</span><input type="number" id="ee-km" min="0" value="'+(e.kmHeen!=null?e.kmHeen:(e.km||0))+'" style="width:100%">'+kmRetourBlockHtml('ee',e.kmRetour)+'</div>';
   h+='<div><span class="form-label">'+t('wizard_travel_hours')+'</span><input type="number" id="ee-reisuren" min="0" step="0.25" value="'+(e.reisUren||0)+'" style="width:100%"></div>';
   h+='</div>';
   h+='<div style="margin-bottom:8px"><span class="form-label">'+t('col_kosten')+' ('+currencySymbol()+')</span><input type="number" id="ee-kosten" min="0" step="0.01" value="'+(e.kosten||0)+'" style="width:100%"></div>';
@@ -34414,7 +34513,12 @@ function duplicateEditEntry(entryId){
   if(datum)e.datum=datum.value;
   if(tijd)e.tijd=tijd.value||'';
   if(uren)e.uren=parseFloat(uren.value)||0;
-  if(km)e.km=parseFloat(km.value)||0;
+  if(km){
+    var eeKmR2=readKmWithRetour('ee');
+    e.km=eeKmR2.km;
+    if(eeKmR2.kmHeen!=null){e.kmHeen=eeKmR2.kmHeen;e.kmRetour=eeKmR2.kmRetour;}
+    else{delete e.kmHeen;delete e.kmRetour;}
+  }
   if(reisuren)e.reisUren=parseFloat(reisuren.value)||0;
   if(kosten)e.kosten=parseFloat(kosten.value)||0;
   if(cat)e.categorie=cat.value;
@@ -34508,7 +34612,12 @@ function saveEditEntry(entryId){
   if(datum)e.datum=datum.value;
   if(tijd)e.tijd=tijd.value||'';
   if(uren)e.uren=parseFloat(uren.value)||0;
-  if(km)e.km=parseFloat(km.value)||0;
+  if(km){
+    var eeKmR=readKmWithRetour('ee');
+    e.km=eeKmR.km;
+    if(eeKmR.kmHeen!=null){e.kmHeen=eeKmR.kmHeen;e.kmRetour=eeKmR.kmRetour;}
+    else{delete e.kmHeen;delete e.kmRetour;}
+  }
   if(reisuren)e.reisUren=parseFloat(reisuren.value)||0;
   if(kosten)e.kosten=parseFloat(kosten.value)||0;
   if(cat)e.categorie=cat.value;
