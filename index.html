@@ -15584,7 +15584,28 @@ function renderWiz(){
       <div class="btn-row"><button class="btn" onclick="wBack()">${t('wizard_back')}</button><button class="btn" onclick="wQuickSave()">${t('save_btn')}</button><button class="btn primary" onclick="wSet('kosten','w-kosten');wNext()">${t('wizard_next')}</button></div>`;
     }
   }else if(s==='cursist'){
-    const opts=buildCursistOptgroups(db.cursisten,function(cu){return `<option value="${cu.id}" ${draft.cursistId==cu.id?'selected':''}>${cu.naam}</option>`;});
+    // Was a plain native <select> - fine on a keyboard/mouse desktop (native
+    // selects support type-to-jump), but on a touchscreen there's no
+    // keyboard visible while the OS picker is open, so scrolling through
+    // every contact by hand was the only option. Replaced with the app's
+    // own searchable tap-list (same filter-as-you-type idea as the
+    // Meerdere-contacten checklist above and the repeat-an-activity picker,
+    // #825) - a real text field the person can type into regardless of
+    // device, filtering the same Niet-leden/Leden groups down as they type.
+    // w-cursist stays a hidden input carrying the chosen id, so wSetCursist()
+    // (called from the Volgende button, unchanged) keeps reading it exactly
+    // like it read the old select's value.
+    const wPickPh=tMap({nl:'Zoeken...',en:'Search...',es:'Buscar...',fr:'Rechercher...',de:'Suchen...',ro:'Caută...',hu:'Keresés...',ru:'Поиск...',it:'Cerca...',pt:'Pesquisar...'});
+    const wPickRow=(id,naam,isPlaceholder)=>{
+      const sel=String(draft.cursistId||'')===String(id);
+      return `<div class="cc-row w-pick-row" data-cid="${id}" data-cname="${normNameForMatch(naam)}" onclick="selectWCursist('${id}')" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 6px;cursor:pointer;border-radius:6px;background:${sel?'var(--brand-light)':''};color:${sel?'var(--brand)':(isPlaceholder?'var(--text3)':'')}">`
+        +`<span style="font-size:13.5px">${escapeHtml(naam)}</span><span class="w-pick-check" style="font-size:13px;font-weight:700;opacity:${sel?'1':'0'}">&#10003;</span></div>`;
+    };
+    const wPickGroups=groupCursistenByLid(db.cursisten);
+    let wPickList=wPickRow('',t('wizard_no_contact'),true);
+    if(wPickGroups.nietLeden.length)wPickList+=`<div class="cc-hdr" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px;padding:0 6px">${nietLedenSectionLbl()}</div>`+wPickGroups.nietLeden.map(cu=>wPickRow(cu.id,cu.naam)).join('');
+    if(wPickGroups.leden.length)wPickList+=`<div class="cc-hdr" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px;padding:0 6px">${ledenSectionLbl()}</div>`+wPickGroups.leden.map(cu=>wPickRow(cu.id,cu.naam)).join('');
+    if(wPickGroups.paused.length)wPickList+=`<div class="cc-hdr" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px;padding:0 6px">${pausedSectionLbl()}</div>`+wPickGroups.paused.map(cu=>wPickRow(cu.id,cu.naam)).join('');
     // "Meerdere studenten"/"Meerdere contacten" (multiple contacts): offered
     // for Bijbelstudie geven plus any other MULTI_CONTACT_CATS category
     // (Bezoek, Pastoraal contact, Pastoraal werk - task #959) - a home
@@ -15600,20 +15621,32 @@ function renderWiz(){
       const multiLbl=multiContactLabel(draft.categorie);
       const multiHint=multiContactHint(draft.categorie);
       const extraIds=(draft.extraCursistIds||[]).map(String);
-      const multiRow=cu=>`<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer"><input type="checkbox" class="w-multi-cb" value="${cu.id}" ${extraIds.indexOf(String(cu.id))>=0?'checked':''} style="width:16px;height:16px;flex-shrink:0"><span style="font-size:13px">${cu.naam}</span></label>`;
+      // data-cname (not d-cname/class-based text scraping) so filterContactChecklist
+      // can match on the normalized full name even though the visible <span>
+      // may later get truncated/styled - see that function's own comment.
+      const multiRow=cu=>`<label class="cc-row" data-cname="${normNameForMatch(cu.naam)}" style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer"><input type="checkbox" class="w-multi-cb" value="${cu.id}" ${extraIds.indexOf(String(cu.id))>=0?'checked':''} style="width:16px;height:16px;flex-shrink:0"><span style="font-size:13px">${cu.naam}</span></label>`;
       const multiGroups=groupCursistenByLid(db.cursisten);
-      const multiSubtitle=lbl=>`<div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px">${lbl}</div>`;
+      const multiSubtitle=lbl=>`<div class="cc-hdr" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px">${lbl}</div>`;
       let checkList='';
       if(multiGroups.nietLeden.length)checkList+=multiSubtitle(nietLedenSectionLbl())+multiGroups.nietLeden.map(multiRow).join('');
       if(multiGroups.leden.length)checkList+=multiSubtitle(ledenSectionLbl())+multiGroups.leden.map(multiRow).join('');
+      // Search box above the list, same "filter as you type" pattern as the
+      // repeat-an-activity picker (#825) - this list is every contact in the
+      // app, unfiltered, which used to mean scrolling through all of them by
+      // hand to find one person, especially painful for anyone not
+      // comfortable scrolling/searching a long list on a touchscreen.
+      const ccSearchPh=tMap({nl:'Zoeken...',en:'Search...',es:'Buscar...',fr:'Rechercher...',de:'Suchen...',ro:'Caută...',hu:'Keresés...',ru:'Поиск...',it:'Cerca...',pt:'Pesquisar...'});
       multiHtml=`<label style="display:flex;align-items:center;gap:8px;margin-top:12px;cursor:pointer"><input type="checkbox" id="w-multi-toggle" onchange="toggleWizMultiStudent()" ${multiChecked?'checked':''} style="width:16px;height:16px;flex-shrink:0"><span style="font-size:13px;font-weight:600">${multiLbl}</span></label>
       <div id="w-multi-wrap" style="display:${multiChecked?'block':'none'};margin-top:6px;padding:10px 12px;background:var(--surface2);border-radius:var(--r-sm)">
         <div style="font-size:11px;color:var(--text3);margin-bottom:6px">${multiHint}</div>
-        <div style="max-height:180px;overflow-y:auto">${checkList||'<div style="font-size:12px;color:var(--text3)">'+t('wizard_no_contact')+'</div>'}</div>
+        ${checkList?'<input type="text" id="w-multi-search" placeholder="'+ccSearchPh+'" oninput="filterContactChecklist(\'w-multi-search\',\'w-multi-list\')" style="margin-bottom:6px">':''}
+        <div id="w-multi-list" style="max-height:180px;overflow-y:auto">${checkList||'<div style="font-size:12px;color:var(--text3)">'+t('wizard_no_contact')+'</div>'}</div>
       </div>`;
     }
     c.innerHTML=`<div class="wiz-q">${t('wizard_with_who')}</div>
-      <select id="w-cursist"><option value="">${t('wizard_no_contact')}</option>${opts}</select>
+      <input type="text" id="w-cursist-search" placeholder="${wPickPh}" oninput="filterContactChecklist('w-cursist-search','w-cursist-list')" style="margin-bottom:8px">
+      <input type="hidden" id="w-cursist" value="${draft.cursistId||''}">
+      <div id="w-cursist-list" style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r-sm);padding:4px 6px">${wPickList}</div>
       <div style="margin-top:10px"><button class="btn sm" onclick="showAddCursist()">${t('add_cursist')}</button></div>
       ${multiHtml}
       <div class="btn-row"><button class="btn" onclick="wBack()">${t('wizard_back')}</button><button class="btn" onclick="wQuickSave()">${t('save_btn')}</button><button class="btn primary" onclick="wSetCursist();wNext()">${t('wizard_next')}</button></div>`;
@@ -15712,6 +15745,44 @@ function renderWiz(){
 
 function toggleVrij(){const sel=document.getElementById('w-thema');const wrap=document.getElementById('vrij-wrap');if(sel&&wrap)wrap.style.display=sel.value==='Vrij onderwerp'?'':'none';}
 function toggleQrVrij(){const sel=document.getElementById('qr-thema');const wrap=document.getElementById('qr-vrij-wrap');if(sel&&wrap)wrap.style.display=sel.value==='Vrij onderwerp'?'block':'none';}
+// Shared live-filter for the "Meerdere contacten" checkbox lists (wizard,
+// Edit Entry modal, Quick Repeat modal - all three build the exact same
+// cc-hdr/cc-row structure). Only ever hides rows via display:none, never
+// removes them from the DOM, so a name checked while visible stays checked
+// after the search text hides it again - same "hide, don't drop" rule used
+// for the gemeente-planning review groups (see gpToggleReviewGroup).
+function filterContactChecklist(searchId,wrapId){
+  var wrap=document.getElementById(wrapId);
+  if(!wrap)return;
+  var q=normNameForMatch(document.getElementById(searchId)&&document.getElementById(searchId).value||'');
+  var lastHdr=null;
+  Array.prototype.forEach.call(wrap.children,function(el){
+    if(el.classList&&el.classList.contains('cc-hdr')){
+      lastHdr=el;
+      el.style.display='none';
+    } else if(el.hasAttribute&&el.hasAttribute('data-cname')){
+      var match=!q||el.getAttribute('data-cname').indexOf(q)>=0;
+      el.style.display=match?'':'none';
+      if(match&&lastHdr)lastHdr.style.display='';
+    }
+  });
+}
+// Tap handler for the "Met wie?" searchable contact list (w-cursist-list) -
+// updates the hidden w-cursist input plus the visual checkmark/highlight,
+// without a full re-render (which would also wipe the in-progress search
+// text). wSetCursist() still reads the hidden input's value exactly as it
+// used to read the old <select>'s value, on Volgende/Opslaan.
+function selectWCursist(id){
+  var hidden=document.getElementById('w-cursist');
+  if(hidden)hidden.value=id;
+  document.querySelectorAll('.w-pick-row').forEach(function(row){
+    var isSel=row.getAttribute('data-cid')===String(id);
+    row.style.background=isSel?'var(--brand-light)':'';
+    row.style.color=isSel?'var(--brand)':'';
+    var chk=row.querySelector('.w-pick-check');
+    if(chk)chk.style.opacity=isSel?'1':'0';
+  });
+}
 function toggleWizMultiStudent(){
   var cb=document.getElementById('w-multi-toggle'),wrap=document.getElementById('w-multi-wrap');
   if(!cb||!wrap)return;
@@ -17271,16 +17342,17 @@ function openQuickRepeatModal(last, prefillDate){
     var qrMultiChecked=qrExtraIds.length>0;
     var qrMultiLbl=multiContactLabel(last.categorie);
     var qrMultiHint=multiContactHint(last.categorie);
-    var qrMultiRow=function(cu){return '<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer"><input type="checkbox" class="qr-multi-cb" value="'+cu.id+'" '+(qrExtraIds.indexOf(String(cu.id))>=0?'checked':'')+' style="width:16px;height:16px;flex-shrink:0"><span style="font-size:13px">'+cu.naam+'</span></label>';};
+    var qrMultiRow=function(cu){return '<label class="cc-row" data-cname="'+normNameForMatch(cu.naam)+'" style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer"><input type="checkbox" class="qr-multi-cb" value="'+cu.id+'" '+(qrExtraIds.indexOf(String(cu.id))>=0?'checked':'')+' style="width:16px;height:16px;flex-shrink:0"><span style="font-size:13px">'+cu.naam+'</span></label>';};
     var qrMultiGroups=groupCursistenByLid(db.cursisten);
-    var qrMultiSubtitle=function(lbl){return '<div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px">'+lbl+'</div>';};
+    var qrMultiSubtitle=function(lbl){return '<div class="cc-hdr" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px">'+lbl+'</div>';};
     var qrCheckList='';
     if(qrMultiGroups.nietLeden.length)qrCheckList+=qrMultiSubtitle(nietLedenSectionLbl())+qrMultiGroups.nietLeden.map(qrMultiRow).join('');
     if(qrMultiGroups.leden.length)qrCheckList+=qrMultiSubtitle(ledenSectionLbl())+qrMultiGroups.leden.map(qrMultiRow).join('');
     qrMultiHtml='<label style="display:flex;align-items:center;gap:8px;margin-top:12px;cursor:pointer"><input type="checkbox" id="qr-multi-toggle" onchange="toggleQrMultiStudent()" '+(qrMultiChecked?'checked':'')+' style="width:16px;height:16px;flex-shrink:0"><span style="font-size:13px;font-weight:600">'+qrMultiLbl+'</span></label>'
       +'<div id="qr-multi-wrap" style="display:'+(qrMultiChecked?'block':'none')+';margin-top:6px;padding:10px 12px;background:var(--surface2);border-radius:var(--r-sm)">'
       +'<div style="font-size:11px;color:var(--text3);margin-bottom:6px">'+qrMultiHint+'</div>'
-      +'<div style="max-height:180px;overflow-y:auto">'+(qrCheckList||'<div style="font-size:12px;color:var(--text3)">'+t('wizard_no_contact')+'</div>')+'</div>'
+      +(qrCheckList?'<input type="text" id="qr-multi-search" placeholder="'+tMap({nl:'Zoeken...',en:'Search...',es:'Buscar...',fr:'Rechercher...',de:'Suchen...',ro:'Caută...',hu:'Keresés...',ru:'Поиск...',it:'Cerca...',pt:'Pesquisar...'})+'" oninput="filterContactChecklist(\'qr-multi-search\',\'qr-multi-list\')" style="margin-bottom:6px">':'')
+      +'<div id="qr-multi-list" style="max-height:180px;overflow-y:auto">'+(qrCheckList||'<div style="font-size:12px;color:var(--text3)">'+t('wizard_no_contact')+'</div>')+'</div>'
       +'</div>';
   }
   var moreLbl=tMap({nl:'Meer aanpassen (categorie, km, notitie)',en:'More options (category, km, note)',es:'Más opciones (categoría, km, nota)',fr:'Plus d\'options (catégorie, km, note)',de:'Weitere Optionen (Kategorie, Km, Notiz)',ro:'Mai multe opțiuni (categorie, km, notă)',hu:'További beállítások (kategória, km, jegyzet)',ru:'Дополнительно (категория, км, заметка)',it:'Altre opzioni (categoria, km, nota)',pt:'Mais opções (categoria, km, nota)'});
@@ -34198,9 +34270,9 @@ function openEditEntryModal(entryId,skipSummary){
   var eeMultiChecked=eeExtraIds.length>0;
   var eeMultiLbl=multiContactLabel(e.categorie);
   var eeMultiHint=multiContactHint(e.categorie);
-  var eeMultiRow=function(cu){return '<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer"><input type="checkbox" class="ee-multi-cb" value="'+cu.id+'" '+(eeExtraIds.indexOf(String(cu.id))>=0?'checked':'')+' style="width:16px;height:16px;flex-shrink:0"><span style="font-size:13px">'+cu.naam+'</span></label>';};
+  var eeMultiRow=function(cu){return '<label class="cc-row" data-cname="'+normNameForMatch(cu.naam)+'" style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer"><input type="checkbox" class="ee-multi-cb" value="'+cu.id+'" '+(eeExtraIds.indexOf(String(cu.id))>=0?'checked':'')+' style="width:16px;height:16px;flex-shrink:0"><span style="font-size:13px">'+cu.naam+'</span></label>';};
   var eeMultiGroups=groupCursistenByLid(db.cursisten);
-  var eeMultiSubtitle=function(lbl){return '<div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px">'+lbl+'</div>';};
+  var eeMultiSubtitle=function(lbl){return '<div class="cc-hdr" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px">'+lbl+'</div>';};
   var eeCheckList='';
   if(eeMultiGroups.nietLeden.length)eeCheckList+=eeMultiSubtitle(nietLedenSectionLbl())+eeMultiGroups.nietLeden.map(eeMultiRow).join('');
   if(eeMultiGroups.leden.length)eeCheckList+=eeMultiSubtitle(ledenSectionLbl())+eeMultiGroups.leden.map(eeMultiRow).join('');
@@ -34272,7 +34344,8 @@ function openEditEntryModal(entryId,skipSummary){
   h+='<label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="ee-multi-toggle" onchange="toggleEeMultiStudent()" '+(eeMultiChecked?'checked':'')+' style="width:16px;height:16px;flex-shrink:0"><span id="ee-multi-toggle-lbl" style="font-size:13px;font-weight:600">'+eeMultiLbl+'</span></label>';
   h+='<div id="ee-multi-wrap" style="display:'+(eeMultiChecked?'block':'none')+';margin-top:6px;padding:10px 12px;background:var(--surface2);border-radius:var(--r-sm)">';
   h+='<div id="ee-multi-hint" style="font-size:11px;color:var(--text3);margin-bottom:6px">'+eeMultiHint+'</div>';
-  h+='<div style="max-height:180px;overflow-y:auto">'+(eeCheckList||'<div style="font-size:12px;color:var(--text3)">'+t('wizard_no_contact')+'</div>')+'</div>';
+  if(eeCheckList)h+='<input type="text" id="ee-multi-search" placeholder="'+tMap({nl:'Zoeken...',en:'Search...',es:'Buscar...',fr:'Rechercher...',de:'Suchen...',ro:'Caută...',hu:'Keresés...',ru:'Поиск...',it:'Cerca...',pt:'Pesquisar...'})+'" oninput="filterContactChecklist(\'ee-multi-search\',\'ee-multi-list\')" style="margin-bottom:6px">';
+  h+='<div id="ee-multi-list" style="max-height:180px;overflow-y:auto">'+(eeCheckList||'<div style="font-size:12px;color:var(--text3)">'+t('wizard_no_contact')+'</div>')+'</div>';
   h+='</div></div>';
   h+='<span class="form-label">'+t('wizard_gemeente')+'</span>';
   h+='<select id="ee-gemeente" style="width:100%;margin-bottom:4px" onchange="toggleEeGemeenteNew()">';
