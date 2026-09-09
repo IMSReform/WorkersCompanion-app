@@ -6160,7 +6160,11 @@ function openTipsList(){
   showModalCentered(h);
 }
 const UREN_CRIT=2088,VAKANTIE=192;
-function getVakantieUren(){return (db&&db.settings&&db.settings.goalVacationDays)?db.settings.goalVacationDays*8:VAKANTIE;}
+// goalVacationDays!=null (not the old truthy check) so an explicit 0 - a
+// worker with no vacation-day goal at all - reports as 0/0 rather than
+// silently falling back to the 24-day default; only a genuinely unset field
+// (null, i.e. never filled in) uses that default. See saveSettings().
+function getVakantieUren(){return (db&&db.settings&&db.settings.goalVacationDays!=null)?db.settings.goalVacationDays*8:VAKANTIE;}
 // Official Dutch "onbelaste kilometervergoeding" (tax-free km allowance) per calendar year.
 // 2026: raised from 0.23 to 0.25, decided ~July 2026 but applied retroactively to 1 Jan 2026.
 // Source: Belastingdienst / Rijksoverheid. Update this table when a new official rate is announced.
@@ -12537,7 +12541,7 @@ function applySettings(){const s=db.settings;
   // Reminder text: show current language default if empty or equals any known default
   // Set reminder text field
   buildReminderText();
-  sv('setting-naam',s.naam||'');sv('setting-gemeente',s.gemeente||'');sv('setting-email',s.email||'');sv('setting-tel',s.tel||'');sv('setting-geboortedatum',s.geboortedatum||'');sv('goal-studies',s.goalStudies||'');sv('goal-evang',s.goalEvang||'');sv('goal-uren-week',s.goalUrenWeek||'');sv('goal-followup',s.goalFollowup||'');sv('goal-vacation-days',s.goalVacationDays||'');sv('goal-km-rate',s.goalKmRate||'');sv('setting-adres',s.myAdres||'');sv('setting-adres-postcode',s.myAdresPostcode||'');sv('setting-adres-city',s.myAdresCity||'');sv('setting-adres-country',s.myAdresCountry||'');sv('setting-time-format',s.timeFormat||'24h');sv('setting-date-format',s.dateFormat||'dmy');sv('setting-currency',s.currency||'EUR');sv('setting-distance-unit',s.distanceUnit||'km');updateKmRateLabel();
+  sv('setting-naam',s.naam||'');sv('setting-gemeente',s.gemeente||'');sv('setting-email',s.email||'');sv('setting-tel',s.tel||'');sv('setting-geboortedatum',s.geboortedatum||'');sv('goal-studies',s.goalStudies||'');sv('goal-evang',s.goalEvang||'');sv('goal-uren-week',s.goalUrenWeek||'');sv('goal-followup',s.goalFollowup||'');(function(){var _gvdEl=document.getElementById('goal-vacation-days');if(_gvdEl)_gvdEl.value=s.goalVacationDays!=null?s.goalVacationDays:'';})();sv('goal-km-rate',s.goalKmRate||'');sv('setting-adres',s.myAdres||'');sv('setting-adres-postcode',s.myAdresPostcode||'');sv('setting-adres-city',s.myAdresCity||'');sv('setting-adres-country',s.myAdresCountry||'');sv('setting-time-format',s.timeFormat||'24h');sv('setting-date-format',s.dateFormat||'dmy');sv('setting-currency',s.currency||'EUR');sv('setting-distance-unit',s.distanceUnit||'km');updateKmRateLabel();
   // Update About card
   var aname=document.getElementById('about-app-name');
   if(aname)aname.textContent=getOrgShortName();
@@ -12556,7 +12560,18 @@ function applySettings(){const s=db.settings;
 function saveSettings(){if(_suppressSettingsChange)return;const s=db.settings;s.reminderOn=document.getElementById('setting-reminder-on')?.checked||false;s.interval=parseInt(document.getElementById('setting-interval')?.value)||60;var _rtv=document.getElementById('setting-reminder-text')?.value||'';
   var _rtvIsDefault=!_rtv||Object.keys(TRANSLATIONS).some(function(lng){return TRANSLATIONS[lng]&&TRANSLATIONS[lng].reminder_default===_rtv;});
   s.reminderText=_rtvIsDefault?'':_rtv;s.naam=document.getElementById('setting-naam')?.value||'';s.gemeente=document.getElementById('setting-gemeente')?.value||'';s.email=document.getElementById('setting-email')?.value||'';s.tel=document.getElementById('setting-tel')?.value||'';s.geboortedatum=document.getElementById('setting-geboortedatum')?.value||'';s.goalStudies=parseInt(document.getElementById('goal-studies')?.value)||0;s.goalEvang=parseInt(document.getElementById('goal-evang')?.value)||0;s.goalUrenWeek=parseFloat(document.getElementById('goal-uren-week')?.value)||0;s.textSize=s.textSize||'md';s.lang=LANG;s.goalFollowup=parseInt(document.getElementById('goal-followup')?.value)||0;
-  s.goalVacationDays=parseInt(document.getElementById('goal-vacation-days')?.value)||0;
+  // Unlike the other goal-* fields above (where blank and "genuinely 0" are
+  // both meaningless/unset and can safely collapse to 0), vacation days has
+  // a real, meaningful zero: some workers (e.g. Kantoor staff whose leave is
+  // tracked elsewhere) are deliberately given 0 goal days, and that must
+  // read differently from "field left blank, please assume the 24-day
+  // default" (see the placeholder="24" on this input, and its use in
+  // getVakantieUren below). So this one field stores null for blank instead
+  // of collapsing to 0 like the others - keeping "unset" and "explicitly 0"
+  // distinguishable downstream.
+  var _gvdRaw=document.getElementById('goal-vacation-days')?.value;
+  var _gvdNum=parseInt(_gvdRaw);
+  s.goalVacationDays=(_gvdRaw===''||_gvdRaw===undefined||isNaN(_gvdNum))?null:_gvdNum;
   s.goalKmRate=parseFloat(document.getElementById('goal-km-rate')?.value)||0;
   s.currency=document.getElementById('setting-currency')?.value||'EUR';
   s.distanceUnit=document.getElementById('setting-distance-unit')?.value||'km';
@@ -20517,8 +20532,8 @@ function _buildRapportInner(){
     <div class="rp-tile green"><div class="rp-tile-ico">&#9203;</div><div class="rp-tile-num">${totalUren.toFixed(1)}</div><div class="rp-tile-label">${t('rapport_grand_hours').replace(' ','\n')}</div></div>
     <div class="rp-tile blue"><div class="rp-tile-ico">&#10003;</div><div class="rp-tile-num">${critUren.toFixed(1)}</div><div class="rp-tile-label">${t('rp_crit_hours')}</div></div>
     <div class="rp-tile amber"><div class="rp-tile-ico">${distUnit()}</div><div class="rp-tile-num">${Math.round(totalKm)}</div><div class="rp-tile-label">${t('km_label')}</div></div>
-    <div class="rp-tile purple"><div class="rp-tile-ico">&#128214;</div><div class="rp-tile-num">${studyEntries.length}</div><div class="rp-tile-label">${t('rp_bible_studies')}</div></div>
-    <div class="rp-tile teal"><div class="rp-tile-ico">&#128100;</div><div class="rp-tile-num">${Object.keys(byCursist).length}</div><div class="rp-tile-label">${t('rp_students_guided')}</div></div>
+    ${hasBibleStudies?`<div class="rp-tile purple"><div class="rp-tile-ico">&#128214;</div><div class="rp-tile-num">${studyEntries.length}</div><div class="rp-tile-label">${t('rp_bible_studies')}</div></div>`:''}
+    ${hasBibleStudies?`<div class="rp-tile teal"><div class="rp-tile-ico">&#128100;</div><div class="rp-tile-num">${Object.keys(byCursist).length}</div><div class="rp-tile-label">${t('rp_students_guided')}</div></div>`:''}
   </div>
   <div class="rp-divider rp-sec-cover"></div>
   <div class="rp-cover-body rp-sec-catdist">
@@ -20535,19 +20550,28 @@ function _buildRapportInner(){
       </div>`;
     }).join('')}
   </div>
-  <div class="rp-vak-section rp-sec-absence">
+  ${(()=>{
+    // #970/#972: a worker with no vacation-day goal at all (vakDays===0, e.g. Kantoor
+    // staff whose leave is tracked elsewhere) shouldn't show a "0 / 0 dagen" row, and if
+    // that leaves Verlof/Ziekteverzuim/Feestdag also empty, the whole section (including
+    // its header) should be omitted rather than showing an empty-looking box. The card
+    // stays safely paired with Reiskosten on wide screens either way (see #971).
+    const _vakHasContent=(_vakRangeMultiYear?_vak.vakUsedDays>0:_vak.vakDays>0)||_vak.verlofDays>0||_vak.ziekDays>0||_vak.feestdagDays>0;
+    if(!_vakHasContent)return'';
+    return `<div class="rp-vak-section rp-sec-absence">
     <div class="rp-sh">${t('holiday')} ${_vakRangeMultiYear?(formatDate(rapportRangeFrom)+' – '+formatDate(rapportRangeTo)):_vakStatsYear}</div>
-    <div class="rp-cat-item"><div class="rp-cname">${getCatLabel('Vakantie')}</div><div class="rp-chours">${_vakRangeMultiYear?(_vak.vakUsedDays+' '+(t('days_lbl')||'')):(_vak.vakRemDays+' / '+_vak.vakDays+' '+(t('days_lbl')||''))}</div></div>
+    ${(_vakRangeMultiYear?_vak.vakUsedDays>0:_vak.vakDays>0)?`<div class="rp-cat-item"><div class="rp-cname">${getCatLabel('Vakantie')}</div><div class="rp-chours">${_vakRangeMultiYear?(_vak.vakUsedDays+' '+(t('days_lbl')||'')):(_vak.vakRemDays+' / '+_vak.vakDays+' '+(t('days_lbl')||''))}</div></div>`:''}
     ${_vak.verlofDays>0?`<div class="rp-cat-item"><div class="rp-cname">${getCatLabel('Verlof')}</div><div class="rp-chours">${_vak.verlofDays} ${t('days_lbl')||''}</div></div>`:''}
     ${_vak.ziekDays>0?`<div class="rp-cat-item"><div class="rp-cname">${t('sick_leave')}</div><div class="rp-chours">${_vak.ziekDays} ${t('days_lbl')||''}</div></div>`:''}
     ${_vak.feestdagDays>0?`<div class="rp-cat-item"><div class="rp-cname">${getCatLabel('Feestdag (NL)')}</div><div class="rp-chours">${_vak.feestdagDays} ${t('days_lbl')||''}</div></div>`:''}
-  </div>
+  </div>`;
+  })()}
   <div class="rp-vak-section rp-sec-cover">
     <div class="rp-sh">${LANG==='en'?'Activities':LANG==='es'?'Actividades':LANG==='fr'?'Activités':LANG==='de'?'Aktivitäten':LANG==='ro'?'Activități':LANG==='hu'?'Tevékenységek':LANG==='ru'?'Деятельности':'Activiteiten'}</div>
     <div class="rp-cat-item"><div class="rp-cname">${t('rp_total_activities')}</div><div class="rp-chours">${data.length}</div></div>
     <div class="rp-cat-item"><div class="rp-cname">${t('rp_working_days')}</div><div class="rp-chours">${Object.keys(byDay).length}</div></div>
-    <div class="rp-cat-item"><div class="rp-cname">${t('rp_bible_studies')}</div><div class="rp-chours" style="color:#1A6B47">${studyEntries.length}</div></div>
-    <div class="rp-cat-item"><div class="rp-cname">${t('rp_students_guided')}</div><div class="rp-chours" style="color:#1A6B47">${Object.keys(byCursist).length}</div></div>
+    ${hasBibleStudies?`<div class="rp-cat-item"><div class="rp-cname">${t('rp_bible_studies')}</div><div class="rp-chours" style="color:#1A6B47">${studyEntries.length}</div></div>`:''}
+    ${hasBibleStudies?`<div class="rp-cat-item"><div class="rp-cname">${t('rp_students_guided')}</div><div class="rp-chours" style="color:#1A6B47">${Object.keys(byCursist).length}</div></div>`:''}
   </div>
   <div class="rp-km-section rp-sec-km">
     <div class="rp-km-headline">
