@@ -16926,6 +16926,31 @@ function buildPlanDetailInnerHtml(p){
   h+='</div>';
   return h;
 }
+// Read-only detail modal for a planned (not-yet-done) item, matching
+// openEntryDetailModal's shape (title/date header, detail block, Edit
+// button) so tapping a planned item anywhere - including calendar search
+// results - shows the same kind of "view before you edit" popup that
+// logged entries and gemeente-planning items already get, instead of
+// jumping straight into the edit form.
+function openPlanDetailModal(planId){
+  ensurePlanned();
+  var p=db.planned.find(function(x){return String(x.id)===String(planId);});
+  if(!p)return;
+  var titleTxt=escapeHtml(p.cursistNaam||activityTitle(p));
+  var h='<div style="padding:16px">';
+  h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px">';
+  h+='<div style="font-size:16px;font-weight:700">'+titleTxt+'</div>';
+  h+='<button onclick="closeTopModal()" style="border:none;background:none;font-size:20px;color:var(--text3);cursor:pointer;line-height:1;padding:0 2px">&times;</button>';
+  h+='</div>';
+  h+='<div style="font-size:12px;color:var(--text3);margin-bottom:14px">'+formatDate(p.datum)+(p.tijd?' · '+formatTimeDisplay(p.tijd):'')+' · '+t('planned_lbl')+'</div>';
+  h+='<div style="font-size:13px;color:var(--text2);margin-bottom:10px">'+getCatLabel(p.categorie)+'</div>';
+  h+=buildPlanDetailInnerHtml(p);
+  h+='<div style="display:flex;gap:8px;margin-top:14px">';
+  h+='<button class="btn primary" onclick="closeModals();openPlanModal('+ssIdArg(p.id)+')" style="flex:1">'+t('edit_btn')+'</button>';
+  h+='</div>';
+  h+='</div>';
+  showModal(h);
+}
 // Year view: tapping a day shows one popup listing everything planned or
 // logged that day, without leaving the year grid underneath it (the popup
 // is an overlay - the year view is untouched behind it). Tapping one of
@@ -26141,25 +26166,35 @@ function fcOnSearchInput(){
   var resultsEl=document.getElementById('fc-search-results');
   if(resultsEl)resultsEl.innerHTML=renderFcSearchResultsList();
 }
-// Searches both logged entries and still-active planned items (matching the
-// "isPlanned" distinction fcOpenYearDayPopup already uses for its own rows,
-// so tapping a planned result correctly opens openPlanModal instead of the
-// entries-only openEditEntryModal) across description, contact name, topic,
-// note, category and church - basically every free-text field someone might
-// remember typing when they logged or planned the activity.
+// Searches logged entries, still-active planned items, and imported
+// gemeente-planning rows (kind: 'entry'/'plan'/'gp' - replaces the old
+// boolean isPlanned flag now that there are 3 kinds, not 2) across
+// description, contact name, topic, note, category, church, title and
+// responsible-person - basically every free-text field someone might
+// remember typing (or that was parsed from the PDF) for the activity.
 function fcSearchMatches(){
   var qn=fcSearchNorm(fcSearchQuery);
   if(!qn)return [];
   var rows=[];
-  db.entries.forEach(function(e){if(e.categorie)rows.push({item:e,isPlanned:false});});
+  db.entries.forEach(function(e){if(e.categorie)rows.push({item:e,kind:'entry'});});
   ensurePlanned();
-  db.planned.forEach(function(p){if(p.categorie&&!p.completed&&!p.skipped)rows.push({item:p,isPlanned:true});});
+  db.planned.forEach(function(p){if(p.categorie&&!p.completed&&!p.skipped)rows.push({item:p,kind:'plan'});});
+  (db.gemeentePlanning||[]).forEach(function(g){rows.push({item:g,kind:'gp'});});
   return rows.filter(function(row){
     var item=row.item;
-    var cat=findCatByLabel(item.categorie);
-    var hay=[item.omschrijving,item.cursistNaam,item.thema,item.opmerking,getCatLabel(item.categorie),cat?getAardLabel(cat.aard):'',item.gemeente].filter(Boolean).join(' ');
+    var hay;
+    if(row.kind==='gp'){
+      hay=[item.titel,item.verantwoordelijke].filter(Boolean).join(' ');
+    }else{
+      var cat=findCatByLabel(item.categorie);
+      hay=[item.omschrijving,item.cursistNaam,item.thema,item.opmerking,getCatLabel(item.categorie),cat?getAardLabel(cat.aard):'',item.gemeente].filter(Boolean).join(' ');
+    }
     return fcSearchNorm(hay).indexOf(qn)>=0;
-  }).sort(function(a,b){return (b.item.datum||'').localeCompare(a.item.datum||'');});
+  }).sort(function(a,b){
+    var da=a.kind==='gp'?a.item.datumStart:a.item.datum;
+    var dbb=b.kind==='gp'?b.item.datumStart:b.item.datum;
+    return (dbb||'').localeCompare(da||'');
+  });
 }
 function renderFcSearchResultsList(){
   var qn=fcSearchQuery.trim();
@@ -26174,13 +26209,32 @@ function renderFcSearchResultsList(){
   }
   var h='';
   matches.slice(0,200).forEach(function(row){
-    var item=row.item,isPlanned=row.isPlanned;
+    var item=row.item,kind=row.kind;
+    if(kind==='gp'){
+      // Gemeente-planning result: tap opens the same read-only detail popup
+      // used everywhere else in the calendar for these items (#982/#983),
+      // not an edit form - they're imported, not something the worker owns.
+      h+='<div class="activity-card" style="margin-bottom:6px;cursor:pointer" onclick="openGemeentePlanningDetail('+item.id+')"><div class="activity-card-inner">';
+      h+='<div class="ac-stripe" style="background:'+GEMEENTE_PLANNING_COLOR+'"></div>';
+      h+='<div class="ac-body">';
+      h+='<div class="ac-top"><div class="ac-who">'+escapeHtml(item.titel)+'</div><div class="ac-hours">'+(item.datumStart?formatDate(item.datumStart):'')+'</div></div>';
+      h+='<div class="ac-cat">'+(item.verantwoordelijke?escapeHtml(item.verantwoordelijke)+' · ':'')+tMap({nl:'Gemeente-planning',en:'Church schedule',es:'Planificación de iglesia'})+'</div>';
+      h+='</div></div></div>';
+      return;
+    }
+    var isPlanned=kind==='plan';
     var cat=findCatByLabel(item.categorie);
     var col=AARDEN_COLORS[cat?cat.aard:'Overig']||'#A1A1AA';
     var idArg=ssIdArg(item.id);
     var titleTxt=escapeHtml(item.cursistNaam||activityTitle(item));
     var dateTxt=item.datum?formatDate(item.datum):'';
-    h+='<div class="activity-card" style="margin-bottom:6px;cursor:pointer" onclick="'+(isPlanned?'openPlanModal('+idArg+')':'openEditEntryModal('+idArg+')')+'"><div class="activity-card-inner">';
+    // Tapping opens the read-only detail popup (openEntryDetailModal /
+    // openPlanDetailModal), matching every other calendar surface, rather
+    // than jumping straight into the edit form - see user feedback: "it
+    // would be nice to be able to tap on each one of the entries in the
+    // search result and see details, like in anything registered in the
+    // calendar". Edit is still one tap away from there.
+    h+='<div class="activity-card" style="margin-bottom:6px;cursor:pointer" onclick="'+(isPlanned?'openPlanDetailModal('+idArg+')':'openEntryDetailModal('+idArg+')')+'"><div class="activity-card-inner">';
     h+='<div class="ac-stripe" style="background:'+col+'"></div>';
     h+='<div class="ac-body">';
     h+='<div class="ac-top"><div class="ac-who">'+titleTxt+'</div><div class="ac-hours">'+dateTxt+'</div></div>';
