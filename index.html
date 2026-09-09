@@ -1827,6 +1827,7 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
 
     </div>
     <div class="about-footer">
+      <div style="display:flex;justify-content:center;margin-bottom:10px"><div id="about-isotope-mark" style="width:26px;height:26px;opacity:.65"></div></div>
       <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px" data-i18n="about_card">Over deze app</div>
       <div style="font-size:15px;font-weight:700;color:var(--brand);margin-bottom:2px" id="about-app-name">IMS SDA Reform Mov.</div>
       <div style="font-size:11px;color:var(--text3);margin-bottom:4px;line-height:1.5" id="about-org-full">International Missionary Society Seventh Day Adventist Church Reform Movement</div>
@@ -1838,7 +1839,7 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
       </div>
       <div style="font-size:10.5px;color:var(--text3);line-height:1.4;margin-bottom:14px" data-i18n="force_update_hint">Wist tijdelijke appgegevens en laadt de nieuwste versie opnieuw. Je gegevens blijven veilig, want die staan apart opgeslagen. Doe dit als een update niet lijkt door te komen.</div>
       <div style="font-size:11px;color:var(--text3);border-top:1px solid var(--border2);padding-top:12px;line-height:2">
-        <span style="color:var(--text2);font-weight:500" data-i18n="dev_by">Ontwikkeld door:</span> Gabriel Porras<br>
+        <span style="color:var(--text2);font-weight:500" data-i18n="dev_by">Ontwikkeld door:</span> Gabriel Porras | &copy; p2pgraphics<br>
         <span style="color:var(--text2);font-weight:500" data-i18n="version_lbl">Versie:</span> <span id="about-version-num">1.0.0</span>
       </div>
     </div>
@@ -12686,6 +12687,23 @@ function applySettings(){const s=db.settings;
   if(avern)avern.textContent=APP_VERSION;
   var aupdbtn=document.getElementById('about-updates-btn');
   if(aupdbtn)aupdbtn.textContent=tMap(UPDATE_LBL_MAP)+' '+CHANGELOG.length;
+  // Small isotope mark above "About this app", recolored to the active
+  // theme color via a CSS mask (the PNG itself is a single-color shape on
+  // a transparent background, so masking it with background-color:var(--brand)
+  // reliably reproduces it in whatever brand color the worker has chosen,
+  // instead of baking in one fixed color). Same source image as the PDF
+  // letterhead's orgHeaderHtml() - just the mark, no org-name text, per the
+  // request that this only be the isotope, not the full lockup.
+  var aiso=document.getElementById('about-isotope-mark');
+  if(aiso&&!aiso.dataset.set){
+    aiso.style.backgroundColor='var(--brand)';
+    aiso.style.webkitMaskImage="url('"+IMS_ISOTOPE_DATA_URI+"')";
+    aiso.style.maskImage="url('"+IMS_ISOTOPE_DATA_URI+"')";
+    aiso.style.webkitMaskSize='contain';aiso.style.maskSize='contain';
+    aiso.style.webkitMaskRepeat='no-repeat';aiso.style.maskRepeat='no-repeat';
+    aiso.style.webkitMaskPosition='center';aiso.style.maskPosition='center';
+    aiso.dataset.set='1';
+  }
   applyStoredTheme();
   applyStoredDarkMode();
   applyWorkRoleVisibility();
