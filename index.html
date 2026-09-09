@@ -15700,6 +15700,7 @@ function renderWiz(){
 }
 
 function toggleVrij(){const sel=document.getElementById('w-thema');const wrap=document.getElementById('vrij-wrap');if(sel&&wrap)wrap.style.display=sel.value==='Vrij onderwerp'?'':'none';}
+function toggleQrVrij(){const sel=document.getElementById('qr-thema');const wrap=document.getElementById('qr-vrij-wrap');if(sel&&wrap)wrap.style.display=sel.value==='Vrij onderwerp'?'block':'none';}
 function toggleWizMultiStudent(){
   var cb=document.getElementById('w-multi-toggle'),wrap=document.getElementById('w-multi-wrap');
   if(!cb||!wrap)return;
@@ -17220,14 +17221,28 @@ function openQuickRepeatModal(last, prefillDate){
   }).join('');
   var themaBlock='';
   if(last.categorie==='Bijbelstudie geven'&&!isLid){
+    // qr-vrij (free-text custom topic) was missing entirely - the select
+    // below happily pre-selected "Vrij onderwerp" whenever the source entry
+    // used a custom topic (last.themacode==='Vrij onderwerp'), but there was
+    // nowhere to see or keep the actual typed-in topic text, only the select.
+    // Since this "more options" block stays in the DOM (just hidden) even
+    // when never opened, saveQuickRepeat below was reading that select's
+    // value regardless - silently replacing the real custom topic with the
+    // generic "Vrij onderwerp"/"Free topic" placeholder on every repeat,
+    // even when the user never touched the thema field at all. Same
+    // select+wrap+toggle pattern as the main wizard (w-thema/w-vrij) and
+    // the edit-entry modal (ee-thema/ee-vrij).
     themaBlock='<span class="form-label">'+t('wizard_theme')+'</span>'
-      +'<select id="qr-thema" style="margin-bottom:8px">'
+      +'<select id="qr-thema" style="margin-bottom:8px" onchange="toggleQrVrij()">'
       +'<option value="">— '+t('no_topic')+' —</option>'
       +THEMAS.filter(function(th){return th[0]!=='Vrij onderwerp';}).map(function(th){
         return '<option value="'+th[0]+'"'+(th[0]===last.themacode?' selected':'')+'>'+getThemaOptLabel(th[0],th[1])+'</option>';
       }).join('')
       +'<option value="Vrij onderwerp"'+(last.themacode==='Vrij onderwerp'?' selected':'')+'>'+t('wizard_free_topic')+'</option>'
       +'</select>'
+      +'<div id="qr-vrij-wrap" style="display:'+(last.themacode==='Vrij onderwerp'?'block':'none')+';margin-bottom:8px">'
+      +'<input type="text" id="qr-vrij" list="free-thema-dl" placeholder="'+t('wizard_free_placeholder')+'" value="'+(last.themacode==='Vrij onderwerp'?escapeHtml(last.thema||''):'')+'" style="width:100%">'+freeThemaDatalistHtml()
+      +'</div>'
       +'<label style="display:flex;align-items:flex-start;gap:8px;margin:8px 0 4px;cursor:pointer"><input id="qr-thema-completed" type="checkbox" '+(last.themaCompleted===false?'':'checked')+' style="width:16px;height:16px;flex-shrink:0;margin-top:2px"><span><span style="font-size:13px;display:block">'+t('thema_completed_lbl')+'</span><span style="font-size:11px;color:var(--text3)">'+t('thema_completed_hint')+'</span></span></label>';
   }
   // "Meerdere studenten" (same feature as the wizard's cursist step and
@@ -17446,7 +17461,14 @@ function saveQuickRepeat(sourceEntryId){
     var themaVal=thema.value||'';
     var themaName='';
     if(themaVal==='Vrij onderwerp'){
-      themaName=t('wizard_free_topic')||'Vrij onderwerp';
+      // Read the actual typed-in topic (qr-vrij, added alongside qr-thema
+      // above) instead of always falling back to the generic placeholder -
+      // that fallback used to run unconditionally here, silently replacing
+      // whatever real custom topic the source entry had (e.g. repeating a
+      // "Vrij onderwerp" Bible study wiped its specific topic text down to
+      // just the literal words "Vrij onderwerp"/"Free topic").
+      var qrVrijEl=document.getElementById('qr-vrij');
+      themaName=qrVrijEl&&qrVrijEl.value?qrVrijEl.value:(t('wizard_free_topic')||'Vrij onderwerp');
     } else if(themaVal){
       var tm=THEMAS.find(function(x){return x[0]===themaVal;});
       if(tm)themaName=themaVal+' - '+tm[1];
