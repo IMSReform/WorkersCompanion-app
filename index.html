@@ -10587,7 +10587,7 @@ const LS_KEY='zda_v4_'+new Date().getFullYear();
 // Not year-scoped like LS_KEY on purpose - which screen the user was last on
 // should keep working across a year rollover too.
 const LAST_SCREEN_KEY='zda_last_screen';
-let db={entries:[],cursisten:[],todos:[],prayers:[],customStudies:[],tombstones:[],approvals:[],gemeentePlanning:[],settings:{reminderOn:false,interval:60,reminderText:'',naam:'',gemeente:'ZDAreformatie',goalStudies:0,goalEvang:0,goalUrenWeek:40,goalFollowup:0,workRole:'bijbelwerker',workRoleTouched:false,approvalCode:'',gcInfra:{workers:0,pastors:0,missionhouses:0,buildings:0}}};
+let db={entries:[],cursisten:[],todos:[],prayers:[],projects:[],customStudies:[],tombstones:[],approvals:[],gemeentePlanning:[],settings:{reminderOn:false,interval:60,reminderText:'',naam:'',gemeente:'ZDAreformatie',goalStudies:0,goalEvang:0,goalUrenWeek:40,goalFollowup:0,workRole:'bijbelwerker',workRoleTouched:false,approvalCode:'',gcInfra:{workers:0,pastors:0,missionhouses:0,buildings:0}}};
 // Every entry-creation site used to just do id:Date.now(), which can collide
 // when two entries are created within the same millisecond — e.g. the wizard
 // creating a main entry plus its auto-travel entry back-to-back, or a fast
@@ -11734,7 +11734,7 @@ function isDriveAuthError(e){
   var code = e.status || (e.result && e.result.error && e.result.error.code);
   return code===401||code===403;
 }
-async function syncToDrive(forceOverwrite){if(!useGoogleDrive||!accessToken){saveLocal();pulseSsSaveStatus('ok',(LANG==='en'?'Saved locally · ':LANG==='es'?'Guardado localmente · ':LANG==='fr'?'Enregistré localement · ':LANG==='de'?'Lokal gespeichert · ':LANG==='ru'?'Сохранено локально · ':'Lokaal opgeslagen · ')+new Date().toLocaleTimeString(getLocale(),{hour:'2-digit',minute:'2-digit'}));return;}setSyncStatus('info',LANG==='en'?'Saving…':LANG==='es'?'Guardando…':LANG==='fr'?'Sauvegarde…':LANG==='de'?'Speichern…':LANG==='ru'?'Сохранение…':'Opslaan…',true);try{await pullEncMetaFromDrive();if(!driveFileId){const l=await gapi.client.drive.files.list({spaces:'appDataFolder',q:`name='${DRIVE_FILE_NAME}'`,fields:'files(id)'});const f=l.result.files;if(f&&f.length)driveFileId=f[0].id;}if(driveFileId&&!forceOverwrite){var _pullOk=false;try{const rres=await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,{headers:{'Authorization':'Bearer '+accessToken}});if(rres.ok){const rdata=await deserializeDb(await rres.text());_pullOk=true;if(rdata&&rdata.entries){db.tombstones=mergeTombstones(db.tombstones,rdata.tombstones||[]);var _tE=tombIdsFor('entries',db.tombstones),_tP=tombIdsFor('planned',db.tombstones),_tT=tombIdsFor('todos',db.tombstones),_tPr=tombIdsFor('prayers',db.tombstones),_tCs=tombIdsFor('customStudies',db.tombstones),_tCu=tombIdsFor('cursisten',db.tombstones),_tGp=tombIdsFor('gemeentePlanning',db.tombstones);db.entries=mergeArraysById(db.entries,rdata.entries,_tE);db.cursisten=mergeArraysById(db.cursisten,rdata.cursisten||[],_tCu);db.churches=mergeArraysByValue(db.churches,rdata.churches||[]);db.planned=mergeArraysById(db.planned,rdata.planned||[],_tP);db.vacationDays=mergeArraysByValue(db.vacationDays,rdata.vacationDays||[]);db.todos=mergeArraysById(db.todos,rdata.todos||[],_tT);db.prayers=mergeArraysById(db.prayers,rdata.prayers||[],_tPr);db.customStudies=mergeArraysById(db.customStudies,rdata.customStudies||[],_tCs);db.approvals=mergeArraysById(db.approvals,rdata.approvals||[]);db.gemeentePlanning=mergeArraysById(db.gemeentePlanning||[],rdata.gemeentePlanning||[],_tGp);if(rdata.settings){var _ldm=db.settings.darkMode,_lat=db.settings.appTheme,_lts=db.settings.textSize,_cc=db.settings.customCategories,_clo=db.settings.categoryLabelOverrides,_nm=db.settings.naam,_gm=db.settings.gemeente,_em=db.settings.email,_tl=db.settings.tel,_gb=db.settings.geboortedatum,_ad=db.settings.myAdres,_adp=db.settings.myAdresPostcode,_adc=db.settings.myAdresCity,_adco=db.settings.myAdresCountry,_lg=db.settings.lang,_gf=db.settings.groupFrequency,_ddg=db.settings.dismissedDupeGroups,_wr=db.settings.workRole,_wrT=!!db.settings.workRoleTouched,_gci=db.settings.gcInfra,_cr=db.settings.churchRole,_crs=db.settings.churchRoles,_gvd=db.settings.goalVacationDays;Object.assign(db.settings,rdata.settings);if(_ldm!==undefined)db.settings.darkMode=_ldm;if(_lat!==undefined)db.settings.appTheme=_lat;if(_lts!==undefined)db.settings.textSize=_lts;if(_cc)db.settings.customCategories=_cc;if(_clo)db.settings.categoryLabelOverrides=_clo;if(_nm)db.settings.naam=_nm;if(_gm)db.settings.gemeente=_gm;if(_em)db.settings.email=_em;if(_tl)db.settings.tel=_tl;if(_gb)db.settings.geboortedatum=_gb;if(_ad)db.settings.myAdres=_ad;if(_adp)db.settings.myAdresPostcode=_adp;if(_adc)db.settings.myAdresCity=_adc;if(_adco)db.settings.myAdresCountry=_adco;if(_lg)db.settings.lang=_lg;
+async function syncToDrive(forceOverwrite){if(!useGoogleDrive||!accessToken){saveLocal();pulseSsSaveStatus('ok',(LANG==='en'?'Saved locally · ':LANG==='es'?'Guardado localmente · ':LANG==='fr'?'Enregistré localement · ':LANG==='de'?'Lokal gespeichert · ':LANG==='ru'?'Сохранено локально · ':'Lokaal opgeslagen · ')+new Date().toLocaleTimeString(getLocale(),{hour:'2-digit',minute:'2-digit'}));return;}setSyncStatus('info',LANG==='en'?'Saving…':LANG==='es'?'Guardando…':LANG==='fr'?'Sauvegarde…':LANG==='de'?'Speichern…':LANG==='ru'?'Сохранение…':'Opslaan…',true);try{await pullEncMetaFromDrive();if(!driveFileId){const l=await gapi.client.drive.files.list({spaces:'appDataFolder',q:`name='${DRIVE_FILE_NAME}'`,fields:'files(id)'});const f=l.result.files;if(f&&f.length)driveFileId=f[0].id;}if(driveFileId&&!forceOverwrite){var _pullOk=false;try{const rres=await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,{headers:{'Authorization':'Bearer '+accessToken}});if(rres.ok){const rdata=await deserializeDb(await rres.text());_pullOk=true;if(rdata&&rdata.entries){db.tombstones=mergeTombstones(db.tombstones,rdata.tombstones||[]);var _tE=tombIdsFor('entries',db.tombstones),_tP=tombIdsFor('planned',db.tombstones),_tT=tombIdsFor('todos',db.tombstones),_tPr=tombIdsFor('prayers',db.tombstones),_tPj=tombIdsFor('projects',db.tombstones),_tCs=tombIdsFor('customStudies',db.tombstones),_tCu=tombIdsFor('cursisten',db.tombstones),_tGp=tombIdsFor('gemeentePlanning',db.tombstones);db.entries=mergeArraysById(db.entries,rdata.entries,_tE);db.cursisten=mergeArraysById(db.cursisten,rdata.cursisten||[],_tCu);db.churches=mergeArraysByValue(db.churches,rdata.churches||[]);db.planned=mergeArraysById(db.planned,rdata.planned||[],_tP);db.vacationDays=mergeArraysByValue(db.vacationDays,rdata.vacationDays||[]);db.todos=mergeArraysById(db.todos,rdata.todos||[],_tT);db.prayers=mergeArraysById(db.prayers,rdata.prayers||[],_tPr);db.projects=mergeArraysById(db.projects||[],rdata.projects||[],_tPj);db.customStudies=mergeArraysById(db.customStudies,rdata.customStudies||[],_tCs);db.approvals=mergeArraysById(db.approvals,rdata.approvals||[]);db.gemeentePlanning=mergeArraysById(db.gemeentePlanning||[],rdata.gemeentePlanning||[],_tGp);if(rdata.settings){var _ldm=db.settings.darkMode,_lat=db.settings.appTheme,_lts=db.settings.textSize,_cc=db.settings.customCategories,_clo=db.settings.categoryLabelOverrides,_nm=db.settings.naam,_gm=db.settings.gemeente,_em=db.settings.email,_tl=db.settings.tel,_gb=db.settings.geboortedatum,_ad=db.settings.myAdres,_adp=db.settings.myAdresPostcode,_adc=db.settings.myAdresCity,_adco=db.settings.myAdresCountry,_lg=db.settings.lang,_gf=db.settings.groupFrequency,_ddg=db.settings.dismissedDupeGroups,_wr=db.settings.workRole,_wrT=!!db.settings.workRoleTouched,_gci=db.settings.gcInfra,_cr=db.settings.churchRole,_crs=db.settings.churchRoles,_gvd=db.settings.goalVacationDays;Object.assign(db.settings,rdata.settings);if(_ldm!==undefined)db.settings.darkMode=_ldm;if(_lat!==undefined)db.settings.appTheme=_lat;if(_lts!==undefined)db.settings.textSize=_lts;if(_cc)db.settings.customCategories=_cc;if(_clo)db.settings.categoryLabelOverrides=_clo;if(_nm)db.settings.naam=_nm;if(_gm)db.settings.gemeente=_gm;if(_em)db.settings.email=_em;if(_tl)db.settings.tel=_tl;if(_gb)db.settings.geboortedatum=_gb;if(_ad)db.settings.myAdres=_ad;if(_adp)db.settings.myAdresPostcode=_adp;if(_adc)db.settings.myAdresCity=_adc;if(_adco)db.settings.myAdresCountry=_adco;if(_lg)db.settings.lang=_lg;
       // #970b: same gap as loadFromDrive (see the workRole/gcInfra comment
       // there) but here it's more consequential, since syncToDrive() runs on
       // EVERY save() - so unlike loadFromDrive (an explicit user action),
@@ -11801,7 +11801,7 @@ async function syncToDrive(forceOverwrite){if(!useGoogleDrive||!accessToken){sav
   // once the pull can actually succeed.
   if(!forceOverwrite&&!_pullOk)throw new Error('Drive pull failed before upload - aborting to avoid overwriting remote changes');
   }const body=await serializeDb(db);if(driveFileId){await driveUploadBody(driveFileId,body);}else{const m=await gapi.client.drive.files.create({resource:{name:DRIVE_FILE_NAME,parents:['appDataFolder']},fields:'id'});driveFileId=m.result.id;await driveUploadBody(driveFileId,body);}lastSyncTime=new Date();setSyncStatus('ok',(LANG==='en'?'Saved to Drive · ':LANG==='es'?'Guardado en Drive · ':LANG==='fr'?'Enregistré dans Drive · ':LANG==='de'?'In Drive gespeichert · ':LANG==='ru'?'Сохранено в Drive · ':'Opgeslagen in Drive · ')+lastSyncTime.toLocaleTimeString(getLocale(),{hour:'2-digit',minute:'2-digit'}));maybeCreateDailySnapshot();}catch(e){if(isDriveAuthError(e)){accessToken=null;}saveLocal();setSyncStatus('err',LANG==='en'?'Drive error — saved locally':LANG==='es'?'Error Drive — guardado local':LANG==='fr'?'Erreur Drive — sauvegarde locale':LANG==='de'?'Drive-Fehler — lokal gespeichert':LANG==='ru'?'Ошибка Drive — сохранено локально':'Drive fout — lokaal opgeslagen');}}
-async function loadFromDrive(){setSyncStatus('info',LANG==='en'?'Loading from Drive…':LANG==='es'?'Cargando de Drive…':LANG==='fr'?'Chargement Drive…':LANG==='de'?'Laden von Drive…':LANG==='ru'?'Загрузка с Drive…':'Laden van Drive…',true);try{await pullEncMetaFromDrive();const l=await gapi.client.drive.files.list({spaces:'appDataFolder',q:`name='${DRIVE_FILE_NAME}'`,fields:'files(id)'});const f=l.result.files;if(f&&f.length){driveFileId=f[0].id;const res=await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,{headers:{'Authorization':'Bearer '+accessToken}});if(!res.ok){var _e=new Error('Drive load failed: '+res.status);_e.driveStatus=res.status;throw _e;}const data=await deserializeDb(await res.text());if(data.entries){db.tombstones=mergeTombstones(db.tombstones,data.tombstones||[]);var _tE2=tombIdsFor('entries',db.tombstones),_tP2=tombIdsFor('planned',db.tombstones),_tT2=tombIdsFor('todos',db.tombstones),_tPr2=tombIdsFor('prayers',db.tombstones),_tCs2=tombIdsFor('customStudies',db.tombstones),_tCu2=tombIdsFor('cursisten',db.tombstones),_tGp2=tombIdsFor('gemeentePlanning',db.tombstones);db.entries=mergeArraysById(db.entries,data.entries,_tE2);db.cursisten=mergeArraysById(db.cursisten,data.cursisten||[],_tCu2);db.churches=mergeArraysByValue(db.churches,data.churches||[]);db.planned=mergeArraysById(db.planned,data.planned||[],_tP2);db.vacationDays=mergeArraysByValue(db.vacationDays,data.vacationDays||[]);db.todos=mergeArraysById(db.todos,data.todos||[],_tT2);db.prayers=mergeArraysById(db.prayers,data.prayers||[],_tPr2);db.customStudies=mergeArraysById(db.customStudies,data.customStudies||[],_tCs2);db.approvals=mergeArraysById(db.approvals,data.approvals||[]);db.gemeentePlanning=mergeArraysById(db.gemeentePlanning||[],data.gemeentePlanning||[],_tGp2);if(data.settings){var _ldm2=db.settings.darkMode,_lat2=db.settings.appTheme,_lts2=db.settings.textSize,_cc2=db.settings.customCategories,_clo2=db.settings.categoryLabelOverrides,_nm2=db.settings.naam,_gm2=db.settings.gemeente,_em2=db.settings.email,_tl2=db.settings.tel,_gb2=db.settings.geboortedatum,_ad2=db.settings.myAdres,_adp2=db.settings.myAdresPostcode,_adc2=db.settings.myAdresCity,_adco2=db.settings.myAdresCountry,_lg2=db.settings.lang,_gf2=db.settings.groupFrequency,_ddg2=db.settings.dismissedDupeGroups,_wr2=db.settings.workRole,_wrT2=!!db.settings.workRoleTouched,_gci2=db.settings.gcInfra,_cr2=db.settings.churchRole,_crs2=db.settings.churchRoles,_gvd2=db.settings.goalVacationDays;Object.assign(db.settings,data.settings);if(_ldm2!==undefined)db.settings.darkMode=_ldm2;if(_lat2!==undefined)db.settings.appTheme=_lat2;if(_lts2!==undefined)db.settings.textSize=_lts2;if(_cc2)db.settings.customCategories=_cc2;if(_clo2)db.settings.categoryLabelOverrides=_clo2;if(_nm2)db.settings.naam=_nm2;if(_gm2)db.settings.gemeente=_gm2;if(_em2)db.settings.email=_em2;if(_tl2)db.settings.tel=_tl2;if(_gb2)db.settings.geboortedatum=_gb2;if(_ad2)db.settings.myAdres=_ad2;if(_adp2)db.settings.myAdresPostcode=_adp2;if(_adc2)db.settings.myAdresCity=_adc2;if(_adco2)db.settings.myAdresCountry=_adco2;if(_lg2)db.settings.lang=_lg2;
+async function loadFromDrive(){setSyncStatus('info',LANG==='en'?'Loading from Drive…':LANG==='es'?'Cargando de Drive…':LANG==='fr'?'Chargement Drive…':LANG==='de'?'Laden von Drive…':LANG==='ru'?'Загрузка с Drive…':'Laden van Drive…',true);try{await pullEncMetaFromDrive();const l=await gapi.client.drive.files.list({spaces:'appDataFolder',q:`name='${DRIVE_FILE_NAME}'`,fields:'files(id)'});const f=l.result.files;if(f&&f.length){driveFileId=f[0].id;const res=await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,{headers:{'Authorization':'Bearer '+accessToken}});if(!res.ok){var _e=new Error('Drive load failed: '+res.status);_e.driveStatus=res.status;throw _e;}const data=await deserializeDb(await res.text());if(data.entries){db.tombstones=mergeTombstones(db.tombstones,data.tombstones||[]);var _tE2=tombIdsFor('entries',db.tombstones),_tP2=tombIdsFor('planned',db.tombstones),_tT2=tombIdsFor('todos',db.tombstones),_tPr2=tombIdsFor('prayers',db.tombstones),_tPj2=tombIdsFor('projects',db.tombstones),_tCs2=tombIdsFor('customStudies',db.tombstones),_tCu2=tombIdsFor('cursisten',db.tombstones),_tGp2=tombIdsFor('gemeentePlanning',db.tombstones);db.entries=mergeArraysById(db.entries,data.entries,_tE2);db.cursisten=mergeArraysById(db.cursisten,data.cursisten||[],_tCu2);db.churches=mergeArraysByValue(db.churches,data.churches||[]);db.planned=mergeArraysById(db.planned,data.planned||[],_tP2);db.vacationDays=mergeArraysByValue(db.vacationDays,data.vacationDays||[]);db.todos=mergeArraysById(db.todos,data.todos||[],_tT2);db.prayers=mergeArraysById(db.prayers,data.prayers||[],_tPr2);db.projects=mergeArraysById(db.projects||[],data.projects||[],_tPj2);db.customStudies=mergeArraysById(db.customStudies,data.customStudies||[],_tCs2);db.approvals=mergeArraysById(db.approvals,data.approvals||[]);db.gemeentePlanning=mergeArraysById(db.gemeentePlanning||[],data.gemeentePlanning||[],_tGp2);if(data.settings){var _ldm2=db.settings.darkMode,_lat2=db.settings.appTheme,_lts2=db.settings.textSize,_cc2=db.settings.customCategories,_clo2=db.settings.categoryLabelOverrides,_nm2=db.settings.naam,_gm2=db.settings.gemeente,_em2=db.settings.email,_tl2=db.settings.tel,_gb2=db.settings.geboortedatum,_ad2=db.settings.myAdres,_adp2=db.settings.myAdresPostcode,_adc2=db.settings.myAdresCity,_adco2=db.settings.myAdresCountry,_lg2=db.settings.lang,_gf2=db.settings.groupFrequency,_ddg2=db.settings.dismissedDupeGroups,_wr2=db.settings.workRole,_wrT2=!!db.settings.workRoleTouched,_gci2=db.settings.gcInfra,_cr2=db.settings.churchRole,_crs2=db.settings.churchRoles,_gvd2=db.settings.goalVacationDays;Object.assign(db.settings,data.settings);if(_ldm2!==undefined)db.settings.darkMode=_ldm2;if(_lat2!==undefined)db.settings.appTheme=_lat2;if(_lts2!==undefined)db.settings.textSize=_lts2;if(_cc2)db.settings.customCategories=_cc2;if(_clo2)db.settings.categoryLabelOverrides=_clo2;if(_nm2)db.settings.naam=_nm2;if(_gm2)db.settings.gemeente=_gm2;if(_em2)db.settings.email=_em2;if(_tl2)db.settings.tel=_tl2;if(_gb2)db.settings.geboortedatum=_gb2;if(_ad2)db.settings.myAdres=_ad2;if(_adp2)db.settings.myAdresPostcode=_adp2;if(_adc2)db.settings.myAdresCity=_adc2;if(_adco2)db.settings.myAdresCountry=_adco2;if(_lg2)db.settings.lang=_lg2;
       // #970: workRole and gcInfra are per-worker/office setup, not
       // per-device display prefs, but they were missing from this
       // already-established "keep local, don't let a Drive pull silently
@@ -13777,12 +13777,6 @@ function _renderHomeInner(){
   h+='</button>';
   h+='<button onclick="addTodo()" style="flex-shrink:0;width:38px;border-radius:var(--r-sm);background:var(--brand);color:#fff;border:none;font-size:18px;line-height:1;cursor:pointer">+</button>';
   h+='</div>';
-  // #1033: a project is just a to-do item with a checklist attached (see
-  // renderProjectRow/openNewProjectPrompt) - this link is its only distinct
-  // entry point, deliberately kept low-key/secondary under the normal add
-  // row rather than a second prominent button, since most items added here
-  // will still be plain one-line to-dos.
-  h+='<div style="margin:-4px 0 10px"><a href="#" onclick="event.stopPropagation();openNewProjectPrompt();return false" style="font-size:12px;color:var(--text3);text-decoration:none;display:inline-flex;align-items:center;gap:4px"><svg width="12" height="12" viewBox="0 0 24 24"><use href="#ico-clipboard"/></svg>'+t('project_new_title')+'</a></div>';
   h+='<div id="todo-open-list"></div>';
   h+='</div>';
   h+='</div>';
@@ -13816,6 +13810,15 @@ function _renderHomeInner(){
   h+='</div>';
   h+='</div>'; // /col 2
   h+='</div>'; // /dash-2col-wrap (todo+prayer)
+
+  // Projects (#1045-1052) — right under To-do/Prayer per Gabriel: a redesign
+  // of the old checklist-in-a-to-do (#1033) into its own Home card, since
+  // planning something like an evangelism campaign needs more room than a
+  // to-do row (Vision & Scope, Requirements, Team, Timeline - see the big
+  // comment block above renderProjectsCard). Kept as its own card rather
+  // than merged into Tareas (a type dropdown was considered - see PROJECTS
+  // v2 comment) so each keeps its own simple, focused "+" entry point.
+  h+=renderProjectsCard();
 
   // Calendar / agenda (moved up next to Binnenkort — both are "what's coming up" widgets)
   // Paired with Follow-up (below) in a 2-column layout on wide screens —
@@ -14907,154 +14910,465 @@ function renderTodoOpenList(){
   });
   wrap.innerHTML=h;
 }
-// ===== PROJECTS (#1033) =====================================================
-// A "project" is a to-do item with a checklist attached, for planning
-// multi-step things like an evangelism campaign, a special Sabbath, an open
-// day, or a book-market stand: db.todos item shaped as
-//   {id, text, done, category, createdAt, doneAt,
-//    type:'project', targetDate:'YYYY-MM-DD'|null,
-//    subitems:[{id,text,done}]}
-// It rides the existing db.todos array/sync/tombstone plumbing untouched —
-// type/targetDate/subitems are just plain extra JSON fields, so mergeArraysById
-// and the Drive sync round-trip need no changes. Rendered inline in the
-// to-do list via renderProjectRow (see renderTodoOpenList above); tapping
-// the row opens the full checklist in a bottom-sheet popup (openProjectDetail).
+// ===== PROJECTS v2 (#1045-1052) ==============================================
+// Redesigned per Gabriel's request: a project used to be just a to-do item
+// with a flat checklist (#1033-1039) - too small a space for planning
+// something like an evangelism campaign or a special Sabbath. There's a
+// Vision & Scope (what/audience/scale), a Requirements checklist (materials/
+// permits/audio/follow-up), a Team (who leads what), and a Master Timeline
+// (everything with a date). Projects now live in their own db.projects[]
+// array (not nested inside db.todos) and get their own Home card, right
+// next to To-do/Prayer (Gabriel: "it could live right next to to do's").
+// Creating one still starts with a short 3-step wizard (What+date / Audience
+// / Scale, mirroring the .wiz-steps/.wiz-dot/.wiz-q/.wiz-hint pattern of the
+// main activity wizard) but instead of a small checklist popup, it opens a
+// full-screen workspace (same #full-cal-overlay pattern as the full
+// calendar - #848 - since Gabriel asked for that too: "it can go into full
+// screen like the calendar") with three freely-editable accordion sections
+// built on one flat items[] array:
+//   db.projects[] = {id, text, audience, scale, targetDate, done,
+//     createdAt, doneAt,
+//     team:[{id,role,person}],                 // role: fixed key or custom text
+//     items:[{id,text,category,responsible,dueDate,done}]}
+//     // category: materials|permits|audio|followup|other
+// Requirements/Team/Timeline are three different VIEWS over the same
+// items/team arrays, not three parallel data structures - grouping by
+// category for Requirements, iterating team[] for Team Allocation, and
+// filtering+sorting items that have a dueDate for the Master Timeline.
+var PROJECT_CATEGORIES=['materials','permits','audio','followup','other'];
+var PROJECT_DEFAULT_ROLES=['logistics','prayer','outreach','hospitality'];
+function projCatLabel(cat){
+  var map={
+    materials:{nl:'Materialen (boeken, traktaten, snacks)',en:'Materials (books, tracts, snacks)',es:'Materiales (libros, tratados, snacks)',fr:'Matériel (livres, tracts, snacks)',de:'Material (Bücher, Traktate, Snacks)',ro:'Materiale (cărți, tractate, gustări)',hu:'Anyagok (könyvek, traktátusok, snackek)',ru:'Материалы (книги, трактаты, снеки)',it:'Materiali (libri, opuscoli, snack)',pt:'Materiais (livros, tratados, lanches)'},
+    permits:{nl:'Vergunningen/Toestemmingen',en:'Permits/Permissions',es:'Permisos/Autorizaciones',fr:'Permis/Autorisations',de:'Genehmigungen',ro:'Permise/Autorizații',hu:'Engedélyek',ru:'Разрешения',it:'Permessi',pt:'Licenças/Autorizações'},
+    audio:{nl:'Muziek/Audioapparatuur',en:'Music/Audio gear',es:'Música/Equipo de audio',fr:'Musique/Matériel audio',de:'Musik/Audiotechnik',ro:'Muzică/Echipament audio',hu:'Zene/Hangtechnika',ru:'Музыка/Аудиооборудование',it:'Musica/Attrezzatura audio',pt:'Música/Equipamento de áudio'},
+    followup:{nl:'Follow-up strategie',en:'Follow-up strategy',es:'Estrategia de seguimiento',fr:'Stratégie de suivi',de:'Nachbetreuungsstrategie',ro:'Strategie de urmărire',hu:'Utánkövetési stratégia',ru:'Стратегия сопровождения',it:'Strategia di follow-up',pt:'Estratégia de acompanhamento'},
+    other:{nl:'Overig',en:'Other',es:'Otro',fr:'Autre',de:'Sonstiges',ro:'Altele',hu:'Egyéb',ru:'Прочее',it:'Altro',pt:'Outro'}
+  };
+  return tMap(map[cat]||map.other);
+}
+function projRoleLabel(role){
+  var map={
+    logistics:{nl:'Logistiek',en:'Logistics',es:'Logística',fr:'Logistique',de:'Logistik',ro:'Logistică',hu:'Logisztika',ru:'Логистика',it:'Logistica',pt:'Logística'},
+    prayer:{nl:'Gebed',en:'Prayer',es:'Oración',fr:'Prière',de:'Gebet',ro:'Rugăciune',hu:'Ima',ru:'Молитва',it:'Preghiera',pt:'Oração'},
+    outreach:{nl:'Outreach',en:'Outreach',es:'Evangelismo',fr:'Évangélisation',de:'Outreach',ro:'Evanghelizare',hu:'Missziómunka',ru:'Евангелизация',it:'Evangelizzazione',pt:'Evangelismo'},
+    hospitality:{nl:'Gastvrijheid',en:'Hospitality',es:'Hospitalidad',fr:'Hospitalité',de:'Gastfreundschaft',ro:'Ospitalitate',hu:'Vendéglátás',ru:'Гостеприимство',it:'Ospitalità',pt:'Hospitalidade'}
+  };
+  if(map[role])return tMap(map[role]);
+  return role; // custom free-text role added via "+ Add role"
+}
+function projT(key){
+  var map={
+    card_title:{nl:'Projecten',en:'Projects',es:'Proyectos',fr:'Projets',de:'Projekte',ro:'Proiecte',hu:'Projektek',ru:'Проекты',it:'Progetti',pt:'Projetos'},
+    empty:{nl:'Nog geen projecten. Plan er een campagne, open dag of speciale Sabbat mee.',en:'No projects yet. Plan a campaign, open day or special Sabbath.',es:'Aún no hay proyectos. Planifica una campaña, día abierto o Sábado especial.',fr:'Aucun projet. Planifiez une campagne, journée portes ouvertes ou Sabbat spécial.',de:'Noch keine Projekte. Plane eine Kampagne, einen Tag der offenen Tür oder einen besonderen Sabbat.',ro:'Niciun proiect încă. Planifică o campanie, o zi a porților deschise sau un Sabat special.',hu:'Még nincs projekt. Tervezz kampányt, nyílt napot vagy különleges szombatot.',ru:'Пока нет проектов. Спланируйте кампанию, день открытых дверей или особую субботу.',it:'Nessun progetto ancora. Pianifica una campagna, una giornata aperta o un Sabato speciale.',pt:'Ainda sem projetos. Planeie uma campanha, dia aberto ou Sábado especial.'},
+    new_btn:{nl:'+ Nieuw project',en:'+ New project',es:'+ Nuevo proyecto',fr:'+ Nouveau projet',de:'+ Neues Projekt',ro:'+ Proiect nou',hu:'+ Új projekt',ru:'+ Новый проект',it:'+ Nuovo progetto',pt:'+ Novo projeto'},
+    wiz_what_q:{nl:'Wat organiseer je?',en:'What are you organizing?',es:'¿Qué vas a organizar?',fr:'Que organisez-vous ?',de:'Was organisierst du?',ro:'Ce organizezi?',hu:'Mit szervezel?',ru:'Что вы организуете?',it:'Cosa stai organizzando?',pt:'O que você vai organizar?'},
+    wiz_what_hint:{nl:'Bijv. evangelisatiecampagne, open dag, speciale Sabbat',en:'E.g. evangelism campaign, open day, special Sabbath',es:'Ej. campaña de evangelismo, día abierto, Sábado especial',fr:'Ex. campagne d’évangélisation, journée portes ouvertes, Sabbat spécial',de:'Z. B. Evangelisationskampagne, Tag der offenen Tür, besonderer Sabbat',ro:'Ex. campanie de evanghelizare, zi a porților deschise, Sabat special',hu:'Pl. evangelizációs kampány, nyílt nap, különleges szombat',ru:'Напр. евангельская кампания, день открытых дверей, особая суббота',it:'Es. campagna evangelistica, giornata aperta, Sabato speciale',pt:'Ex. campanha de evangelismo, dia aberto, Sábado especial'},
+    wiz_name_ph:{nl:'Naam van het project...',en:'Project name...',es:'Nombre del proyecto...',fr:'Nom du projet...',de:'Projektname...',ro:'Numele proiectului...',hu:'Projekt neve...',ru:'Название проекта...',it:'Nome del progetto...',pt:'Nome do projeto...'},
+    wiz_audience_q:{nl:'Voor wie is het bedoeld?',en:'Who is it for?',es:'¿Para quién es?',fr:'Pour qui est-ce ?',de:'Für wen ist es gedacht?',ro:'Pentru cine este?',hu:'Kinek szól?',ru:'Для кого это?',it:'Per chi è pensato?',pt:'Para quem é?'},
+    wiz_audience_hint:{nl:'De doelgroep: leden, buurt, jongeren, contacten...',en:'The target audience: members, neighborhood, youth, contacts...',es:'El público objetivo: miembros, el barrio, jóvenes, contactos...',fr:'Le public cible : membres, quartier, jeunes, contacts...',de:'Die Zielgruppe: Mitglieder, Nachbarschaft, Jugend, Kontakte...',ro:'Publicul țintă: membri, cartier, tineri, contacte...',hu:'A célközönség: tagok, környék, ifjúság, kapcsolatok...',ru:'Целевая аудитория: члены, район, молодёжь, контакты...',it:'Il pubblico target: membri, quartiere, giovani, contatti...',pt:'O público-alvo: membros, bairro, jovens, contactos...'},
+    wiz_audience_ph:{nl:'Bijv. de hele buurt, jongeren, huidige contacten...',en:'E.g. the whole neighborhood, youth, current contacts...',es:'Ej. todo el barrio, jóvenes, contactos actuales...',fr:'Ex. tout le quartier, jeunes, contacts actuels...',de:'Z. B. die ganze Nachbarschaft, Jugend, aktuelle Kontakte...',ro:'Ex. tot cartierul, tineri, contacte actuale...',hu:'Pl. az egész környék, ifjúság, jelenlegi kapcsolatok...',ru:'Напр. весь район, молодёжь, текущие контакты...',it:'Es. tutto il quartiere, giovani, contatti attuali...',pt:'Ex. todo o bairro, jovens, contactos atuais...'},
+    wiz_scale_q:{nl:'Hoe groot pak je het aan?',en:'How big is the scale?',es:'¿Qué tan grande es el alcance?',fr:'Quelle est l’ampleur ?',de:'Wie groß ist der Umfang?',ro:'Cât de mare este amploarea?',hu:'Mekkora a méret?',ru:'Каков масштаб?',it:'Quanto è grande la portata?',pt:'Qual é a escala?'},
+    wiz_scale_hint:{nl:'Grootte/omvang: verwacht aantal mensen, één gemeente of meerdere...',en:'Size/scope: expected number of people, one church or several...',es:'Tamaño/alcance: número esperado de personas, una iglesia o varias...',fr:'Taille/portée : nombre de personnes attendu, une église ou plusieurs...',de:'Größe/Umfang: erwartete Personenzahl, eine oder mehrere Gemeinden...',ro:'Mărime/amploare: număr estimat de persoane, o biserică sau mai multe...',hu:'Méret/terjedelem: várható létszám, egy vagy több gyülekezet...',ru:'Размер/масштаб: ожидаемое число людей, одна церковь или несколько...',it:'Dimensione/portata: numero previsto di persone, una chiesa o più...',pt:'Tamanho/alcance: número esperado de pessoas, uma igreja ou várias...'},
+    wiz_scale_ph:{nl:'Bijv. ~50 mensen, hele Unie, 1 gemeente...',en:'E.g. ~50 people, whole Union, 1 church...',es:'Ej. ~50 personas, toda la Unión, 1 iglesia...',fr:'Ex. ~50 personnes, toute l’Union, 1 église...',de:'Z. B. ~50 Personen, ganze Union, 1 Gemeinde...',ro:'Ex. ~50 de persoane, toată Uniunea, 1 biserică...',hu:'Pl. ~50 fő, egész Unió, 1 gyülekezet...',ru:'Напр. ~50 человек, весь Униона, 1 церковь...',it:'Es. ~50 persone, tutta l’Unione, 1 chiesa...',pt:'Ex. ~50 pessoas, toda a União, 1 igreja...'},
+    wiz_finish:{nl:'Project aanmaken',en:'Create project',es:'Crear proyecto',fr:'Créer le projet',de:'Projekt erstellen',ro:'Creează proiectul',hu:'Projekt létrehozása',ru:'Создать проект',it:'Crea progetto',pt:'Criar projeto'},
+    section_vision:{nl:'Visie & Omvang',en:'Vision & Scope',es:'Visión y Alcance',fr:'Vision et Portée',de:'Vision & Umfang',ro:'Viziune și amploare',hu:'Vízió és terjedelem',ru:'Видение и масштаб',it:'Visione e portata',pt:'Visão e Alcance'},
+    field_audience:{nl:'Doelgroep',en:'Target audience',es:'Público objetivo',fr:'Public cible',de:'Zielgruppe',ro:'Public țintă',hu:'Célközönség',ru:'Целевая аудитория',it:'Pubblico target',pt:'Público-alvo'},
+    field_scale:{nl:'Omvang/Schaal',en:'Scale/Scope',es:'Escala/Alcance',fr:'Échelle/Portée',de:'Umfang/Skala',ro:'Amploare',hu:'Méret/Terjedelem',ru:'Масштаб',it:'Scala/Portata',pt:'Escala/Alcance'},
+    section_req:{nl:'Vereistenchecklist',en:'Requirements Checklist',es:'Lista de requisitos',fr:'Liste des besoins',de:'Anforderungsliste',ro:'Listă de cerințe',hu:'Követelmény-lista',ru:'Список требований',it:'Elenco requisiti',pt:'Lista de requisitos'},
+    section_team:{nl:'Teamtoewijzing',en:'Team Allocation',es:'Asignación de equipo',fr:'Attribution de l’équipe',de:'Teamzuweisung',ro:'Alocare echipă',hu:'Csapatbeosztás',ru:'Распределение команды',it:'Assegnazione del team',pt:'Alocação de equipa'},
+    section_timeline:{nl:'Tijdlijn & Verantwoordelijken',en:'Master Timeline',es:'Cronograma general',fr:'Calendrier général',de:'Gesamtzeitplan',ro:'Cronologie generală',hu:'Fő idővonal',ru:'Общий график',it:'Cronoprogramma generale',pt:'Cronograma geral'},
+    item_ph:{nl:'Nieuw item...',en:'New item...',es:'Nuevo elemento...',fr:'Nouvel élément...',de:'Neues Element...',ro:'Element nou...',hu:'Új elem...',ru:'Новый пункт...',it:'Nuovo elemento...',pt:'Novo item...'},
+    responsible_ph:{nl:'Verantwoordelijke',en:'Responsible',es:'Responsable',fr:'Responsable',de:'Verantwortlich',ro:'Responsabil',hu:'Felelős',ru:'Ответственный',it:'Responsabile',pt:'Responsável'},
+    add_role:{nl:'+ Rol toevoegen',en:'+ Add role',es:'+ Añadir rol',fr:'+ Ajouter un rôle',de:'+ Rolle hinzufügen',ro:'+ Adaugă rol',hu:'+ Szerep hozzáadása',ru:'+ Добавить роль',it:'+ Aggiungi ruolo',pt:'+ Adicionar função'},
+    role_name_ph:{nl:'Rolnaam...',en:'Role name...',es:'Nombre del rol...',fr:'Nom du rôle...',de:'Rollenname...',ro:'Numele rolului...',hu:'Szerep neve...',ru:'Название роли...',it:'Nome del ruolo...',pt:'Nome da função...'},
+    person_ph:{nl:'Naam...',en:'Name...',es:'Nombre...',fr:'Nom...',de:'Name...',ro:'Nume...',hu:'Név...',ru:'Имя...',it:'Nome...',pt:'Nome...'},
+    timeline_empty:{nl:'Nog geen items met een datum.',en:'No dated items yet.',es:'Aún no hay elementos con fecha.',fr:'Aucun élément daté.',de:'Noch keine Elemente mit Datum.',ro:'Niciun element cu dată încă.',hu:'Még nincs dátumozott elem.',ru:'Пока нет пунктов с датой.',it:'Nessun elemento con data ancora.',pt:'Ainda sem itens com data.'},
+    col_date:{nl:'Datum',en:'Date',es:'Fecha',fr:'Date',de:'Datum',ro:'Data',hu:'Dátum',ru:'Дата',it:'Data',pt:'Data'},
+    col_item:{nl:'Item',en:'Item',es:'Elemento',fr:'Élément',de:'Element',ro:'Element',hu:'Elem',ru:'Пункт',it:'Elemento',pt:'Item'},
+    col_responsible:{nl:'Verantwoordelijke',en:'Responsible',es:'Responsable',fr:'Responsable',de:'Verantwortlich',ro:'Responsabil',hu:'Felelős',ru:'Ответственный',it:'Responsabile',pt:'Responsável'},
+    delete_project:{nl:'Project verwijderen',en:'Delete project',es:'Eliminar proyecto',fr:'Supprimer le projet',de:'Projekt löschen',ro:'Șterge proiectul',hu:'Projekt törlése',ru:'Удалить проект',it:'Elimina progetto',pt:'Eliminar projeto'},
+    confirm_delete:{nl:'Dit project verwijderen? Dit kan niet ongedaan worden gemaakt.',en:'Delete this project? This cannot be undone.',es:'¿Eliminar este proyecto? Esto no se puede deshacer.',fr:'Supprimer ce projet ? Action irréversible.',de:'Dieses Projekt löschen? Das kann nicht rückgängig gemacht werden.',ro:'Ștergi acest proiect? Nu poate fi anulat.',hu:'Törlöd ezt a projektet? Ez nem vonható vissza.',ru:'Удалить этот проект? Это необратимо.',it:'Eliminare questo progetto? Non reversibile.',pt:'Eliminar este projeto? Isto não pode ser desfeito.'},
+    mark_done:{nl:'Markeer project als voltooid',en:'Mark project as done',es:'Marcar proyecto como terminado',fr:'Marquer le projet comme terminé',de:'Projekt als erledigt markieren',ro:'Marchează proiectul ca finalizat',hu:'Projekt megjelölése késznek',ru:'Отметить проект как завершённый',it:'Segna progetto come completato',pt:'Marcar projeto como concluído'},
+    mark_undone:{nl:'Markeer als niet voltooid',en:'Mark as not done',es:'Marcar como no terminado',fr:'Marquer comme non terminé',de:'Als nicht erledigt markieren',ro:'Marchează ca nefinalizat',hu:'Megjelölés befejezetlenként',ru:'Отметить как незавершённый',it:'Segna come non completato',pt:'Marcar como não concluído'}
+  };
+  return tMap(map[key]);
+}
+// Builds a fresh team[] pre-seeded with the 4 fixed section-lead roles
+// (Logistics/Prayer/Outreach/Hospitality) from Gabriel's request, each with
+// an empty person name ready to fill in. Ids are generated against the
+// array being built (not genUniqueId([]) per call) since genUniqueId derives
+// from Date.now() - calling it repeatedly with an empty arr in a tight loop
+// can hand back the same id twice if two calls land in the same millisecond.
+function makeDefaultProjectTeam(){
+  var team=[];
+  PROJECT_DEFAULT_ROLES.forEach(function(r){ team.push({id:genUniqueId(team),role:r,person:''}); });
+  return team;
+}
+// One-time migration: folds any old-style db.todos items with type==='project'
+// (the #1033 checklist-in-a-to-do design) into the new db.projects[] shape,
+// then strips them out of db.todos so they don't keep showing up there too.
+// Guarded by db.settings._projectsV2Migrated so it only ever runs once per
+// installation - safe to call on every Home render.
+function ensureProjectsV2(){
+  if(!db.projects)db.projects=[];
+  if(db.settings&&db.settings._projectsV2Migrated)return;
+  if(!db.settings)db.settings={};
+  var old=(db.todos||[]).filter(function(x){return x.type==='project';});
+  if(old.length){
+    old.forEach(function(o){
+      db.projects.push({
+        id:o.id,text:o.text,audience:'',scale:'',targetDate:o.targetDate||null,
+        done:!!o.done,createdAt:o.createdAt||new Date().toISOString(),doneAt:o.doneAt||null,
+        team:makeDefaultProjectTeam(),
+        items:(o.subitems||[]).map(function(s){return{id:s.id,text:s.text,category:'other',responsible:'',dueDate:null,done:!!s.done};})
+      });
+    });
+    db.todos=(db.todos||[]).filter(function(x){return x.type!=='project';});
+  }
+  db.settings._projectsV2Migrated=true;
+  save();
+}
+
+// ---- Home card ---------------------------------------------------------
+function renderProjectsCard(){
+  ensureProjectsV2();
+  var open=!!getAccState('home-projects');
+  var h='<div class="settings-section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer" onclick="toggleAccordionByKey(\'home-projects\',this.querySelector(\'.acc-toggle-btn\'))">';
+  h+='<div style="display:flex;align-items:center;gap:6px">';
+  h+='<span>'+projT('card_title')+'</span>';
+  h+='<button type="button" class="acc-toggle-btn" onclick="event.stopPropagation();toggleAccordionByKey(\'home-projects\',this)" style="background:none;border:none;padding:4px;margin:-4px;cursor:pointer;display:flex;color:var(--text3)"><svg width="14" height="14" style="transition:transform .2s'+(open?';transform:rotate(180deg)':'')+'"><use href="#ico-chevron-down"/></svg></button>';
+  h+='</div>';
+  h+='<a href="#" onclick="event.stopPropagation();openProjectWizard();return false" style="font-size:12px;color:var(--brand);text-decoration:none;font-weight:500">'+projT('new_btn')+'</a>';
+  h+='</div>';
+  h+='<div class="card card-acc-plain'+(open?' acc-open':'')+'" data-acc-key="home-projects">';
+  h+='<div class="acc-body"><div id="projects-list-wrap">'+renderProjectsListHtml()+'</div></div>';
+  h+='</div>';
+  return h;
+}
+function renderProjectsListHtml(){
+  var list=(db.projects||[]).filter(function(p){return !p.done;}).sort(function(a,b){
+    if(a.targetDate&&b.targetDate)return a.targetDate<b.targetDate?-1:1;
+    if(a.targetDate)return -1;
+    if(b.targetDate)return 1;
+    return (b.createdAt||'').localeCompare(a.createdAt||'');
+  });
+  if(!list.length)return '<div style="text-align:center;padding:14px 0;color:var(--text3);font-size:13px">'+projT('empty')+'</div>';
+  return list.map(renderProjectRow).join('');
+}
+function refreshProjectsList(){
+  var wrap=document.getElementById('projects-list-wrap');
+  if(wrap)wrap.innerHTML=renderProjectsListHtml();
+}
 function renderProjectRow(item){
-  var checked=!!item.done;
-  var subs=item.subitems||[];
-  var doneCount=subs.filter(function(s){return s.done;}).length;
+  var items=item.items||[];
+  var doneCount=items.filter(function(s){return s.done;}).length;
   var idArg=ssIdArg(item.id);
-  return'<div class="todo-row'+(checked?' todo-row-checked':'')+'" onclick="openProjectDetail('+idArg+')" style="cursor:pointer">'
-    +'<div class="todo-check'+(checked?' checked':'')+'" onclick="event.stopPropagation();toggleTodoDone('+idArg+')" title="'+t('project_mark_done')+'"></div>'
+  return'<div class="todo-row" onclick="openProjectWorkspace('+idArg+')" style="cursor:pointer">'
     +'<svg width="15" height="15" viewBox="0 0 24 24" style="color:var(--text3);flex-shrink:0"><use href="#ico-clipboard"/></svg>'
     +'<div class="todo-text">'+escapeHtml(item.text)+'</div>'
-    +'<span style="font-size:10px;font-weight:700;color:var(--brand);background:var(--brand-light);padding:2px 8px;border-radius:20px;flex-shrink:0;margin-right:2px">'+doneCount+'/'+subs.length+'</span>'
-    +'<div class="todo-del" onclick="event.stopPropagation();deleteTodo('+idArg+')" title="'+t('delete_btn')+'">&times;</div>'
+    +(item.targetDate?'<span style="font-size:11px;color:var(--text3);flex-shrink:0;margin-right:2px">'+formatDate(item.targetDate)+'</span>':'')
+    +(items.length?'<span style="font-size:10px;font-weight:700;color:var(--brand);background:var(--brand-light);padding:2px 8px;border-radius:20px;flex-shrink:0;margin-right:2px">'+doneCount+'/'+items.length+'</span>':'')
+    +'<div class="todo-del" onclick="event.stopPropagation();deleteProjectConfirm('+idArg+')" title="'+t('delete_btn')+'">&times;</div>'
     +'</div>';
 }
-function openNewProjectPrompt(){
-  var html=''
-    +'<div style="padding:16px">'
-    +'<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:12px">'+t('project_new_title')+'</div>'
-    +'<input type="text" id="new-project-name" placeholder="'+t('project_name_placeholder')+'" style="width:100%;box-sizing:border-box;font:inherit;padding:9px 11px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text);margin-bottom:10px" autofocus>'
-    +'<label style="display:block;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">'+t('project_target_date')+'</label>'
-    +'<input type="date" id="new-project-date" style="width:100%;box-sizing:border-box;font:inherit;padding:9px 11px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text);margin-bottom:16px">'
-    +'<div style="display:flex;gap:8px">'
-    +'<button class="btn" style="flex:1;background:var(--surface2);color:var(--text)" onclick="closeModals()">'+t('cancel_btn')+'</button>'
-    +'<button class="btn" style="flex:1" onclick="createProject()">'+t('save_btn')+'</button>'
-    +'</div>'
-    +'</div>';
-  showModalCentered(html);
-  setTimeout(function(){
-    var inp=document.getElementById('new-project-name');
-    if(inp){
-      inp.focus();
-      inp.addEventListener('keydown',function(ev){if(ev.key==='Enter'){ev.preventDefault();createProject();}});
-    }
-  },10);
+
+// ---- Quick-start wizard (What+date / Audience / Scale) ----------------
+var projWizStep=0, projDraft={};
+var PROJ_WIZ=['what','audience','scale'];
+function openProjectWizard(){
+  projWizStep=0;
+  projDraft={text:'',targetDate:'',audience:'',scale:''};
+  showModalCentered(renderProjectWizardHtml());
+  setTimeout(projWizFocus,10);
 }
-function createProject(){
-  var nameInp=document.getElementById('new-project-name');
-  var dateInp=document.getElementById('new-project-date');
-  var name=nameInp?(nameInp.value||'').trim():'';
-  if(!name){ if(nameInp)nameInp.focus(); return; }
-  if(!db.todos)db.todos=[];
-  var proj={id:genUniqueId(db.todos),text:name,done:false,category:todoNewCategory,createdAt:new Date().toISOString(),doneAt:null,
-    type:'project',targetDate:(dateInp&&dateInp.value)?dateInp.value:null,subitems:[]};
-  db.todos.unshift(proj);
+function projWizFocus(){
+  var ids=['pw-name','pw-audience','pw-scale'];
+  var el=document.getElementById(ids[projWizStep]);
+  if(el){
+    el.focus();
+    el.addEventListener('keydown',function(ev){if(ev.key==='Enter'){ev.preventDefault();projWizStep<PROJ_WIZ.length-1?projWizNext():projWizFinish();}});
+  }
+}
+function renderProjectWizardHtml(){
+  var dots=PROJ_WIZ.map(function(_,i){return '<div class="wiz-dot '+(i<=projWizStep?'done':'')+'"></div>';}).join('');
+  var h='<div style="padding:16px 16px 20px">';
+  h+='<div class="wiz-steps">'+dots+'</div>';
+  var step=PROJ_WIZ[projWizStep];
+  if(step==='what'){
+    h+='<div class="wiz-q">'+projT('wiz_what_q')+'</div>';
+    h+='<div class="wiz-hint">'+projT('wiz_what_hint')+'</div>';
+    h+='<input type="text" id="pw-name" value="'+escapeHtml(projDraft.text)+'" placeholder="'+projT('wiz_name_ph')+'" style="width:100%;box-sizing:border-box;font:inherit;padding:9px 11px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text);margin-bottom:10px">';
+    h+='<label style="display:block;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">'+t('project_target_date')+'</label>';
+    h+='<input type="date" id="pw-date" value="'+(projDraft.targetDate||'')+'" style="width:100%;box-sizing:border-box;font:inherit;padding:9px 11px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text)">';
+  }else if(step==='audience'){
+    h+='<div class="wiz-q">'+projT('wiz_audience_q')+'</div>';
+    h+='<div class="wiz-hint">'+projT('wiz_audience_hint')+'</div>';
+    h+='<input type="text" id="pw-audience" value="'+escapeHtml(projDraft.audience)+'" placeholder="'+projT('wiz_audience_ph')+'" style="width:100%;box-sizing:border-box;font:inherit;padding:9px 11px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text)">';
+  }else if(step==='scale'){
+    h+='<div class="wiz-q">'+projT('wiz_scale_q')+'</div>';
+    h+='<div class="wiz-hint">'+projT('wiz_scale_hint')+'</div>';
+    h+='<input type="text" id="pw-scale" value="'+escapeHtml(projDraft.scale)+'" placeholder="'+projT('wiz_scale_ph')+'" style="width:100%;box-sizing:border-box;font:inherit;padding:9px 11px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text)">';
+  }
+  h+='<div class="btn-row" style="display:flex;gap:8px;margin-top:16px">';
+  h+=projWizStep>0
+    ?'<button class="btn" style="flex:1;background:var(--surface2);color:var(--text)" onclick="projWizPrev()">'+t('wizard_back')+'</button>'
+    :'<button class="btn" style="flex:1;background:var(--surface2);color:var(--text)" onclick="closeModals()">'+t('wizard_cancel')+'</button>';
+  h+=projWizStep<PROJ_WIZ.length-1
+    ?'<button class="btn" style="flex:1" onclick="projWizNext()">'+t('wizard_next')+'</button>'
+    :'<button class="btn" style="flex:1" onclick="projWizFinish()">'+projT('wiz_finish')+'</button>';
+  h+='</div>';
+  h+='</div>';
+  return h;
+}
+function projWizNext(){
+  var step=PROJ_WIZ[projWizStep];
+  if(step==='what'){
+    var nameEl=document.getElementById('pw-name');
+    projDraft.text=nameEl?nameEl.value.trim():'';
+    if(!projDraft.text){ if(nameEl)nameEl.focus(); return; }
+    var dateEl=document.getElementById('pw-date');
+    projDraft.targetDate=(dateEl&&dateEl.value)?dateEl.value:'';
+  }else if(step==='audience'){
+    var aEl=document.getElementById('pw-audience');
+    projDraft.audience=aEl?aEl.value.trim():'';
+  }
+  projWizStep++;
+  showModalCentered(renderProjectWizardHtml());
+  setTimeout(projWizFocus,10);
+}
+function projWizPrev(){
+  projWizStep--;
+  showModalCentered(renderProjectWizardHtml());
+  setTimeout(projWizFocus,10);
+}
+function projWizFinish(){
+  var sEl=document.getElementById('pw-scale');
+  projDraft.scale=sEl?sEl.value.trim():'';
+  if(!db.projects)db.projects=[];
+  var proj={
+    id:genUniqueId(db.projects),text:projDraft.text,audience:projDraft.audience||'',scale:projDraft.scale||'',
+    targetDate:projDraft.targetDate||null,done:false,createdAt:new Date().toISOString(),doneAt:null,
+    team:makeDefaultProjectTeam(),items:[]
+  };
+  db.projects.unshift(proj);
   save();
   closeModals();
-  renderTodoOpenList();
-  openProjectDetail(proj.id);
+  refreshProjectsList();
+  openProjectWorkspace(proj.id);
 }
-function openProjectDetail(id){
-  var item=(db.todos||[]).find(function(x){return x.id===id&&x.type==='project';});
+
+// ---- Full-screen workspace (same overlay pattern as openFullCalendar) --
+function openProjectWorkspace(id){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
   if(!item)return;
-  showModal(renderProjectDetailHtml(item));
-  setTimeout(function(){
-    var inp=document.getElementById('project-item-new-input');
-    if(inp)inp.addEventListener('keydown',function(ev){if(ev.key==='Enter'){ev.preventDefault();addProjectItem(id);}});
-  },10);
+  document.body.insertAdjacentHTML('beforeend','<div id="proj-ws-overlay" style="position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box"></div>');
+  renderProjectWorkspace(item);
+  document.addEventListener('keydown',projWsKeyHandler);
 }
-function renderProjectDetailHtml(item){
-  var subs=item.subitems||[];
-  var doneCount=subs.filter(function(s){return s.done;}).length;
+function projWsKeyHandler(e){ if(e.key==='Escape')closeProjectWorkspace(); }
+function closeProjectWorkspace(){
+  var el=document.getElementById('proj-ws-overlay');
+  if(el)el.remove();
+  document.removeEventListener('keydown',projWsKeyHandler);
+  refreshProjectsList();
+}
+function renderProjectWorkspace(item){
+  var overlay=document.getElementById('proj-ws-overlay');
+  if(!overlay)return;
+  overlay.innerHTML=''
+    +'<div style="display:flex;align-items:center;gap:8px;padding:12px 10px 10px;border-bottom:1px solid var(--border);flex-shrink:0;box-sizing:border-box;width:100%">'
+    +'<button onclick="closeProjectWorkspace()" style="background:none;border:none;font-size:26px;line-height:1;color:var(--text3);cursor:pointer;padding:0 4px;flex-shrink:0" aria-label="Close">&times;</button>'
+    +'<div style="font-size:15px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escapeHtml(item.text)+'</div>'
+    +'<button onclick="exportProjectPdf('+ssIdArg(item.id)+')" title="'+t('project_export_pdf')+'" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;display:flex"><svg width="18" height="18" viewBox="0 0 24 24"><use href="#ico-printer"/></svg></button>'
+    +'</div>'
+    +'<div id="proj-ws-body" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 40px;box-sizing:border-box"></div>';
+  var body=document.getElementById('proj-ws-body');
+  if(body)body.innerHTML=renderProjectWorkspaceBody(item);
+}
+function refreshProjectWorkspace(id){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
+  if(!item)return;
+  var body=document.getElementById('proj-ws-body');
+  if(body)body.innerHTML=renderProjectWorkspaceBody(item);
+  refreshProjectsList();
+}
+function projSectionHeader(key,label){
+  var open=!!getAccState(key);
+  return '<div class="settings-section-title" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;cursor:pointer" onclick="toggleAccordionByKey(\''+key+'\',this.querySelector(\'.acc-toggle-btn\'))">'
+    +'<span>'+label+'</span>'
+    +'<button type="button" class="acc-toggle-btn" onclick="event.stopPropagation();toggleAccordionByKey(\''+key+'\',this)" style="background:none;border:none;padding:4px;margin:-4px;cursor:pointer;display:flex;color:var(--text3)"><svg width="13" height="13" style="transition:transform .2s'+(open?';transform:rotate(180deg)':'')+'"><use href="#ico-chevron-down"/></svg></button>'
+    +'</div>';
+}
+function renderProjectWorkspaceBody(item){
   var idArg=ssIdArg(item.id);
-  var rows=subs.length?subs.map(function(s){
-    var sIdArg=ssIdArg(s.id);
-    return'<div class="todo-row'+(s.done?' todo-row-checked':'')+'">'
-      +'<div class="todo-check'+(s.done?' checked':'')+'" onclick="toggleProjectItemDone('+idArg+','+sIdArg+')"></div>'
-      +'<div class="todo-text" onclick="startEditProjectItemText(this,'+idArg+','+sIdArg+')" title="'+t('todo_tap_to_edit')+'">'+escapeHtml(s.text)+'</div>'
-      +'<div class="todo-del" onclick="deleteProjectItem('+idArg+','+sIdArg+')" title="'+t('delete_btn')+'">&times;</div>'
-      +'</div>';
-  }).join(''):'<div style="text-align:center;padding:10px 0;color:var(--text3);font-size:13px">'+t('project_no_items')+'</div>';
-  return''
-    +'<div style="padding:16px 16px 20px">'
-    +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px">'
-    +'<div id="project-detail-name" style="font-size:16px;font-weight:700;color:var(--text);flex:1" onclick="startEditProjectName(this,'+idArg+')" title="'+t('todo_tap_to_edit')+'">'+escapeHtml(item.text)+'</div>'
-    +'<span style="font-size:11px;font-weight:700;color:var(--brand);background:var(--brand-light);padding:3px 9px;border-radius:20px;flex-shrink:0">'+doneCount+'/'+subs.length+'</span>'
-    +'</div>'
-    +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:14px">'
-    +'<span style="font-size:11px;color:var(--text3)">'+t('project_target_date')+':</span>'
-    +'<input type="date" value="'+(item.targetDate||'')+'" onchange="updateProjectTargetDate('+idArg+',this.value)" style="font:inherit;font-size:12px;padding:3px 6px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">'
-    +'</div>'
-    +'<div id="project-items-list">'+rows+'</div>'
-    +'<div style="display:flex;gap:6px;margin-top:10px">'
-    +'<input type="text" id="project-item-new-input" placeholder="'+t('project_item_placeholder')+'" style="flex:1;box-sizing:border-box;font:inherit;padding:8px 10px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text)">'
-    +'<button class="btn sm" onclick="addProjectItem('+idArg+')">+</button>'
-    +'</div>'
-    +'<div style="display:flex;gap:8px;margin-top:18px">'
-    +'<button class="btn" style="flex:1;background:var(--surface2);color:var(--text)" onclick="exportProjectPdf('+idArg+')">'+t('project_export_pdf')+'</button>'
-    +'<button class="btn" style="flex:1" onclick="closeModals()">'+t('close_btn')+'</button>'
+  var h='';
+  h+='<div style="margin-bottom:18px">';
+  h+=projSectionHeader('proj-vision-'+item.id,projT('section_vision'));
+  h+='<div class="card" style="padding:12px 14px">';
+  h+='<div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px" onclick="startEditProjWsField(this,'+idArg+',\'text\')" title="'+t('todo_tap_to_edit')+'">'+escapeHtml(item.text)+'</div>';
+  h+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
+    +'<span style="font-size:11px;color:var(--text3);width:90px;flex-shrink:0">'+projT('field_audience')+'</span>'
+    +'<div style="flex:1;font-size:13px;color:var(--text2)" onclick="startEditProjWsField(this,'+idArg+',\'audience\')" title="'+t('todo_tap_to_edit')+'">'+(item.audience?escapeHtml(item.audience):'<span style="color:var(--text3);font-style:italic">'+t('todo_tap_to_edit')+'</span>')+'</div>'
+    +'</div>';
+  h+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
+    +'<span style="font-size:11px;color:var(--text3);width:90px;flex-shrink:0">'+projT('field_scale')+'</span>'
+    +'<div style="flex:1;font-size:13px;color:var(--text2)" onclick="startEditProjWsField(this,'+idArg+',\'scale\')" title="'+t('todo_tap_to_edit')+'">'+(item.scale?escapeHtml(item.scale):'<span style="color:var(--text3);font-style:italic">'+t('todo_tap_to_edit')+'</span>')+'</div>'
+    +'</div>';
+  h+='<div style="display:flex;align-items:center;gap:6px">'
+    +'<span style="font-size:11px;color:var(--text3);width:90px;flex-shrink:0">'+t('project_target_date')+'</span>'
+    +'<input type="date" value="'+(item.targetDate||'')+'" onchange="updateProjWsDate('+idArg+',this.value)" style="font:inherit;font-size:12px;padding:3px 6px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">'
+    +'</div>';
+  h+='</div></div>';
+
+  var reqOpen=!!getAccState('proj-req-'+item.id);
+  h+=projSectionHeader('proj-req-'+item.id,projT('section_req'));
+  h+='<div class="card card-acc-plain'+(reqOpen?' acc-open':'')+'" data-acc-key="proj-req-'+item.id+'" style="margin-bottom:16px"><div class="acc-body">'+renderProjReqSection(item)+'</div></div>';
+
+  var teamOpen=!!getAccState('proj-team-'+item.id);
+  h+=projSectionHeader('proj-team-'+item.id,projT('section_team'));
+  h+='<div class="card card-acc-plain'+(teamOpen?' acc-open':'')+'" data-acc-key="proj-team-'+item.id+'" style="margin-bottom:16px"><div class="acc-body">'+renderProjTeamSection(item)+'</div></div>';
+
+  var tlOpen=!!getAccState('proj-tl-'+item.id);
+  h+=projSectionHeader('proj-tl-'+item.id,projT('section_timeline'));
+  h+='<div class="card card-acc-plain'+(tlOpen?' acc-open':'')+'" data-acc-key="proj-tl-'+item.id+'" style="margin-bottom:16px"><div class="acc-body">'+renderProjTimelineSection(item)+'</div></div>';
+
+  h+='<div style="display:flex;gap:8px;margin-top:8px">';
+  h+='<button class="btn" style="flex:1;background:var(--surface2);color:var(--text)" onclick="toggleProjectDone('+idArg+')">'+(item.done?projT('mark_undone'):projT('mark_done'))+'</button>';
+  h+='<button class="btn" style="flex:1;background:#fee2e2;color:#dc2626" onclick="deleteProjectConfirm('+idArg+')">'+projT('delete_project')+'</button>';
+  h+='</div>';
+  return h;
+}
+function renderProjReqSection(item){
+  var idArg=ssIdArg(item.id);
+  var h='';
+  PROJECT_CATEGORIES.forEach(function(cat){
+    var catItems=(item.items||[]).filter(function(it){return it.category===cat;});
+    h+='<div style="margin-bottom:14px">';
+    h+='<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">'+projCatLabel(cat)+'</div>';
+    h+=catItems.length?catItems.map(function(it){return renderProjReqItemRow(item.id,it);}).join(''):'';
+    h+='<div style="display:flex;gap:6px;margin-top:4px">';
+    h+='<input type="text" id="req-new-'+cat+'" placeholder="'+projT('item_ph')+'" style="flex:1;min-width:0;font:inherit;font-size:12px;padding:7px 9px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text)" onkeydown="if(event.key===\'Enter\'){addProjReqItem('+idArg+',\''+cat+'\');}">';
+    h+='<button class="btn sm" onclick="addProjReqItem('+idArg+',\''+cat+'\')">+</button>';
+    h+='</div>';
+    h+='</div>';
+  });
+  return h;
+}
+function renderProjReqItemRow(pid,it){
+  var checked=!!it.done;
+  var idArg=ssIdArg(pid), itArg=ssIdArg(it.id);
+  return '<div class="todo-row'+(checked?' todo-row-checked':'')+'" style="flex-wrap:wrap;align-items:center">'
+    +'<div class="todo-check'+(checked?' checked':'')+'" onclick="toggleProjReqItem('+idArg+','+itArg+')"></div>'
+    +'<div class="todo-text" onclick="startEditProjReqText(this,'+idArg+','+itArg+')" title="'+t('todo_tap_to_edit')+'" style="flex:1 1 140px">'+escapeHtml(it.text)+'</div>'
+    +'<div class="todo-del" onclick="deleteProjReqItem('+idArg+','+itArg+')" title="'+t('delete_btn')+'">&times;</div>'
+    +'<div style="flex-basis:100%;display:flex;gap:6px;margin:2px 0 4px 22px">'
+    +'<input type="text" value="'+escapeHtml(it.responsible||'')+'" placeholder="'+projT('responsible_ph')+'" onchange="updateProjReqResponsible('+idArg+','+itArg+',this.value)" style="flex:1;min-width:0;font:inherit;font-size:11px;padding:4px 7px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">'
+    +'<input type="date" value="'+(it.dueDate||'')+'" onchange="updateProjReqDueDate('+idArg+','+itArg+',this.value)" style="font:inherit;font-size:11px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">'
     +'</div>'
     +'</div>';
 }
-// Re-renders the open detail popup in place after an edit, so the checklist
-// updates live without the whole modal flashing shut/open like closeModals()
-// + openProjectDetail() would.
-function refreshProjectDetail(item){
-  var overlay=document.getElementById('plan-modal-overlay');
-  if(!overlay)return;
-  var body=overlay.querySelector('.modal-body')||overlay.querySelector('.sheet')||overlay.firstElementChild;
-  if(body)body.innerHTML=renderProjectDetailHtml(item);
-  setTimeout(function(){
-    var inp=document.getElementById('project-item-new-input');
-    if(inp)inp.addEventListener('keydown',function(ev){if(ev.key==='Enter'){ev.preventDefault();addProjectItem(item.id);}});
-  },10);
-  renderTodoOpenList();
+function renderProjTeamSection(item){
+  var idArg=ssIdArg(item.id);
+  var team=item.team||[];
+  var h=team.map(function(tm){
+    var tIdArg=ssIdArg(tm.id);
+    var label=PROJECT_DEFAULT_ROLES.indexOf(tm.role)>=0?projRoleLabel(tm.role):escapeHtml(tm.role);
+    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0">'
+      +'<div style="width:100px;flex-shrink:0;font-size:12px;font-weight:600;color:var(--text2)">'+label+'</div>'
+      +'<input type="text" value="'+escapeHtml(tm.person||'')+'" placeholder="'+projT('person_ph')+'" onchange="updateProjTeamPerson('+idArg+','+tIdArg+',this.value)" style="flex:1;min-width:0;font:inherit;font-size:13px;padding:6px 9px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text)">'
+      +'<div class="todo-del" onclick="deleteProjTeamRole('+idArg+','+tIdArg+')" title="'+t('delete_btn')+'">&times;</div>'
+      +'</div>';
+  }).join('');
+  h+='<div style="display:flex;gap:6px;margin-top:8px">';
+  h+='<input type="text" id="team-new-role" placeholder="'+projT('role_name_ph')+'" style="flex:1;min-width:0;font:inherit;font-size:12px;padding:7px 9px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text)" onkeydown="if(event.key===\'Enter\'){addProjTeamRole('+idArg+');}">';
+  h+='<button class="btn sm" onclick="addProjTeamRole('+idArg+')">'+projT('add_role')+'</button>';
+  h+='</div>';
+  return h;
 }
-function addProjectItem(id){
-  var item=(db.todos||[]).find(function(x){return x.id===id&&x.type==='project';});
+function renderProjTimelineSection(item){
+  var dated=(item.items||[]).filter(function(it){return it.dueDate;}).sort(function(a,b){return a.dueDate<b.dueDate?-1:1;});
+  if(!dated.length)return '<div style="text-align:center;padding:10px 0;color:var(--text3);font-size:13px">'+projT('timeline_empty')+'</div>';
+  var h='<div style="width:100%;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
+  h+='<thead><tr style="text-align:left;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.03em">'
+    +'<th style="padding:4px 6px 6px 0">'+projT('col_date')+'</th>'
+    +'<th style="padding:4px 6px 6px 0">'+projT('col_item')+'</th>'
+    +'<th style="padding:4px 6px 6px 0">'+projT('col_responsible')+'</th>'
+    +'</tr></thead><tbody>';
+  dated.forEach(function(it){
+    h+='<tr style="border-top:1px solid var(--border)'+(it.done?';opacity:.5':'')+'">'
+      +'<td style="padding:6px 6px 6px 0;white-space:nowrap;color:var(--text2)">'+formatDate(it.dueDate)+'</td>'
+      +'<td style="padding:6px 6px 6px 0'+(it.done?';text-decoration:line-through':'')+'">'+escapeHtml(it.text)+'</td>'
+      +'<td style="padding:6px 6px 6px 0;color:var(--text3)">'+(it.responsible?escapeHtml(it.responsible):'—')+'</td>'
+      +'</tr>';
+  });
+  h+='</tbody></table></div>';
+  return h;
+}
+
+// ---- Field editors + CRUD ------------------------------------------------
+function startEditProjWsField(el,id,field){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
+  if(!item||el.querySelector('input'))return;
+  var cur=item[field]||'';
+  el.innerHTML='';
+  var inp=document.createElement('input');
+  inp.type='text';
+  inp.value=cur;
+  inp.style.cssText='width:100%;font:inherit;color:inherit;background:var(--surface2);border:none;border-radius:var(--r-sm);padding:6px 8px;margin:-6px -8px;outline:none;box-shadow:0 0 0 1.5px var(--border)';
+  el.appendChild(inp);
+  inp.focus();
+  inp.setSelectionRange(cur.length,cur.length);
+  var done=false;
+  function commit(){
+    if(done)return; done=true;
+    var val=inp.value.trim();
+    if(val!==cur){ item[field]=val; touch(item); save(); }
+    refreshProjectWorkspace(id);
+  }
+  inp.addEventListener('blur',commit);
+  inp.addEventListener('keydown',function(ev){
+    if(ev.key==='Enter'){ ev.preventDefault(); inp.blur(); }
+    else if(ev.key==='Escape'){ done=true; refreshProjectWorkspace(id); }
+  });
+  inp.addEventListener('click',function(ev){ ev.stopPropagation(); });
+}
+function updateProjWsDate(id,val){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
   if(!item)return;
-  var inp=document.getElementById('project-item-new-input');
+  item.targetDate=val||null;
+  touch(item); save();
+  refreshProjectsList();
+}
+function addProjReqItem(id,cat){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
+  if(!item)return;
+  var inp=document.getElementById('req-new-'+cat);
   if(!inp)return;
   var text=(inp.value||'').trim();
   if(!text)return;
-  if(!item.subitems)item.subitems=[];
-  item.subitems.push({id:genUniqueId(item.subitems),text:text,done:false});
-  touch(item);
-  save();
-  refreshProjectDetail(item);
+  if(!item.items)item.items=[];
+  item.items.push({id:genUniqueId(item.items),text:text,category:cat,responsible:'',dueDate:null,done:false});
+  touch(item); save();
+  refreshProjectWorkspace(id);
   setTimeout(function(){
-    var newInp=document.getElementById('project-item-new-input');
+    var newInp=document.getElementById('req-new-'+cat);
     if(newInp)newInp.focus();
   },20);
 }
-function toggleProjectItemDone(id,subId){
-  var item=(db.todos||[]).find(function(x){return x.id===id&&x.type==='project';});
-  if(!item)return;
-  var sub=(item.subitems||[]).find(function(s){return s.id===subId;});
-  if(!sub)return;
-  sub.done=!sub.done;
-  touch(item);
-  save();
-  refreshProjectDetail(item);
+function toggleProjReqItem(id,itemId){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
+  var it=item&&(item.items||[]).find(function(s){return s.id===itemId;});
+  if(!it)return;
+  it.done=!it.done;
+  touch(item); save();
+  refreshProjectWorkspace(id);
 }
-function startEditProjectItemText(el,id,subId){
-  var item=(db.todos||[]).find(function(x){return x.id===id&&x.type==='project';});
-  var sub=item&&(item.subitems||[]).find(function(s){return s.id===subId;});
-  if(!sub||el.querySelector('input'))return;
-  var cur=sub.text;
+function startEditProjReqText(el,id,itemId){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
+  var it=item&&(item.items||[]).find(function(s){return s.id===itemId;});
+  if(!it||el.querySelector('input'))return;
+  var cur=it.text;
   el.innerHTML='';
   var inp=document.createElement('input');
   inp.type='text';
@@ -15067,74 +15381,112 @@ function startEditProjectItemText(el,id,subId){
   function commit(){
     if(done)return; done=true;
     var val=inp.value.trim();
-    if(val&&val!==cur){ sub.text=val; touch(item); save(); }
-    refreshProjectDetail(item);
+    if(val&&val!==cur){ it.text=val; touch(item); save(); }
+    refreshProjectWorkspace(id);
   }
   inp.addEventListener('blur',commit);
   inp.addEventListener('keydown',function(ev){
     if(ev.key==='Enter'){ ev.preventDefault(); inp.blur(); }
-    else if(ev.key==='Escape'){ done=true; refreshProjectDetail(item); }
+    else if(ev.key==='Escape'){ done=true; refreshProjectWorkspace(id); }
   });
   inp.addEventListener('click',function(ev){ ev.stopPropagation(); });
 }
-function deleteProjectItem(id,subId){
-  var item=(db.todos||[]).find(function(x){return x.id===id&&x.type==='project';});
+function updateProjReqResponsible(id,itemId,val){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
+  var it=item&&(item.items||[]).find(function(s){return s.id===itemId;});
+  if(!it)return;
+  it.responsible=val||'';
+  touch(item); save();
+}
+function updateProjReqDueDate(id,itemId,val){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
+  var it=item&&(item.items||[]).find(function(s){return s.id===itemId;});
+  if(!it)return;
+  it.dueDate=val||null;
+  touch(item); save();
+  refreshProjectWorkspace(id); // Timeline view needs to re-sort/re-filter
+}
+function deleteProjReqItem(id,itemId){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
   if(!item)return;
-  item.subitems=(item.subitems||[]).filter(function(s){return s.id!==subId;});
-  touch(item);
-  save();
-  refreshProjectDetail(item);
+  item.items=(item.items||[]).filter(function(s){return s.id!==itemId;});
+  touch(item); save();
+  refreshProjectWorkspace(id);
 }
-function startEditProjectName(el,id){
-  var item=(db.todos||[]).find(function(x){return x.id===id&&x.type==='project';});
-  if(!item||el.querySelector('input'))return;
-  var cur=item.text;
-  el.innerHTML='';
-  var inp=document.createElement('input');
-  inp.type='text';
-  inp.value=cur;
-  inp.style.cssText='width:100%;font:inherit;font-weight:700;color:inherit;background:var(--surface2);border:none;border-radius:var(--r-sm);padding:6px 8px;margin:-6px -8px;outline:none;box-shadow:0 0 0 1.5px var(--border)';
-  el.appendChild(inp);
-  inp.focus();
-  inp.setSelectionRange(cur.length,cur.length);
-  var done=false;
-  function commit(){
-    if(done)return; done=true;
-    var val=inp.value.trim();
-    if(val&&val!==cur){ item.text=val; touch(item); save(); }
-    refreshProjectDetail(item);
-  }
-  inp.addEventListener('blur',commit);
-  inp.addEventListener('keydown',function(ev){
-    if(ev.key==='Enter'){ ev.preventDefault(); inp.blur(); }
-    else if(ev.key==='Escape'){ done=true; refreshProjectDetail(item); }
-  });
-  inp.addEventListener('click',function(ev){ ev.stopPropagation(); });
+function updateProjTeamPerson(id,teamId,val){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
+  var tm=item&&(item.team||[]).find(function(s){return s.id===teamId;});
+  if(!tm)return;
+  tm.person=val||'';
+  touch(item); save();
 }
-function updateProjectTargetDate(id,val){
-  var item=(db.todos||[]).find(function(x){return x.id===id&&x.type==='project';});
+function addProjTeamRole(id){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
   if(!item)return;
-  item.targetDate=val||null;
-  touch(item);
-  save();
-  renderTodoOpenList();
+  var inp=document.getElementById('team-new-role');
+  if(!inp)return;
+  var role=(inp.value||'').trim();
+  if(!role)return;
+  if(!item.team)item.team=[];
+  item.team.push({id:genUniqueId(item.team),role:role,person:''});
+  touch(item); save();
+  refreshProjectWorkspace(id);
 }
-// Prints the project as a one-page "handout" - the checklist a worker can
-// print and hand to whoever is coordinating/helping run the project (an
-// evangelism campaign, a special Sabbath, an open day, a book-market stand).
-// Same hidden-iframe print approach as gcExportPdfWorker above (see the
-// comment there): NOT window.open(), which hijacks the whole WKWebView
-// inside an installed iOS PWA instead of opening a real tab. Unlike the GC
-// report (which is deliberately always English, since it goes to Delegates),
-// this handout renders in the app's own active language (LANG/t()), since
-// it's meant for the worker's own team.
+function deleteProjTeamRole(id,teamId){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
+  if(!item)return;
+  item.team=(item.team||[]).filter(function(s){return s.id!==teamId;});
+  touch(item); save();
+  refreshProjectWorkspace(id);
+}
+function toggleProjectDone(id){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
+  if(!item)return;
+  item.done=!item.done;
+  item.doneAt=item.done?new Date().toISOString():null;
+  touch(item); save();
+  refreshProjectWorkspace(id);
+}
+function deleteProjectConfirm(id){
+  if(!confirm(projT('confirm_delete')))return;
+  recordTombstone('projects',id);
+  db.projects=(db.projects||[]).filter(function(x){return x.id!==id;});
+  save();
+  closeProjectWorkspace();
+  refreshProjectsList();
+}
+// Prints the project as a one-page "handout" - Vision & Scope, Requirements
+// by category, Team, and the Master Timeline table - for whoever is
+// coordinating/helping run it. Same hidden-iframe print approach as
+// gcExportPdfWorker above (see the comment there): NOT window.open(), which
+// hijacks the whole WKWebView inside an installed iOS PWA instead of opening
+// a real tab. Renders in the app's own active language (LANG/t()), since
+// it's meant for the worker's own team (unlike the GC report, which is
+// deliberately always English).
 function exportProjectPdf(id){
-  var item=(db.todos||[]).find(function(x){return x.id===id&&x.type==='project';});
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
   if(!item)return;
-  var subs=item.subitems||[];
-  var rowsHtml=subs.length?subs.map(function(s){
-    return '<div class="chk-row"><span class="chk-box">'+(s.done?'&#10003;':'')+'</span><span class="chk-text'+(s.done?' chk-done':'')+'">'+escapeHtml(s.text)+'</span></div>';
-  }).join(''):'<div class="private-note">'+t('project_no_items')+'</div>';
+  var items=item.items||[];
+  var team=item.team||[];
+  var reqHtml='';
+  PROJECT_CATEGORIES.forEach(function(cat){
+    var catItems=items.filter(function(it){return it.category===cat;});
+    if(!catItems.length)return;
+    reqHtml+='<div class="cat-h">'+projCatLabel(cat)+'</div>';
+    reqHtml+=catItems.map(function(s){
+      var meta=[s.responsible,s.dueDate?formatDate(s.dueDate):''].filter(Boolean).join(' · ');
+      return '<div class="chk-row"><span class="chk-box">'+(s.done?'&#10003;':'')+'</span><span class="chk-text'+(s.done?' chk-done':'')+'">'+escapeHtml(s.text)+(meta?' <span class="chk-meta">('+escapeHtml(meta)+')</span>':'')+'</span></div>';
+    }).join('');
+  });
+  if(!reqHtml)reqHtml='<div class="private-note">'+t('project_no_items')+'</div>';
+  var teamHtml=team.length?team.map(function(tm){
+    var label=PROJECT_DEFAULT_ROLES.indexOf(tm.role)>=0?projRoleLabel(tm.role):tm.role;
+    return '<div class="chk-row"><span class="chk-text">'+escapeHtml(label)+': '+(tm.person?escapeHtml(tm.person):'—')+'</span></div>';
+  }).join(''):'';
+  var dated=items.filter(function(it){return it.dueDate;}).sort(function(a,b){return a.dueDate<b.dueDate?-1:1;});
+  var tlHtml=dated.length?('<table class="tl-table"><thead><tr><th>'+projT('col_date')+'</th><th>'+projT('col_item')+'</th><th>'+projT('col_responsible')+'</th></tr></thead><tbody>'
+    +dated.map(function(it){return '<tr><td>'+formatDate(it.dueDate)+'</td><td>'+escapeHtml(it.text)+'</td><td>'+(it.responsible?escapeHtml(it.responsible):'—')+'</td></tr>';}).join('')
+    +'</tbody></table>'):'';
   var style=''
     +'@page{size:A4;margin:16mm}'
     +'*{box-sizing:border-box}'
@@ -15143,12 +15495,18 @@ function exportProjectPdf(id){
     +'body{font-family:Arial,Helvetica,sans-serif;color:#1a2733;margin:0;padding:0;font-size:10pt}'
     +'.page-wrap{max-width:182mm;margin:0 auto;padding:0 4mm;box-sizing:border-box}'
     +'.title{font-size:15pt;font-weight:700;margin-bottom:2px}'
-    +'.meta{font-size:9pt;color:#667;margin-bottom:8mm}'
+    +'.meta{font-size:9pt;color:#667;margin-bottom:4mm}'
+    +'.sec-h{font-size:11pt;font-weight:700;color:#335781;margin:8mm 0 3mm;border-bottom:1px solid #335781;padding-bottom:2pt}'
+    +'.cat-h{font-size:9pt;font-weight:700;color:#667;text-transform:uppercase;letter-spacing:.04em;margin:5mm 0 1mm}'
     +'.chk-row{display:flex;align-items:flex-start;gap:8px;padding:5pt 0;border-bottom:1px solid #EAF0F5}'
     +'.chk-box{flex-shrink:0;width:13pt;height:13pt;border:1.5pt solid #335781;border-radius:3pt;display:flex;align-items:center;justify-content:center;font-size:10pt;font-weight:700;color:#335781;margin-top:1pt}'
     +'.chk-text{font-size:10.5pt;line-height:1.35}'
+    +'.chk-meta{color:#889;font-size:9pt}'
     +'.chk-done{color:#889;text-decoration:line-through}'
     +'.private-note{font-size:9pt;color:#889;font-style:italic;margin-top:4mm}'
+    +'.tl-table{width:100%;border-collapse:collapse;font-size:9.5pt;margin-top:2mm}'
+    +'.tl-table th{text-align:left;font-size:8pt;text-transform:uppercase;color:#889;padding:2pt 6pt 4pt 0}'
+    +'.tl-table td{padding:4pt 6pt 4pt 0;border-top:1px solid #EAF0F5}'
     +'.print-btn{margin-top:8mm;padding:7px 16px;background:#335781;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:11px}'
     +'@media print{.print-btn{display:none}}';
   var _printFrame=_gcCreatePrintFrameWorker();
@@ -15156,8 +15514,14 @@ function exportProjectPdf(id){
   w.document.write('<html><head><title>'+escapeHtml(item.text)+'</title><style>'+style+'</style></head><body><div class="page-wrap">');
   w.document.write(orgHeaderHtml(11));
   w.document.write('<div class="title">'+escapeHtml(item.text)+'</div>');
-  if(item.targetDate)w.document.write('<div class="meta">'+t('project_target_date')+': '+formatDate(item.targetDate)+'</div>');
-  w.document.write('<div>'+rowsHtml+'</div>');
+  var metaBits=[];
+  if(item.audience)metaBits.push(projT('field_audience')+': '+escapeHtml(item.audience));
+  if(item.scale)metaBits.push(projT('field_scale')+': '+escapeHtml(item.scale));
+  if(item.targetDate)metaBits.push(t('project_target_date')+': '+formatDate(item.targetDate));
+  if(metaBits.length)w.document.write('<div class="meta">'+metaBits.join(' &middot; ')+'</div>');
+  w.document.write('<div class="sec-h">'+projT('section_req')+'</div>'+reqHtml);
+  if(teamHtml)w.document.write('<div class="sec-h">'+projT('section_team')+'</div>'+teamHtml);
+  if(tlHtml)w.document.write('<div class="sec-h">'+projT('section_timeline')+'</div>'+tlHtml);
   w.document.write('<br><button class="print-btn" onclick="window.print()">'+t('print_btn')+'</button>');
   w.document.write('<script>(function(){setTimeout(function(){try{window.print();}catch(e){}},150);})();<\/script>');
   w.document.write('</div></body></html>');
