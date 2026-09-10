@@ -16465,28 +16465,22 @@ function renderWiz(){
       <div class="btn-row"><button class="btn" onclick="wBack()">${t('wizard_back')}</button><button class="btn" onclick="wQuickSave()">${t('save_btn')}</button><button class="btn primary" onclick="wSet('kosten','w-kosten');wNext()">${t('wizard_next')}</button></div>`;
     }
   }else if(s==='cursist'){
-    // Was a plain native <select> - fine on a keyboard/mouse desktop (native
-    // selects support type-to-jump), but on a touchscreen there's no
-    // keyboard visible while the OS picker is open, so scrolling through
-    // every contact by hand was the only option. Replaced with the app's
-    // own searchable tap-list (same filter-as-you-type idea as the
-    // Meerdere-contacten checklist above and the repeat-an-activity picker,
-    // #825) - a real text field the person can type into regardless of
-    // device, filtering the same Niet-leden/Leden groups down as they type.
-    // w-cursist stays a hidden input carrying the chosen id, so wSetCursist()
-    // (called from the Volgende button, unchanged) keeps reading it exactly
-    // like it read the old select's value.
-    const wPickPh=tMap({nl:'Zoeken...',en:'Search...',es:'Buscar...',fr:'Rechercher...',de:'Suchen...',ro:'Caută...',hu:'Keresés...',ru:'Поиск...',it:'Cerca...',pt:'Pesquisar...'});
-    const wPickRow=(id,naam,isPlaceholder)=>{
-      const sel=String(draft.cursistId||'')===String(id);
-      return `<div class="cc-row w-pick-row" data-cid="${id}" data-cname="${normNameForMatch(naam)}" onclick="selectWCursist('${id}')" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 6px;cursor:pointer;border-radius:6px;background:${sel?'var(--brand-light)':''};color:${sel?'var(--brand)':(isPlaceholder?'var(--text3)':'')}">`
-        +`<span style="font-size:13.5px">${escapeHtml(naam)}</span><span class="w-pick-check" style="font-size:13px;font-weight:700;opacity:${sel?'1':'0'}">&#10003;</span></div>`;
-    };
-    const wPickGroups=groupCursistenByLid(db.cursisten);
-    let wPickList=wPickRow('',t('wizard_no_contact'),true);
-    if(wPickGroups.nietLeden.length)wPickList+=`<div class="cc-hdr" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px;padding:0 6px">${nietLedenSectionLbl()}</div>`+wPickGroups.nietLeden.map(cu=>wPickRow(cu.id,cu.naam)).join('');
-    if(wPickGroups.leden.length)wPickList+=`<div class="cc-hdr" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px;padding:0 6px">${ledenSectionLbl()}</div>`+wPickGroups.leden.map(cu=>wPickRow(cu.id,cu.naam)).join('');
-    if(wPickGroups.paused.length)wPickList+=`<div class="cc-hdr" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px;padding:0 6px">${pausedSectionLbl()}</div>`+wPickGroups.paused.map(cu=>wPickRow(cu.id,cu.naam)).join('');
+    // Contact picker: a compact tap-to-open field, not an always-expanded
+    // inline list. #1008 replaced the plain native <select> with a
+    // searchable list rendered directly in the step (full Niet-leden/Leden
+    // groups always visible plus a full-width search bar) so a touchscreen
+    // user wouldn't have to scroll a native picker by hand - but per user
+    // feedback that made every contact's name show at once and pushed the
+    // rest of the step down. Reverted to a "tap the field, pick from a
+    // popup" flow instead (openWCursistPicker(), below): same searchable/
+    // grouped list, just behind a tap, and its own search affordance is a
+    // small icon that expands into a real input on tap (wcpExpandSearch())
+    // rather than a bar shown by default. w-cursist stays a hidden input
+    // carrying the chosen id, so wSetCursist() (called from the Volgende
+    // button, unchanged) keeps reading it exactly like it read the old
+    // select's value.
+    const wSelCu=draft.cursistId?db.cursisten.find(cu=>String(cu.id)===String(draft.cursistId)):null;
+    const wFieldLabel=wSelCu?wSelCu.naam:t('wizard_no_contact');
     // "Meerdere studenten"/"Meerdere contacten" (multiple contacts): offered
     // for Bijbelstudie geven plus any other MULTI_CONTACT_CATS category
     // (Bezoek, Pastoraal contact, Pastoraal werk - task #959) - a home
@@ -16525,9 +16519,11 @@ function renderWiz(){
       </div>`;
     }
     c.innerHTML=`<div class="wiz-q">${t('wizard_with_who')}</div>
-      <input type="text" id="w-cursist-search" placeholder="${wPickPh}" oninput="filterContactChecklist('w-cursist-search','w-cursist-list')" style="margin-bottom:8px">
+      <div id="w-cursist-field" onclick="openWCursistPicker()" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);cursor:pointer;background:var(--surface)">
+        <span id="w-cursist-field-label" style="font-size:14px;color:${wSelCu?'var(--text)':'var(--text3)'}">${escapeHtml(wFieldLabel)}</span>
+        <svg width="16" height="16" style="color:var(--text3);flex-shrink:0"><use href="#ico-chevron-right"/></svg>
+      </div>
       <input type="hidden" id="w-cursist" value="${draft.cursistId||''}">
-      <div id="w-cursist-list" style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r-sm);padding:4px 6px">${wPickList}</div>
       <div style="margin-top:10px"><button class="btn sm" onclick="showAddCursist()">${t('add_cursist')}</button></div>
       ${multiHtml}
       <div class="btn-row"><button class="btn" onclick="wBack()">${t('wizard_back')}</button><button class="btn" onclick="wQuickSave()">${t('save_btn')}</button><button class="btn primary" onclick="wSetCursist();wNext()">${t('wizard_next')}</button></div>`;
@@ -16648,11 +16644,55 @@ function filterContactChecklist(searchId,wrapId){
     }
   });
 }
-// Tap handler for the "Met wie?" searchable contact list (w-cursist-list) -
-// updates the hidden w-cursist input plus the visual checkmark/highlight,
-// without a full re-render (which would also wipe the in-progress search
-// text). wSetCursist() still reads the hidden input's value exactly as it
-// used to read the old <select>'s value, on Volgende/Opslaan.
+// Popup version of the "Met wie?" contact picker (see the wizard-step
+// comment at the 'cursist' step above) - builds the same grouped,
+// searchable Niet-leden/Leden/paused list that step used to render inline,
+// but inside a showModal() bottom sheet, opened by tapping the compact
+// w-cursist-field. Row markup/ids (w-pick-row, w-cursist-list) unchanged so
+// selectWCursist() and filterContactChecklist() work exactly as before.
+function openWCursistPicker(){
+  const wPickPh=tMap({nl:'Zoeken...',en:'Search...',es:'Buscar...',fr:'Rechercher...',de:'Suchen...',ro:'Caută...',hu:'Keresés...',ru:'Поиск...',it:'Cerca...',pt:'Pesquisar...'});
+  const wPickRow=(id,naam,isPlaceholder)=>{
+    const sel=String(draft.cursistId||'')===String(id);
+    return `<div class="cc-row w-pick-row" data-cid="${id}" data-cname="${normNameForMatch(naam)}" onclick="selectWCursist('${id}')" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 6px;cursor:pointer;border-radius:6px;background:${sel?'var(--brand-light)':''};color:${sel?'var(--brand)':(isPlaceholder?'var(--text3)':'')}">`
+      +`<span style="font-size:13.5px">${escapeHtml(naam)}</span><span class="w-pick-check" style="font-size:13px;font-weight:700;opacity:${sel?'1':'0'}">&#10003;</span></div>`;
+  };
+  const wPickGroups=groupCursistenByLid(db.cursisten);
+  let wPickList=wPickRow('',t('wizard_no_contact'),true);
+  if(wPickGroups.nietLeden.length)wPickList+=`<div class="cc-hdr" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px;padding:0 6px">${nietLedenSectionLbl()}</div>`+wPickGroups.nietLeden.map(cu=>wPickRow(cu.id,cu.naam)).join('');
+  if(wPickGroups.leden.length)wPickList+=`<div class="cc-hdr" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px;padding:0 6px">${ledenSectionLbl()}</div>`+wPickGroups.leden.map(cu=>wPickRow(cu.id,cu.naam)).join('');
+  if(wPickGroups.paused.length)wPickList+=`<div class="cc-hdr" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px;padding:0 6px">${pausedSectionLbl()}</div>`+wPickGroups.paused.map(cu=>wPickRow(cu.id,cu.naam)).join('');
+  showModal(`<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px">
+      <div style="font-size:16px;font-weight:700">${t('wizard_with_who')}</div>
+      <button type="button" onclick="closeModals()" style="background:none;border:none;font-size:22px;line-height:1;color:var(--text3);cursor:pointer;padding:0 4px">&times;</button>
+    </div>
+    <div id="wcp-search-row" style="margin-bottom:8px">
+      <button type="button" onclick="wcpExpandSearch()" style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface2);color:var(--text3);font-size:13px;cursor:pointer"><svg width="14" height="14"><use href="#ico-search"/></svg>${wPickPh}</button>
+    </div>
+    <div id="w-cursist-list" style="max-height:50vh;overflow-y:auto">${wPickList}</div>
+    <div style="margin-top:10px"><button class="btn sm full" onclick="closeModals();showAddCursist()">${t('add_cursist')}</button></div>`);
+}
+// Collapses to a small search icon by default (per user feedback - a
+// full-width bar shown up front felt heavier than needed for a popup that's
+// usually short enough to just scroll) - tapping it swaps itself for a real
+// text input, reusing the same filterContactChecklist() live-filter as
+// every other contact checklist in the app.
+function wcpExpandSearch(){
+  const row=document.getElementById('wcp-search-row');
+  if(!row)return;
+  const ph=tMap({nl:'Zoeken...',en:'Search...',es:'Buscar...',fr:'Rechercher...',de:'Suchen...',ro:'Caută...',hu:'Keresés...',ru:'Поиск...',it:'Cerca...',pt:'Pesquisar...'});
+  row.innerHTML=`<input type="text" id="w-cursist-search" placeholder="${ph}" oninput="filterContactChecklist('w-cursist-search','w-cursist-list')" style="width:100%">`;
+  const f=document.getElementById('w-cursist-search');
+  if(f)f.focus();
+}
+// Tap handler for the "Met wie?" searchable contact list (w-cursist-list,
+// now inside the openWCursistPicker() popup) - updates the hidden
+// w-cursist input plus the visual checkmark/highlight, reflects the pick
+// onto the compact field's label back in the wizard step underneath, and
+// closes the popup - picking a name is a one-tap "select and go", the same
+// feel as the old native <select> this all replaced. wSetCursist() still
+// reads the hidden input's value exactly as it used to read the old
+// <select>'s value, on Volgende/Opslaan.
 function selectWCursist(id){
   var hidden=document.getElementById('w-cursist');
   if(hidden)hidden.value=id;
@@ -16663,6 +16703,13 @@ function selectWCursist(id){
     var chk=row.querySelector('.w-pick-check');
     if(chk)chk.style.opacity=isSel?'1':'0';
   });
+  var cu=db.cursisten.find(function(c){return String(c.id)===String(id);});
+  var fieldLbl=document.getElementById('w-cursist-field-label');
+  if(fieldLbl){
+    fieldLbl.textContent=cu?cu.naam:t('wizard_no_contact');
+    fieldLbl.style.color=cu?'var(--text)':'var(--text3)';
+  }
+  closeModals();
 }
 function toggleWizMultiStudent(){
   var cb=document.getElementById('w-multi-toggle'),wrap=document.getElementById('w-multi-wrap');
