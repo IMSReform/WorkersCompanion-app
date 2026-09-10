@@ -1829,18 +1829,20 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
     <div class="about-footer">
       <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px" data-i18n="about_card">Over deze app</div>
       <div style="font-size:15px;font-weight:700;color:var(--brand);margin-bottom:6px" id="about-app-name">Workers Companion App</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.5" id="about-app-desc">Meer dan een urenregistratie<br>— het is je agenda, rapportage, contacten en bijbelstudie-metgezel, allemaal op één plek.</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.5" id="about-app-desc">Meer dan een urenregistratie<br>— het is je agenda, rapportage, contacten en bijbelstudie-metgezel,<br>allemaal op één plek.</div>
       <div style="font-size:11px;color:var(--text3);font-weight:600;margin-bottom:14px" id="about-version">v1.0.0 · 2026</div>
       <div style="display:flex;gap:8px;justify-content:center;margin-bottom:6px">
         <button class="btn sm" id="about-updates-btn" onclick="openChangelog()" style="width:auto;padding:8px 14px;font-weight:500">Update 1</button>
         <button class="btn sm" onclick="forceAppUpdate()" style="width:auto;padding:8px 14px;background:transparent;color:var(--text2);border-color:var(--border2);font-weight:500" data-i18n="force_update_btn">App bijwerken</button>
       </div>
       <div style="font-size:10.5px;color:var(--text3);line-height:1.4;margin-bottom:14px" data-i18n="force_update_hint">Wist tijdelijke appgegevens en laadt de nieuwste versie opnieuw. Je gegevens blijven veilig, want die staan apart opgeslagen. Doe dit als een update niet lijkt door te komen.</div>
-      <div style="font-size:11px;color:var(--text3);border-top:1px solid var(--border2);padding-top:12px;margin-bottom:10px;line-height:2">
+      <div style="border-top:1px solid var(--border2);padding-top:12px;margin-bottom:10px">
+        <div style="display:flex;justify-content:center;margin-bottom:8px"><div id="about-isotope-mark" style="width:40px;height:40px;opacity:.65"></div></div>
+        <div style="font-size:11px;color:var(--text3);line-height:1.5" id="about-org-full">International Missionary Society Seventh Day Adventist Church Reform Movement</div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);line-height:2">
         <span style="color:var(--text2);font-weight:500" data-i18n="dev_by">Ontwikkeld door:</span> Gabriel Porras | &copy; p2pgraphics
       </div>
-      <div style="display:flex;justify-content:center;margin-bottom:8px"><div id="about-isotope-mark" style="width:40px;height:40px;opacity:.65"></div></div>
-      <div style="font-size:11px;color:var(--text3);line-height:1.5" id="about-org-full">International Missionary Society Seventh Day Adventist Church Reform Movement</div>
     </div>
   </div>
 
@@ -12677,20 +12679,37 @@ function applySettings(){const s=db.settings;
   // Update About card
   var aname=document.getElementById('about-app-name');
   if(aname)aname.textContent=t('app_brand_name');
-  // App description reuses the welcome-screen tagline, but with a line
-  // break inserted at its natural clause boundary (the em dash most
-  // languages use, or the colon in Spanish) so it reads as two short
-  // lines in the narrow About card instead of one long paragraph.
+  // App description reuses the welcome-screen tagline, but with line
+  // breaks inserted at its natural clause boundaries (the em dash most
+  // languages use, or the colon in Spanish, and again before the final
+  // "all in one place" clause, which in every language is set off by
+  // its own comma) so it reads as three short lines in the narrow About
+  // card instead of one long paragraph.
   var adesc=document.getElementById('about-app-desc');
   if(adesc){
     var _wsub=t('welcome_subtitle');
     var _dashIdx=_wsub.indexOf('—');
-    var _adescHtml;
+    var _part1,_rest;
     if(_dashIdx>-1){
-      _adescHtml=_wsub.slice(0,_dashIdx).trim()+'<br>'+_wsub.slice(_dashIdx).trim();
+      _part1=_wsub.slice(0,_dashIdx).trim();
+      _rest=_wsub.slice(_dashIdx).trim();
     }else{
       var _colonIdx=_wsub.indexOf(':');
-      _adescHtml=(_colonIdx>-1)?(_wsub.slice(0,_colonIdx+1).trim()+'<br>'+_wsub.slice(_colonIdx+1).trim()):_wsub;
+      if(_colonIdx>-1){
+        _part1=_wsub.slice(0,_colonIdx+1).trim();
+        _rest=_wsub.slice(_colonIdx+1).trim();
+      }else{
+        _part1=_wsub;_rest='';
+      }
+    }
+    var _adescHtml=_part1;
+    if(_rest){
+      var _lastComma=_rest.lastIndexOf(',');
+      if(_lastComma>-1){
+        _adescHtml+='<br>'+_rest.slice(0,_lastComma+1).trim()+'<br>'+_rest.slice(_lastComma+1).trim();
+      }else{
+        _adescHtml+='<br>'+_rest;
+      }
     }
     adesc.innerHTML=_adescHtml;
   }
