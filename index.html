@@ -26569,7 +26569,18 @@ function exportApprovalRequest(prefs){
   var a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
   var safeName=workerName.replace(/[^a-z0-9]/gi,'_');
-  a.download='ZDA_goedkeuring_verzoek_'+safeName+'_'+ymKey+'.json';
+  // #1029: this filename used to be hardcoded Dutch ('goedkeuring_verzoek')
+  // regardless of the worker's chosen app language - so a president who
+  // doesn't read Dutch (e.g. a Spanish-speaking one) would receive a file
+  // named in a language neither of them necessarily uses day-to-day.
+  // Translate the label to the active LANG (ASCII-only on purpose: accented
+  // filenames render inconsistently across OSes and would get partially
+  // mangled by the safeName-style sanitizer anyway). ymKey (YYYY-MM) already
+  // carries the month unambiguously and sorts correctly regardless of
+  // language, so it's kept as-is rather than swapped for a spelled-out,
+  // language-specific month name.
+  var reqLabel=tMap({nl:'goedkeuring_verzoek',en:'approval_request',es:'solicitud_aprobacion',fr:'demande_approbation',de:'genehmigungsantrag',ro:'cerere_aprobare',hu:'jovahagyasi_kerelem',ru:'zapros_odobreniya',it:'richiesta_approvazione',pt:'pedido_aprovacao'});
+  a.download='ZDA_'+reqLabel+'_'+safeName+'_'+ymKey+'.json';
   a.click();
   setApprovalForMonth(ymKey,{status:'pending',workerName:workerName,submittedAt:Date.now()});
   save();
