@@ -29639,32 +29639,25 @@ function openChangelog(){
       h+='<span class="acc-chevron" style="display:inline-block;transition:transform .2s;color:var(--text3);font-size:13px'+(open?';transform:rotate(180deg)':'')+'">⌄</span>';
       h+='</button>';
       h+='<div style="display:'+(open?'block':'none')+';padding:0 0 14px 0">';
-      // Per Gabriel's feedback (this replaced an even earlier flat list that
-      // spelled out every single bugfix, same as the grouped version this
-      // itself replaced): other apps' "what's new" screens spell out what
-      // was ADDED, but never itemize individual bug fixes one by one - they
-      // just say "various bug fixes" as a single line. So "new" items still
-      // get their own heading and are listed out individually (still useful
-      // to know what changed), but "bug" items only ever earn a single
-      // generic "Bug fixes" line when the release has any - the actual text
-      // of each bugfix (still stored per-item in CHANGELOG, in case it's
-      // ever needed again) is deliberately not rendered here.
+      // Back to the original flat list (no "What's new"/"Bug fixes"
+      // headings splitting the release in two, per Gabriel: "leave it the
+      // way it was") - every "new" item is still spelled out as its own
+      // bullet, but "bug" items collapse into one single generic bullet at
+      // the end instead of each one being spelled out individually (that
+      // part of the previous change stays - other apps' update notes never
+      // itemize individual bugfixes, they just say "various bug fixes" once).
+      // The actual per-item bugfix text is still stored in CHANGELOG itself,
+      // just not rendered here.
       var newItems=rel.items.filter(function(it){return it.type!=='bug';});
       var bugCount=rel.items.filter(function(it){return it.type==='bug';}).length;
-      function clGroup(label,list){
-        if(!list.length)return;
-        h+='<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin:10px 0 5px">'+label+'</div>';
-        h+='<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px">';
-        list.forEach(function(it){
-          h+='<li style="font-size:13px;color:var(--text2);line-height:1.5">'+escapeHtml(tMap(it))+'</li>';
-        });
-        h+='</ul>';
-      }
-      clGroup(tMap({nl:'Nieuw',en:"What's new",es:'Novedades',fr:'Nouveautés',de:'Neu',ro:'Noutăți',hu:'Újdonságok',ru:'Новое',it:'Novità',pt:'Novidades'}),newItems);
+      h+='<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px">';
+      newItems.forEach(function(it){
+        h+='<li style="font-size:13px;color:var(--text2);line-height:1.5">'+escapeHtml(tMap(it))+'</li>';
+      });
       if(bugCount){
-        h+='<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin:10px 0 5px">'+tMap({nl:'Bugfixes',en:'Bug fixes',es:'Correcciones de errores',fr:'Corrections de bugs',de:'Fehlerbehebungen',ro:'Remedieri de erori',hu:'Hibajavítások',ru:'Исправления ошибок',it:'Correzioni di bug',pt:'Correções de bugs'})+'</div>';
-        h+='<ul style="margin:0;padding-left:18px"><li style="font-size:13px;color:var(--text2);line-height:1.5">'+tMap({nl:'Diverse foutcorrecties.',en:'Various bug fixes.',es:'Varias correcciones de errores.',fr:'Diverses corrections de bugs.',de:'Verschiedene Fehlerbehebungen.',ro:'Diverse remedieri de erori.',hu:'Különféle hibajavítások.',ru:'Различные исправления ошибок.',it:'Varie correzioni di bug.',pt:'Várias correções de bugs.'})+'</li></ul>';
+        h+='<li style="font-size:13px;color:var(--text2);line-height:1.5">'+tMap({nl:'Diverse foutcorrecties.',en:'Various bug fixes.',es:'Varias correcciones de errores.',fr:'Diverses corrections de bugs.',de:'Verschiedene Fehlerbehebungen.',ro:'Diverse remedieri de erori.',hu:'Különféle hibajavítások.',ru:'Различные исправления ошибок.',it:'Varie correzioni di bug.',pt:'Várias correções de bugs.'})+'</li>';
       }
+      h+='</ul>';
       h+='</div></div>';
     });
   }
