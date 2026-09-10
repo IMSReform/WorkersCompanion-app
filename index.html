@@ -13734,6 +13734,24 @@ function _renderHomeInner(){
   // Wrapped with Prayer (below) in a 2-column pair on wide screens — see
   // .dash-2col-wrap (does nothing below that breakpoint, so mobile is
   // unaffected).
+  // #1031: each card's open/closed state used to be read independently
+  // here (getAccState('home-todo') / getAccState('home-prayer')), so the
+  // "opening one opens the other too" behavior from #984 only actually
+  // held while the user stayed on the same page - it was wired into the
+  // click handler (toggleTodoOrPrayerAccordion), not into the render
+  // itself. Any history where the two keys ended up with different saved
+  // values (e.g. from before #984 existed, or a click whose "open the
+  // other card too" step silently no-opped because that card wasn't in
+  // the DOM yet) stayed mismatched forever after, since a fresh page load
+  // just redrew each card from its own stored value again. On the
+  // wide-screen 2-column layout this put a fully expanded To-do card right
+  // next to a collapsed, empty-looking Prayer card - confusing for anyone
+  // who didn't already know to tap it. Computing one shared "open" value up
+  // front and using it for both cards makes the invariant hold on every
+  // render, not just after a click - closing either one still only closes
+  // that one (unchanged from #984), but they can no longer load already
+  // out of sync with each other.
+  var todoOrPrayerOpen=!!(getAccState('home-todo')||getAccState('home-prayer'));
   h+='<div class="dash-2col-wrap" style="margin-top:-8px"><div>';
   h+='<div class="settings-section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer" onclick="toggleTodoOrPrayerAccordion(\'home-todo\',this.querySelector(\'.acc-toggle-btn\'));syncTodoPrayerHeightDeferred()">';
   // Chevron sits right next to the "To do" label itself (not next to
@@ -13743,11 +13761,11 @@ function _renderHomeInner(){
   // looks it belongs to geschiedenis, but it's from to do").
   h+='<div style="display:flex;align-items:center;gap:6px">';
   h+='<span>'+t('todo_title')+'</span>';
-  h+='<button type="button" class="acc-toggle-btn" onclick="event.stopPropagation();toggleTodoOrPrayerAccordion(\'home-todo\',this);syncTodoPrayerHeightDeferred()" title="'+t('todo_title')+'" style="background:none;border:none;padding:4px;margin:-4px;cursor:pointer;display:flex;color:var(--text3)"><svg width="14" height="14" style="transition:transform .2s'+(getAccState('home-todo')?';transform:rotate(180deg)':'')+'"><use href="#ico-chevron-down"/></svg></button>';
+  h+='<button type="button" class="acc-toggle-btn" onclick="event.stopPropagation();toggleTodoOrPrayerAccordion(\'home-todo\',this);syncTodoPrayerHeightDeferred()" title="'+t('todo_title')+'" style="background:none;border:none;padding:4px;margin:-4px;cursor:pointer;display:flex;color:var(--text3)"><svg width="14" height="14" style="transition:transform .2s'+(todoOrPrayerOpen?';transform:rotate(180deg)':'')+'"><use href="#ico-chevron-down"/></svg></button>';
   h+='</div>';
   h+='<a href="#" onclick="event.stopPropagation();openTodoHistory();return false" style="font-size:12px;color:var(--brand);text-decoration:none;font-weight:500">'+t('todo_history')+'</a>';
   h+='</div>';
-  h+='<div class="card card-acc-plain'+(getAccState('home-todo')?' acc-open':'')+'" data-acc-key="home-todo">';
+  h+='<div class="card card-acc-plain'+(todoOrPrayerOpen?' acc-open':'')+'" data-acc-key="home-todo">';
   h+='<div class="acc-body">';
   h+='<div style="display:flex;gap:6px;margin-bottom:10px">';
   h+='<input id="todo-new-input" type="text" placeholder="'+t('todo_placeholder')+'" style="flex:1;min-width:0" onkeydown="if(event.key===\'Enter\'){addTodo();}">';
@@ -13771,11 +13789,11 @@ function _renderHomeInner(){
   // label it actually toggles, not with the History link.
   h+='<div style="display:flex;align-items:center;gap:6px">';
   h+='<span>'+t('prayer_title')+'</span>';
-  h+='<button type="button" class="acc-toggle-btn" onclick="event.stopPropagation();toggleTodoOrPrayerAccordion(\'home-prayer\',this);syncTodoPrayerHeightDeferred()" title="'+t('prayer_title')+'" style="background:none;border:none;padding:4px;margin:-4px;cursor:pointer;display:flex;color:var(--text3)"><svg width="14" height="14" style="transition:transform .2s'+(getAccState('home-prayer')?';transform:rotate(180deg)':'')+'"><use href="#ico-chevron-down"/></svg></button>';
+  h+='<button type="button" class="acc-toggle-btn" onclick="event.stopPropagation();toggleTodoOrPrayerAccordion(\'home-prayer\',this);syncTodoPrayerHeightDeferred()" title="'+t('prayer_title')+'" style="background:none;border:none;padding:4px;margin:-4px;cursor:pointer;display:flex;color:var(--text3)"><svg width="14" height="14" style="transition:transform .2s'+(todoOrPrayerOpen?';transform:rotate(180deg)':'')+'"><use href="#ico-chevron-down"/></svg></button>';
   h+='</div>';
   h+='<a href="#" onclick="event.stopPropagation();openPrayerHistory();return false" style="font-size:12px;color:var(--brand);text-decoration:none;font-weight:500">'+t('prayer_history')+'</a>';
   h+='</div>';
-  h+='<div class="card card-acc-plain'+(getAccState('home-prayer')?' acc-open':'')+'" data-acc-key="home-prayer">';
+  h+='<div class="card card-acc-plain'+(todoOrPrayerOpen?' acc-open':'')+'" data-acc-key="home-prayer">';
   h+='<div class="acc-body">';
   h+='<div style="display:flex;gap:6px;margin-bottom:10px">';
   h+='<input id="prayer-new-input" type="text" placeholder="'+t('prayer_placeholder')+'" style="flex:1;min-width:0" onkeydown="if(event.key===\'Enter\'){addPrayer();}">';
