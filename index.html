@@ -11069,6 +11069,7 @@ function migrateSettings(){
   migrateDuplicatePrayerIds();
   migrateDuplicateCursistIds();
   migrateLidPersonType();
+  migrateCompanionPhotos();
 }
 // One-time repair: the Excel/legacy-report importer used to put a standalone
 // "Reizen - X" row's hours in `uren` (worked time) instead of `reisUren`
@@ -11276,6 +11277,30 @@ function migrateLidPersonType(){
     if(!cu)return;
     var isLidTag=(cu.personTypes||[]).indexOf('lid')>=0;
     if(isLidTag&&cu.type!=='lid'){cu.type='lid';changed=true;}
+  });
+  if(changed){
+    if(typeof save==='function')save();
+    else if(typeof saveLocal==='function')saveLocal();
+  }
+}
+// One-time repair: every "Meerdere studenten"/"Meerdere contacten" group-study
+// companion entry (identified by having groupStudyPrimaryId set) used to be
+// created via {...primaryEntry}, which zeroed out uren/km/kosten but left
+// foto/fotos copied over by reference from the primary - so a single receipt
+// photo attached to a 3-person group study showed up 3 times over in the PDF
+// report's Bijlagen appendix (and the Settings Bonnetjes panel/zip download),
+// once per attendee's own zero-cost entry, instead of just once on the real
+// expense. Fixed going forward at all 3 places a companion gets created
+// (wSave, quick-repeat popup, edit-entry modal); this repairs companions
+// already created before that fix, in place, on every device - no re-photo
+// needed. Only touches companions (never the primary entry itself, which is
+// where the photo belongs), and is a no-op once already cleaned.
+function migrateCompanionPhotos(){
+  if(!db.entries)return;
+  var changed=false;
+  db.entries.forEach(function(e){
+    if(!e||!e.groupStudyPrimaryId)return;
+    if((e.fotos&&e.fotos.length)||e.foto){e.fotos=[];e.foto=null;touch(e);changed=true;}
   });
   if(changed){
     if(typeof save==='function')save();
@@ -17019,8 +17044,16 @@ function wSave(wantsCal){
       draft.extraCursistIds.forEach(function(exId){
         var exCu=db.cursisten.find(function(c){return String(c.id)===String(exId);});
         if(!exCu)return;
+        // foto/fotos deliberately cleared too, not just zeroed like the
+        // money/time fields above: {...entry} otherwise hands every companion
+        // the exact same receipt-photo array reference as the primary entry,
+        // so a single photo attached to a 3-person group study showed up
+        // three times over in the PDF report's Bijlagen appendix (once per
+        // attendee's entry) even though only one real receipt exists. The
+        // photo belongs on the primary entry, which is the one that actually
+        // carries the expense.
         var companion={...entry,id:genEntryId(),cursistId:exCu.id,cursistNaam:exCu.naam,
-          uren:0,km:0,kosten:0,reisUren:0,isAutoTravel:false,
+          uren:0,km:0,kosten:0,reisUren:0,isAutoTravel:false,foto:null,fotos:[],
           groupStudyId:groupId,groupStudyPrimaryId:entry.id};
         touch(companion);
         db.entries.unshift(companion);
@@ -18530,8 +18563,12 @@ function saveQuickRepeat(sourceEntryId){
     qrExtraCursistIds.forEach(function(exId){
       var exCu=db.cursisten.find(function(c){return String(c.id)===String(exId);});
       if(!exCu)return;
+      // foto/fotos cleared too (see the same fix + comment in wSave()) - a
+      // receipt photo carried over from the primary entry via the spread
+      // would otherwise show up once per group-study attendee in the PDF
+      // Bijlagen appendix instead of just once.
       var companion=Object.assign({},newEntry,{id:genEntryId(),cursistId:exCu.id,cursistNaam:exCu.naam,
-        uren:0,km:0,kosten:0,reisUren:0,isAutoTravel:false,
+        uren:0,km:0,kosten:0,reisUren:0,isAutoTravel:false,foto:null,fotos:[],
         groupStudyId:qrGroupId,groupStudyPrimaryId:newEntry.id});
       touch(companion);
       db.entries.push(companion);
@@ -35764,8 +35801,12 @@ function saveEditEntry(entryId){
       if(eeExistingByCu[exId])return;
       var exCu=db.cursisten.find(function(c){return String(c.id)===String(exId);});
       if(!exCu)return;
+      // foto/fotos cleared too (see the same fix + comment in wSave()) - a
+      // receipt photo carried over from the edited entry via the spread
+      // would otherwise show up once per group-study attendee in the PDF
+      // Bijlagen appendix instead of just once.
       var companion={...e,id:genEntryId(),cursistId:exCu.id,cursistNaam:exCu.naam,
-        uren:0,km:0,kosten:0,reisUren:0,isAutoTravel:false,
+        uren:0,km:0,kosten:0,reisUren:0,isAutoTravel:false,foto:null,fotos:[],
         groupStudyId:e.groupStudyId,groupStudyPrimaryId:e.id};
       touch(companion);
       db.entries.unshift(companion);
