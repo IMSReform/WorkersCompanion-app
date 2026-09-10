@@ -35786,9 +35786,31 @@ function openEditEntryModal(entryId,skipSummary){
   h+='<button class="btn primary" onclick="saveEditEntry('+entryIdArg+')" style="flex:1">'
     +t('save_btn')+'</button>';
   h+='</div>';
+  // Repeat (weekly/every-2-weeks/monthly) - same option already offered
+  // when creating a brand-new activity from the main wizard, the quick-repeat
+  // popup, and the standalone "+ Activiteit plannen" modal, added here too
+  // per Gabriel's feedback ("I don't see it in this edit entry from
+  // calendar"). Tied to the "Guardar como nuevo"/"Save as new" button below
+  // rather than the main Guardar button - this edit form's own save always
+  // overwrites just this one entry, same as before, but "save as new" with a
+  // repeat option chosen generates a whole series of new entries/plans
+  // starting from whatever date is in the form, one interval apart, instead
+  // of only ever making a single copy.
+  h+='<div style="margin-top:12px"><span class="form-label">'+t('repeat_lbl')+'</span>';
+  h+='<select id="ee-repeat" onchange="onEeRepeatChange()" style="margin-bottom:8px">';
+  h+='<option value="">'+t('repeat_none')+'</option>';
+  h+='<option value="weekly">'+t('repeat_weekly')+'</option>';
+  h+='<option value="biweekly">'+t('repeat_biweekly')+'</option>';
+  h+='<option value="monthly">'+t('repeat_monthly')+'</option>';
+  h+='</select>';
+  h+='<div id="ee-repeat-count-wrap" style="display:none;margin-bottom:8px">';
+  h+='<span class="form-label">'+t('repeat_count_lbl')+'</span>';
+  h+='<input type="number" id="ee-repeat-count" value="8" min="2" max="52" style="width:100%">';
+  h+='</div></div>';
   // Save the currently-filled-in form as a brand-new entry instead of
   // overwriting the original — lets you tweak the date/study/etc. and log
-  // it as a repeat without losing the original entry.
+  // it as a repeat without losing the original entry. With a repeat option
+  // selected above, this creates the whole series instead of just one copy.
   h+='<button class="btn sm" onclick="duplicateEditEntry('+entryIdArg+')" style="width:100%;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px"><svg width="14" height="14"><use href="#ico-refresh"/></svg>'
     +t('save_as_new_btn')+'</button>';
   h+='</div>'; // close ee-full-form
@@ -35875,24 +35897,56 @@ function duplicateEditEntry(entryId){
   // would have classified a fresh entry with that date/time. `e` isn't in
   // db.entries yet here, so this checks BEFORE deciding which array to add
   // it to, rather than reclassifyEntryIfFuture's after-the-fact move.
-  if(!e.groupStudyId&&isEntryDateTimeFuture(e.datum,e.tijd)){
-    ensurePlanned();
-    db.planned.push({
-      id:genUniqueId(db.planned),
-      datum:e.datum,time:e.tijd||'',categorie:e.categorie||'',
-      cursistId:e.cursistId||'',cursistNaam:e.cursistNaam||'',
-      gemeente:e.gemeente||'',omschrijving:e.omschrijving||'',
-      thema:e.thema||'',themacode:e.themacode||'',
-      themaCompleted:e.themaCompleted!==false,
-      uren:parseFloat(e.uren)||0,reisUren:parseFloat(e.reisUren)||0,
-      km:parseFloat(e.km)||0,kosten:parseFloat(e.kosten)||0,
-      opmerking:e.opmerking||'',notitiePrive:!!e.notitiePrive,
-      completed:false,skipped:false,reminded:false
-    });
-    savePlanned();
-  } else {
-    db.entries.unshift(e);
-    save();
+  // Repeat (see the ee-repeat select in openEditEntryModal above) - when
+  // set, "Save as new" generates the whole series (each occurrence one
+  // interval apart from this form's date) instead of just a single copy,
+  // same repeatGroupId-sharing approach as the wizard/quick-repeat/plan
+  // modal's repeat option. Each occurrence is independently classified as
+  // logged vs planned by its own date/time, exactly like the original
+  // single-copy path below already did.
+  var eeRepeatSel=document.getElementById('ee-repeat');
+  var eeRepeatVal=eeRepeatSel?eeRepeatSel.value:'';
+  var eeRepeatCount=1;
+  if(eeRepeatVal){
+    var eeCountEl=document.getElementById('ee-repeat-count');
+    eeRepeatCount=Math.max(2,Math.min(52,parseInt(eeCountEl&&eeCountEl.value)||8));
+  }
+  var eeBaseDate=parseLocalDate(e.datum);
+  var eeRepeatGroupId=eeRepeatVal?('rpt-'+e.id):null;
+  for(var eeI=0;eeI<eeRepeatCount;eeI++){
+    var occ=(eeI===0)?e:Object.assign({},e,{id:genEntryId()});
+    if(eeI>0){
+      var occD=new Date(eeBaseDate);
+      if(eeRepeatVal==='weekly')occD.setDate(occD.getDate()+7*eeI);
+      else if(eeRepeatVal==='biweekly')occD.setDate(occD.getDate()+14*eeI);
+      else if(eeRepeatVal==='monthly')occD.setMonth(occD.getMonth()+eeI);
+      occ.datum=ymdLocal(occD);
+      // Receipt photo belongs to the specific occasion it was taken for,
+      // not copied onto every future repeat of the series - same rule as
+      // the multi-day span path in wSave (#1057).
+      delete occ.foto;occ.fotos=[];
+    }
+    if(eeRepeatGroupId)occ.repeatGroupId=eeRepeatGroupId;
+    if(!occ.groupStudyId&&isEntryDateTimeFuture(occ.datum,occ.tijd)){
+      ensurePlanned();
+      db.planned.push({
+        id:genUniqueId(db.planned),
+        datum:occ.datum,time:occ.tijd||'',categorie:occ.categorie||'',
+        cursistId:occ.cursistId||'',cursistNaam:occ.cursistNaam||'',
+        gemeente:occ.gemeente||'',omschrijving:occ.omschrijving||'',
+        thema:occ.thema||'',themacode:occ.themacode||'',
+        themaCompleted:occ.themaCompleted!==false,
+        uren:parseFloat(occ.uren)||0,reisUren:parseFloat(occ.reisUren)||0,
+        km:parseFloat(occ.km)||0,kosten:parseFloat(occ.kosten)||0,
+        opmerking:occ.opmerking||'',notitiePrive:!!occ.notitiePrive,
+        completed:false,skipped:false,reminded:false,
+        repeatGroupId:eeRepeatGroupId||undefined
+      });
+      savePlanned();
+    } else {
+      db.entries.unshift(occ);
+      save();
+    }
   }
   closeModals();
   renderLog();
@@ -36073,6 +36127,11 @@ function toggleEeVrij(){
   if(sel&&wrap)wrap.style.display=sel.value==='Vrij onderwerp'?'block':'none';
   var compWrap=document.getElementById('ee-thema-completed-wrap');
   if(sel&&compWrap)compWrap.style.display=sel.value?'block':'none';
+}
+function onEeRepeatChange(){
+  var sel=document.getElementById('ee-repeat');
+  var wrap=document.getElementById('ee-repeat-count-wrap');
+  if(wrap)wrap.style.display=(sel&&sel.value)?'block':'none';
 }
 // Shows/hides the "Meerdere studenten" section based on the currently
 // selected category - only meaningful for Bijbelstudie geven, same rule the
