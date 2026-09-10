@@ -16576,6 +16576,30 @@ function renderWiz(){
       var wCalLbl=tMap({nl:'Ook toevoegen aan agenda-app (Apple/Google/Windows) met herinnering 30 min. van tevoren',en:'Also add to Calendar app (Apple/Google/Windows) with a 30-min reminder',es:'También añadir a la app de calendario (Apple/Google/Windows) con recordatorio 30 min. antes',fr:'Ajouter aussi à l\'app calendrier (Apple/Google/Windows) avec rappel 30 min. avant',de:'Auch zur Kalender-App hinzufügen (Apple/Google/Windows) mit Erinnerung 30 Min. vorher',ro:'Adaugă și în aplicația de calendar (Apple/Google/Windows) cu memento cu 30 min. înainte',hu:'Hozzáadás a naptár alkalmazáshoz is (Apple/Google/Windows) 30 perces emlékeztetővel',ru:'Также добавить в приложение календаря (Apple/Google/Windows) с напоминанием за 30 мин.',it:'Aggiungi anche all\'app calendario (Apple/Google/Windows) con promemoria 30 min. prima',pt:'Também adicionar à app de calendário (Apple/Google/Windows) com lembrete 30 min. antes'});
       calCbHtml='<label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;margin-top:10px;line-height:1.4"><input type="checkbox" id="w-add-to-cal" '+(getCalExportPref()?'checked':'')+' style="width:16px;height:16px;flex-shrink:0;margin-top:1px">'+wCalLbl+'</label>';
     }
+    // Repeat (weekly/every-2-weeks/monthly) for a planned (future-dated)
+    // activity - this already existed in the standalone "+ Activiteit
+    // plannen" modal (openPlanModal/savePlanModal, task #166), but the main
+    // step wizard is how most planning actually happens (task #112 merged
+    // register+plan into this one flow), so leaving it out here meant most
+    // entry points never offered it at all - exactly the "I miss that option
+    // in every popup/wizard" gap reported. Only offered for a single-day plan
+    // (not combined with the "Meerdere dagen" span from the details step,
+    // same mutual-exclusivity as the standalone modal) and only while this is
+    // still a fresh, not-yet-saved draft.
+    var wRepeatHtml='';
+    if(showCalCb&&!draft.multiDayUntil){
+      wRepeatHtml='<span class="form-label" style="margin-top:8px">'+t('repeat_lbl')+'</span>'
+        +'<select id="w-repeat" onchange="onWizRepeatChange()" style="margin-bottom:8px">'
+        +'<option value="">'+t('repeat_none')+'</option>'
+        +'<option value="weekly">'+t('repeat_weekly')+'</option>'
+        +'<option value="biweekly">'+t('repeat_biweekly')+'</option>'
+        +'<option value="monthly">'+t('repeat_monthly')+'</option>'
+        +'</select>'
+        +'<div id="w-repeat-count-wrap" style="display:none;margin-bottom:8px">'
+        +'<span class="form-label">'+t('repeat_count_lbl')+'</span>'
+        +'<input type="number" id="w-repeat-count" value="8" min="2" max="52" style="width:100%">'
+        +'</div>';
+    }
     var gemeenteField='';
     if(showGemeente){
       ensureChurches();
@@ -16605,6 +16629,7 @@ function renderWiz(){
       +'<div><span class="form-label">'+t('wizard_followup_time_lbl')+' <span style="font-size:11px;color:var(--text3);font-weight:400">('+(t('optional')||'opt.')+')</span></span>'+renderTimePicker('w-reminder-time',draft.reminderTime||'')+'</div>'
       +'</div>'
       +'<div style="font-size:11px;color:var(--text3);margin-top:3px">'+t('wizard_followup_date_hint')+'</div>'
+      +wRepeatHtml
       +calCbHtml
       +'<div class="btn-row"><button class="btn" onclick="wBack()">'+t('wizard_back')+'</button>'
       +'<button class="btn primary" id="wiz-save-btn">'+t('save_btn')+' &#10003;</button></div>';
@@ -16880,6 +16905,11 @@ function getSuggestedNextLesson(cursistId){
   return{code:next[0],title:next[1],doneCount:doneCount,lastCode:lastEntry?lastEntry.themacode:null};
 }
 function wSetThema(){const sel=document.getElementById('w-thema');if(!sel)return;draft.themacode=sel.value;if(sel.value==='Vrij onderwerp'){const v=document.getElementById('w-vrij');draft.thema=v?v.value:(LANG==='en'?'Free topic':LANG==='es'?'Tema libre':'Vrij onderwerp');}else draft.thema=sel.options[sel.selectedIndex]?.dataset.naam||'';const compEl=document.getElementById('w-thema-completed');draft.themaCompleted=compEl?compEl.checked:true;}
+function onWizRepeatChange(){
+  var sel=document.getElementById('w-repeat');
+  var wrap=document.getElementById('w-repeat-count-wrap');
+  if(wrap)wrap.style.display=(sel&&sel.value)?'block':'none';
+}
 function onWizMultiDayChange(){
   var cb=document.getElementById('w-multiday');
   var wrap=document.getElementById('w-multiday-wrap');
@@ -17019,8 +17049,39 @@ function saveDraftAsPlanned(){
       mdI++;
     }
   } else {
-    db.planned.push(base);
-    createdEntries.push(base);
+    // Repeat (weekly/every-2-weeks/monthly) - same generation logic as the
+    // standalone "+ Activiteit plannen" modal (savePlanModal): the whole
+    // series is created up front as independent planned items sharing a
+    // repeatGroupId, so any single occurrence can be edited/completed/
+    // deleted afterward without touching the rest. Reads the w-repeat select
+    // straight from the DOM since this only ever runs while the 'notities'
+    // step (which rendered it) is still on screen - wSave() doesn't
+    // re-render until after this returns.
+    var repeatSel=document.getElementById('w-repeat');
+    var repeatVal=repeatSel?repeatSel.value:'';
+    if(repeatVal){
+      var countEl=document.getElementById('w-repeat-count');
+      var count=Math.max(2,Math.min(52,parseInt(countEl&&countEl.value)||8));
+      var groupId='rpt-'+base.id;
+      base.repeatGroupId=groupId;
+      var baseDate=parseLocalDate(base.datum);
+      var baseId=base.id;
+      for(var i=0;i<count;i++){
+        var occ=(i===0)?base:Object.assign({},base,{id:baseId+i});
+        if(i>0){
+          var d=new Date(baseDate);
+          if(repeatVal==='weekly')d.setDate(d.getDate()+7*i);
+          else if(repeatVal==='biweekly')d.setDate(d.getDate()+14*i);
+          else if(repeatVal==='monthly')d.setMonth(d.getMonth()+i);
+          occ.datum=ymdLocal(d);
+        }
+        db.planned.push(occ);
+        createdEntries.push(occ);
+      }
+    } else {
+      db.planned.push(base);
+      createdEntries.push(base);
+    }
   }
   savePlanned();
   return createdEntries;
@@ -18386,6 +18447,25 @@ function openQuickRepeatModal(last, prefillDate){
   h+='<div style="background:var(--surface2);border-radius:var(--r-sm);padding:12px;margin-bottom:12px">';
   var qrInitDate=prefillDate||ymdLocal();
   h+='<span class="form-label">'+dateLbl+'</span><input type="date" id="qr-datum" value="'+qrInitDate+'" style="margin-bottom:8px">';
+  // Repeat (weekly/every-2-weeks/monthly) - same option already offered by
+  // the standalone "+ Activiteit plannen" modal (savePlanModal, task #166)
+  // and the main wizard's own planning step, added here too since this
+  // popup is exactly where someone repeating a weekly study/visit would
+  // reach for it ("I miss that option in every popup/wizard"). Only takes
+  // effect if the date above ends up in the future (see saveQuickRepeat) -
+  // picking a repeat option then a past/today date just gets ignored, same
+  // as the calendar-export checkbox below.
+  h+='<span class="form-label">'+t('repeat_lbl')+'</span>';
+  h+='<select id="qr-repeat" onchange="onQrRepeatChange()" style="margin-bottom:8px">';
+  h+='<option value="">'+t('repeat_none')+'</option>';
+  h+='<option value="weekly">'+t('repeat_weekly')+'</option>';
+  h+='<option value="biweekly">'+t('repeat_biweekly')+'</option>';
+  h+='<option value="monthly">'+t('repeat_monthly')+'</option>';
+  h+='</select>';
+  h+='<div id="qr-repeat-count-wrap" style="display:none;margin-bottom:8px">';
+  h+='<span class="form-label">'+t('repeat_count_lbl')+'</span>';
+  h+='<input type="number" id="qr-repeat-count" value="8" min="2" max="52" style="width:100%">';
+  h+='</div>';
   h+='<span class="form-label">'+t('wizard_time')+'</span>';
   h+=renderTimePicker('qr-time',roundToQuarterHour(),'qrTimeManualEdit()');
   var qrAutoTimeLbl=tMap({nl:'Huidige tijd gebruiken',en:'Use current time',es:'Usar la hora actual',fr:'Utiliser l\'heure actuelle',de:'Aktuelle Uhrzeit verwenden',ro:'Folosește ora curentă',hu:'Jelenlegi idő használata',ru:'Использовать текущее время',it:'Usa l\'ora attuale',pt:'Usar hora atual'});
@@ -18447,6 +18527,11 @@ function openQuickRepeatModal(last, prefillDate){
 // picker's <select> elements doesn't fire their change event, so
 // _syncTimePicker must be called explicitly afterwards to sync the hidden
 // canonical HH:MM input the save logic actually reads.
+function onQrRepeatChange(){
+  var sel=document.getElementById('qr-repeat');
+  var wrap=document.getElementById('qr-repeat-count-wrap');
+  if(wrap)wrap.style.display=(sel&&sel.value)?'block':'none';
+}
 function qrToggleAutoTime(checked){
   var hEl=document.getElementById('qr-time_h'),mEl=document.getElementById('qr-time_m'),apEl=document.getElementById('qr-time_ap');
   if(!hEl||!mEl)return;
@@ -18645,13 +18730,38 @@ function saveQuickRepeat(sourceEntryId){
       completed:false,skipped:false,reminded:false
     };
     touch(plannedEntry);
-    db.planned.push(plannedEntry);
+    // Repeat (see the qr-repeat select in openQuickRepeatModal above) -
+    // same "generate the whole series up front, sharing a repeatGroupId"
+    // approach as savePlanModal/saveDraftAsPlanned, so each occurrence can
+    // still be edited/completed/deleted independently afterward.
+    var createdPlanned=[plannedEntry];
+    var qrRepeatSel=document.getElementById('qr-repeat');
+    var qrRepeatVal=qrRepeatSel?qrRepeatSel.value:'';
+    if(qrRepeatVal){
+      var qrCountEl=document.getElementById('qr-repeat-count');
+      var qrCount=Math.max(2,Math.min(52,parseInt(qrCountEl&&qrCountEl.value)||8));
+      var qrGroupId2='rpt-'+plannedEntry.id;
+      plannedEntry.repeatGroupId=qrGroupId2;
+      var qrBaseDate=parseLocalDate(plannedEntry.datum);
+      var qrBaseId=plannedEntry.id;
+      for(var qi=1;qi<qrCount;qi++){
+        var qrOcc=Object.assign({},plannedEntry,{id:qrBaseId+qi});
+        var qrD=new Date(qrBaseDate);
+        if(qrRepeatVal==='weekly')qrD.setDate(qrD.getDate()+7*qi);
+        else if(qrRepeatVal==='biweekly')qrD.setDate(qrD.getDate()+14*qi);
+        else if(qrRepeatVal==='monthly')qrD.setMonth(qrD.getMonth()+qi);
+        qrOcc.datum=ymdLocal(qrD);
+        touch(qrOcc);
+        createdPlanned.push(qrOcc);
+      }
+    }
+    createdPlanned.forEach(function(o){db.planned.push(o);});
     savePlanned();
     setCalExportPref(wantsCal);
     if(wantsCal){
-      plannedEntry.calExported=true;
+      createdPlanned.forEach(function(o){o.calExported=true;});
       savePlanned();
-      exportPlannedToIcs([plannedEntry]);
+      exportPlannedToIcs(createdPlanned);
     }
     closeModals();
     if(typeof renderHomeAgenda==='function')renderHomeAgenda();
