@@ -8572,6 +8572,14 @@ function setLanguage(lang){
   else if(screen==='rapport'){renderRapport();buildChartTypeSelect();}
   else if(screen==='settings'){applySettings();renderCategorySettings();renderDriveStatus();applyLanguage();}
   else if(screen==='bijbelstudies')renderBijbelstudies();
+  // Demo data (names, addresses, church names, free text) is locale-specific
+  // - see loadDemoData()'s DEMO_LOCALE table - so if demo data is currently
+  // loaded, quietly regenerate it in the new language instead of leaving it
+  // frozen in whatever language it was first loaded in (matters most when
+  // switching languages mid-presentation).
+  if(db.settings&&db.settings.demoDataLoaded&&typeof loadDemoData==='function'){
+    try{loadDemoData(true);}catch(e){}
+  }
   _inSetLanguage=false;
 }
 
@@ -15013,7 +15021,7 @@ function projRoleLabel(role){
 function projT(key){
   var map={
     card_title:{nl:'Projecten',en:'Projects',es:'Proyectos',fr:'Projets',de:'Projekte',ro:'Proiecte',hu:'Projektek',ru:'Проекты',it:'Progetti',pt:'Projetos'},
-    empty:{nl:'Nog geen projecten. Plan er een campagne, open dag of speciale Sabbat mee.',en:'No projects yet. Plan a campaign, open day or special Sabbath.',es:'Aún no hay proyectos. Planifica una campaña, día abierto o Sábado especial.',fr:'Aucun projet. Planifiez une campagne, journée portes ouvertes ou Sabbat spécial.',de:'Noch keine Projekte. Plane eine Kampagne, einen Tag der offenen Tür oder einen besonderen Sabbat.',ro:'Niciun proiect încă. Planifică o campanie, o zi a porților deschise sau un Sabat special.',hu:'Még nincs projekt. Tervezz kampányt, nyílt napot vagy különleges szombatot.',ru:'Пока нет проектов. Спланируйте кампанию, день открытых дверей или особую субботу.',it:'Nessun progetto ancora. Pianifica una campagna, una giornata aperta o un Sabato speciale.',pt:'Ainda sem projetos. Planeie uma campanha, dia aberto ou Sábado especial.'},
+    empty:{nl:'Nog geen projecten. Plan er een campagne, open dag of speciale Sabbat mee.',en:'No projects yet. Plan a campaign, open day or special Sabbath.',es:'Aún no hay proyectos. Planifica una campaña, proyecto o sábado especial.',fr:'Aucun projet. Planifiez une campagne, journée portes ouvertes ou Sabbat spécial.',de:'Noch keine Projekte. Plane eine Kampagne, einen Tag der offenen Tür oder einen besonderen Sabbat.',ro:'Niciun proiect încă. Planifică o campanie, o zi a porților deschise sau un Sabat special.',hu:'Még nincs projekt. Tervezz kampányt, nyílt napot vagy különleges szombatot.',ru:'Пока нет проектов. Спланируйте кампанию, день открытых дверей или особую субботу.',it:'Nessun progetto ancora. Pianifica una campagna, una giornata aperta o un Sabato speciale.',pt:'Ainda sem projetos. Planeie uma campanha, dia aberto ou Sábado especial.'},
     new_btn:{nl:'+ Nieuw project',en:'+ New project',es:'+ Nuevo proyecto',fr:'+ Nouveau projet',de:'+ Neues Projekt',ro:'+ Proiect nou',hu:'+ Új projekt',ru:'+ Новый проект',it:'+ Nuovo progetto',pt:'+ Novo projeto'},
     wiz_what_q:{nl:'Wat organiseer je?',en:'What are you organizing?',es:'¿Qué vas a organizar?',fr:'Que organisez-vous ?',de:'Was organisierst du?',ro:'Ce organizezi?',hu:'Mit szervezel?',ru:'Что вы организуете?',it:'Cosa stai organizzando?',pt:'O que você vai organizar?'},
     wiz_what_hint:{nl:'Bijv. evangelisatiecampagne, open dag, speciale Sabbat',en:'E.g. evangelism campaign, open day, special Sabbath',es:'Ej. campaña de evangelismo, día abierto, Sábado especial',fr:'Ex. campagne d’évangélisation, journée portes ouvertes, Sabbat spécial',de:'Z. B. Evangelisationskampagne, Tag der offenen Tür, besonderer Sabbat',ro:'Ex. campanie de evanghelizare, zi a porților deschise, Sabat special',hu:'Pl. evangelizációs kampány, nyílt nap, különleges szombat',ru:'Напр. евангельская кампания, день открытых дверей, особая суббота',it:'Es. campagna evangelistica, giornata aperta, Sabato speciale',pt:'Ex. campanha de evangelismo, dia aberto, Sábado especial'},
@@ -32857,8 +32865,13 @@ function renderStudieRow(les, stats) {
   les = getLesTranslation(les);
   var safeCode = les.code.replace(/ /g,'_');
   var totalContacts = stats.voltooid.length + stats.actueel.length;
+  // Both badges open a small "who studied this" popover instead of the full
+  // study (stopPropagation keeps the click from also bubbling up to the row's
+  // own onclick="toggleStudie(...)") - tapping the study's title/text is still
+  // what opens the study itself. Gabriel: "clicking on the number shouldn't
+  // open the study, only the students who studied that subject".
   var badge = totalContacts > 0
-    ? '<span style="background:var(--brand-light);color:var(--brand);font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px">'+totalContacts+'</span>'
+    ? '<span onclick="showStudieContactsPopover(event,\''+les.code+'\')" style="background:var(--brand-light);color:var(--brand);font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px;cursor:pointer">'+totalContacts+'</span>'
     : '';
   // Separate amber badge for scheduled-but-not-given sessions (stats.gepland,
   // from db.planned - see getStudieStats) - kept apart from the given/actueel
@@ -32866,7 +32879,7 @@ function renderStudieRow(les, stats) {
   // silently inflate the main "given" number.
   var geplandBadgeLbl=tMap({nl:'Gepland',en:'Planned',es:'Planificado',fr:'Planifié',de:'Geplant',ro:'Planificat',hu:'Tervezve',ru:'Запланировано',it:'Pianificato',pt:'Planeado'});
   var geplandBadge = (stats.gepland&&stats.gepland.length)
-    ? '<span style="background:rgba(217,164,6,.15);color:var(--amber,#b8860b);font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px">'+geplandBadgeLbl+' '+stats.gepland.length+'</span>'
+    ? '<span onclick="showStudieContactsPopover(event,\''+les.code+'\')" style="background:rgba(217,164,6,.15);color:var(--amber,#b8860b);font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px;cursor:pointer">'+geplandBadgeLbl+' '+stats.gepland.length+'</span>'
     : '';
   var h = '<div id="sr-'+safeCode+'" class="studie-row" style="border-bottom:1px solid var(--border)">';
   h += '<div onclick="toggleStudie(\''+les.code+'\')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;cursor:pointer">';
@@ -33016,6 +33029,88 @@ function renderStudieContact(c, status, lesCode) {
   h += '<span style="font-size:11px;color:var(--text3)">'+dateLabel+'</span>';
   h += '</div>';
   return h;
+}
+// Small anchored popover listing just the students for one study (Gepland/
+// Actueel/Voltooid, same grouping and rows as the full study's expanded
+// panel) - tapping a study's count badge shows this instead of expanding the
+// whole study, since Gabriel only wants the badge to reveal who studied it;
+// tapping the study's title/text still opens the full study as before.
+// Follows the same anchored-popover pattern used elsewhere (openWCursistPicker
+// etc.): create off-screen, measure, position against the tapped element with
+// viewport clamping, close on outside click/resize/scroll.
+var _bsContactsPopEl=null;
+function showStudieContactsPopover(ev, code){
+  if(ev){ev.stopPropagation();}
+  closeStudieContactsPopover();
+  var les = STUDIE_DATA.find(function(l){return l.code===code;});
+  if(!les)return;
+  les = getLesTranslation(les);
+  var stats = getStudieStats(code);
+  var studiePlannedLbl = tMap({nl:'Gepland',en:'Planned',es:'Planificado',fr:'Planifié',de:'Geplant',ro:'Planificat',hu:'Tervezve',ru:'Запланировано',it:'Pianificato',pt:'Planeado'});
+  var h = '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)">';
+  h += '<span style="font-size:13px;font-weight:700">'+les.code+' – '+les.titel+'</span>';
+  h += '<span onclick="closeStudieContactsPopover()" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1;padding:0 4px">&times;</span>';
+  h += '</div>';
+  h += '<div style="padding:10px 14px;max-height:min(50vh,360px);overflow-y:auto">';
+  var any = false;
+  if(stats.gepland && stats.gepland.length){
+    any = true;
+    h += '<div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:6px">&#128197; '+studiePlannedLbl+' ('+stats.gepland.length+')</div>';
+    stats.gepland.forEach(function(c){
+      var sessionBadge = (c.sessionCount>1) ? '<span style="font-size:10px;font-weight:700;color:var(--text3);background:var(--border);padding:0 5px;border-radius:8px;margin-right:6px">'+c.sessionCount+'&times;</span>' : '';
+      h += '<div style="display:flex;align-items:center;padding:5px 8px;background:var(--surface2);border-radius:6px;margin-bottom:4px;cursor:pointer" onclick="closeStudieContactsPopover();openPlanModal('+ssIdArg(c.planId)+')">';
+      h += '<span style="width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block;margin-right:5px;flex-shrink:0"></span>';
+      h += '<span style="font-size:13px;font-weight:500;flex:1">'+c.naam+'</span>';
+      h += sessionBadge;
+      h += '<span style="font-size:11px;color:var(--text3)">'+c.datum+'</span>';
+      h += '</div>';
+    });
+  }
+  if(stats.actueel.length){
+    any = true;
+    h += '<div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:6px;margin-top:'+((stats.gepland&&stats.gepland.length)?'10px':'0')+'">&#128336; '+t('studie_current')+' ('+stats.actueel.length+')</div>';
+    stats.actueel.forEach(function(c){ h += renderStudieContact(c,'actueel',code); });
+  }
+  if(stats.voltooid.length){
+    any = true;
+    h += '<div style="font-size:11px;font-weight:700;color:#22863a;margin-bottom:6px;margin-top:'+((stats.actueel.length||(stats.gepland&&stats.gepland.length))?'10px':'0')+'">&#10003; '+t('studie_completed')+' ('+stats.voltooid.length+')</div>';
+    stats.voltooid.forEach(function(c){ h += renderStudieContact(c,'voltooid',code); });
+  }
+  if(!any){
+    h += '<div style="font-size:12px;color:var(--text3);text-align:center;padding:10px 0">'+t('studie_no_contacts')+'</div>';
+  }
+  h += '</div>';
+  var pop = document.createElement('div');
+  pop.id = 'bs-contacts-pop';
+  pop.style.cssText = 'position:fixed;background:var(--surface);border-radius:14px;box-shadow:var(--shadow-md);z-index:10000;width:300px;max-width:calc(100vw - 16px);max-height:'+(window.innerHeight-16)+'px;overflow-y:auto';
+  pop.innerHTML = h;
+  document.body.appendChild(pop);
+  var anchorEl = ev && ev.currentTarget ? ev.currentTarget : null;
+  var rect = anchorEl && anchorEl.getBoundingClientRect ? anchorEl.getBoundingClientRect() : {top:innerHeight/2,bottom:innerHeight/2,left:innerWidth/2,right:innerWidth/2,width:0};
+  var popW = pop.offsetWidth, popH = pop.offsetHeight;
+  var top = rect.bottom+8;
+  if(top+popH>window.innerHeight-8) top = rect.top-popH-8;
+  if(top<8) top = 8;
+  if(top+popH>window.innerHeight-8) top = Math.max(8,window.innerHeight-8-popH);
+  var left = rect.left;
+  if(left+popW>window.innerWidth-8) left = window.innerWidth-8-popW;
+  if(left<8) left = 8;
+  pop.style.top = top+'px'; pop.style.left = left+'px';
+  _bsContactsPopEl = pop;
+  setTimeout(function(){
+    document.addEventListener('mousedown', bsContactsPopOutsideClick);
+    window.addEventListener('resize', closeStudieContactsPopover);
+    window.addEventListener('scroll', bsContactsPopOutsideScroll, true);
+  },10);
+}
+function bsContactsPopOutsideClick(ev){ if(_bsContactsPopEl && !_bsContactsPopEl.contains(ev.target)) closeStudieContactsPopover(); }
+function bsContactsPopOutsideScroll(ev){ if(_bsContactsPopEl && ev.target && _bsContactsPopEl.contains(ev.target)) return; closeStudieContactsPopover(); }
+function closeStudieContactsPopover(){
+  if(_bsContactsPopEl && _bsContactsPopEl.parentNode) _bsContactsPopEl.parentNode.removeChild(_bsContactsPopEl);
+  _bsContactsPopEl = null;
+  document.removeEventListener('mousedown', bsContactsPopOutsideClick);
+  window.removeEventListener('resize', closeStudieContactsPopover);
+  window.removeEventListener('scroll', bsContactsPopOutsideScroll, true);
 }
 // Shows every logged session of a given contact + lesson code together (not
 // just the latest one, which is all openEntryDetailModal ever showed here) -
@@ -35426,9 +35521,14 @@ function toggleLessonCell(cursistId, lesCode){
 // app - contacts at every stage of the contact-to-member journey, planned
 // activities, to-do list, prayer list - so "Load demo data" actually shows
 // what the app can do instead of a nearly-empty screen.
-function loadDemoData(){
+function loadDemoData(silent){
+  // silent=true is used by setLanguage() to quietly regenerate the demo
+  // dataset in the new language when it detects demo data is currently
+  // loaded (db.settings.demoDataLoaded) - no overwrite confirmation and no
+  // "loaded!" alert, since this isn't a fresh user-initiated load, just the
+  // existing demo data following the language switch (e.g. mid-presentation).
   var hasData=(db.entries&&db.entries.length)||(db.cursisten&&db.cursisten.length)||(db.planned&&db.planned.length)||(db.todos&&db.todos.length)||(db.prayers&&db.prayers.length);
-  if(hasData&&!confirm(tMap({nl:'Huidige data overschrijven met demo data?',en:'Overwrite current data with demo data?',es:'¿Sobrescribir los datos actuales con datos de demostración?',fr:'Remplacer les données actuelles par des données de démonstration ?',de:'Aktuelle Daten mit Demodaten überschreiben?',ro:'Suprascrieți datele curente cu date demonstrative?',hu:'Felülírja a jelenlegi adatokat demóadatokkal?',ru:'Заменить текущие данные демо-данными?',it:'Sovrascrivere i dati attuali con dati demo?',pt:'Substituir os dados atuais por dados de demonstração?'})))return;
+  if(hasData&&!silent&&!confirm(tMap({nl:'Huidige data overschrijven met demo data?',en:'Overwrite current data with demo data?',es:'¿Sobrescribir los datos actuales con datos de demostración?',fr:'Remplacer les données actuelles par des données de démonstration ?',de:'Aktuelle Daten mit Demodaten überschreiben?',ro:'Suprascrieți datele curente cu date demonstrative?',hu:'Felülírja a jelenlegi adatokat demóadatokkal?',ru:'Заменить текущие данные демо-данными?',it:'Sovrascrivere i dati attuali con dati demo?',pt:'Substituir os dados atuais por dados de demonstração?'})))return;
 
   ensurePlanned();
   var today=new Date();
@@ -35454,17 +35554,147 @@ function loadDemoData(){
   // the demographic tags (youth/elderly/child) and the less common fields
   // (extra care, paused, another worker's responsibility) so the Contacts
   // tab, its groupings and the Follow-up card all have something real. ----
+  // Names/addresses/church names are also locale-specific now (DEMO_LOCALE
+  // below), so demo data looks native for whatever country/language the app
+  // is presented in - not just the free text. Miriam, Robert, Elisabeth and
+  // Cornelia keep the same first name in every locale on purpose: that name
+  // is baked into the to-do/prayer sentences below (e.g. "Robert's baptism"),
+  // so changing it per-language would desync the two.
+  var DEMO_LOCALE={
+    nl:{country:'Nederland',gemeente1:'Immanuel Gemeente',gemeente2:'Hoop Gemeente',people:[
+      {voornaam:'Thomas',achternaam:'van Berg',adres:'Bergstraat 12',postcode:'3512 AB',plaats:'Utrecht',tel:'06-12345678'},
+      {voornaam:'Miriam',achternaam:'Santos',adres:'Rozenstraat 5',postcode:'3021 CD',plaats:'Rotterdam',tel:'06-87654321'},
+      {voornaam:'Anna',achternaam:'de Groot',adres:'Molenweg 8',postcode:'1017 AB',plaats:'Amsterdam',tel:'06-22334455'},
+      {voornaam:'Robert',achternaam:'Jansen',adres:'Kerkplein 3',postcode:'2011 CD',plaats:'Haarlem',tel:'06-33445566'},
+      {voornaam:'Elisabeth',achternaam:'Mulder',adres:'Dorpsstraat 21',postcode:'3811 AB',plaats:'Amersfoort',tel:'06-44556677'},
+      {voornaam:'Daniël',achternaam:'Visser',adres:'Schoolstraat 9',postcode:'7511 AB',plaats:'Enschede',tel:'06-55667788'},
+      {voornaam:'Cornelia',achternaam:'Bakker',adres:'Julianalaan 44',postcode:'7521 CD',plaats:'Enschede',tel:'06-66778899'},
+      {voornaam:'David',achternaam:'Kowalski',adres:'Kerkweg 3',postcode:'1096 AB',plaats:'Amsterdam',tel:'06-11223344'},
+      {voornaam:'Sarah',achternaam:'de Boer',adres:'Lindelaan 17',postcode:'2311 AB',plaats:'Leiden',tel:'06-77889900'},
+      {voornaam:'Lucas',achternaam:'de Wit',adres:'Julianalaan 44',postcode:'7521 CD',plaats:'Enschede',tel:''}
+    ]},
+    en:{country:'United Kingdom',gemeente1:'Immanuel Church',gemeente2:'Hope Church',people:[
+      {voornaam:'Thomas',achternaam:'Berkeley',adres:'12 Hill Street',postcode:'M1 4ET',plaats:'Manchester',tel:'07123 456789'},
+      {voornaam:'Miriam',achternaam:'Santos',adres:'5 Rose Lane',postcode:'B2 5QD',plaats:'Birmingham',tel:'07876 543210'},
+      {voornaam:'Anna',achternaam:'Greene',adres:'8 Mill Road',postcode:'E1 6AN',plaats:'London',tel:'07223 344556'},
+      {voornaam:'Robert',achternaam:'Jansen',adres:'3 Church Square',postcode:'LS1 2CD',plaats:'Leeds',tel:'07334 455667'},
+      {voornaam:'Elisabeth',achternaam:'Miller',adres:'21 Village Street',postcode:'BS1 8AB',plaats:'Bristol',tel:'07445 566778'},
+      {voornaam:'Daniel',achternaam:'Fisher',adres:'9 School Lane',postcode:'S1 1AB',plaats:'Sheffield',tel:'07556 677889'},
+      {voornaam:'Cornelia',achternaam:'Baker',adres:'44 Juliana Avenue',postcode:'S1 1CD',plaats:'Sheffield',tel:'07667 788990'},
+      {voornaam:'David',achternaam:'Kowalski',adres:'3 Church Way',postcode:'E2 6AB',plaats:'London',tel:'07112 233445'},
+      {voornaam:'Sarah',achternaam:'Woods',adres:'17 Linden Avenue',postcode:'LE1 1AB',plaats:'Leicester',tel:'07778 899001'},
+      {voornaam:'Lucas',achternaam:'Wood',adres:'44 Juliana Avenue',postcode:'S1 1CD',plaats:'Sheffield',tel:''}
+    ]},
+    es:{country:'Colombia',gemeente1:'Iglesia Emanuel',gemeente2:'Iglesia Esperanza',people:[
+      {voornaam:'Tomás',achternaam:'Bermúdez',adres:'Calle del Cerro 12',postcode:'110111',plaats:'Bogotá',tel:'+57 300 1234567'},
+      {voornaam:'Miriam',achternaam:'Santos',adres:'Carrera del Rosal 5',postcode:'050001',plaats:'Medellín',tel:'+57 301 8765432'},
+      {voornaam:'Ana',achternaam:'Gómez',adres:'Calle del Molino 8',postcode:'760001',plaats:'Cali',tel:'+57 302 2233445'},
+      {voornaam:'Robert',achternaam:'Jiménez',adres:'Plaza de la Iglesia 3',postcode:'130001',plaats:'Cartagena',tel:'+57 303 3344556'},
+      {voornaam:'Elisabeth',achternaam:'Molina',adres:'Calle del Pueblo 21',postcode:'680001',plaats:'Bucaramanga',tel:'+57 304 4455667'},
+      {voornaam:'Daniel',achternaam:'Vizcaíno',adres:'Calle Escuela 9',postcode:'170001',plaats:'Manizales',tel:'+57 305 5566778'},
+      {voornaam:'Cornelia',achternaam:'Panqueva',adres:'Avenida Juliana 44',postcode:'170001',plaats:'Manizales',tel:'+57 306 6677889'},
+      {voornaam:'David',achternaam:'Kowalski',adres:'Calle de la Iglesia 3',postcode:'110111',plaats:'Bogotá',tel:'+57 300 1122334'},
+      {voornaam:'Sara',achternaam:'del Bosque',adres:'Avenida Lindera 17',postcode:'660001',plaats:'Pereira',tel:'+57 307 7788990'},
+      {voornaam:'Lucas',achternaam:'del Blanco',adres:'Avenida Juliana 44',postcode:'170001',plaats:'Manizales',tel:''}
+    ]},
+    fr:{country:'France',gemeente1:'Église Emmanuel',gemeente2:'Église Espérance',people:[
+      {voornaam:'Thomas',achternaam:'Berger',adres:'12 Rue de la Colline',postcode:'75012',plaats:'Paris',tel:'06 12 34 56 78'},
+      {voornaam:'Miriam',achternaam:'Santos',adres:'5 Rue des Roses',postcode:'69001',plaats:'Lyon',tel:'06 87 65 43 21'},
+      {voornaam:'Anna',achternaam:'Legrand',adres:'8 Chemin du Moulin',postcode:'13001',plaats:'Marseille',tel:'06 22 33 44 55'},
+      {voornaam:'Robert',achternaam:'Janssen',adres:'3 Place de l\'Église',postcode:'31000',plaats:'Toulouse',tel:'06 33 44 55 66'},
+      {voornaam:'Elisabeth',achternaam:'Meunier',adres:'21 Rue du Village',postcode:'44000',plaats:'Nantes',tel:'06 44 55 66 77'},
+      {voornaam:'Daniel',achternaam:'Fischer',adres:'9 Rue de l\'École',postcode:'67000',plaats:'Strasbourg',tel:'06 55 66 77 88'},
+      {voornaam:'Cornelia',achternaam:'Boulanger',adres:'44 Avenue Juliana',postcode:'67000',plaats:'Strasbourg',tel:'06 66 77 88 99'},
+      {voornaam:'David',achternaam:'Kowalski',adres:'3 Rue de l\'Église',postcode:'75011',plaats:'Paris',tel:'06 11 22 33 44'},
+      {voornaam:'Sarah',achternaam:'Dubois',adres:'17 Avenue des Tilleuls',postcode:'59000',plaats:'Lille',tel:'06 77 88 99 00'},
+      {voornaam:'Lucas',achternaam:'Leblanc',adres:'44 Avenue Juliana',postcode:'67000',plaats:'Strasbourg',tel:''}
+    ]},
+    de:{country:'Deutschland',gemeente1:'Gemeinde Immanuel',gemeente2:'Gemeinde Hoffnung',people:[
+      {voornaam:'Thomas',achternaam:'Berger',adres:'Bergstraße 12',postcode:'70173',plaats:'Stuttgart',tel:'0151 1234567'},
+      {voornaam:'Miriam',achternaam:'Santos',adres:'Rosenweg 5',postcode:'20095',plaats:'Hamburg',tel:'0151 8765432'},
+      {voornaam:'Anna',achternaam:'Groth',adres:'Mühlenweg 8',postcode:'80331',plaats:'München',tel:'0151 2233445'},
+      {voornaam:'Robert',achternaam:'Jansen',adres:'Kirchplatz 3',postcode:'50667',plaats:'Köln',tel:'0151 3344556'},
+      {voornaam:'Elisabeth',achternaam:'Müller',adres:'Dorfstraße 21',postcode:'60311',plaats:'Frankfurt',tel:'0151 4455667'},
+      {voornaam:'Daniel',achternaam:'Fischer',adres:'Schulstraße 9',postcode:'04109',plaats:'Leipzig',tel:'0151 5566778'},
+      {voornaam:'Cornelia',achternaam:'Bäcker',adres:'Julianaallee 44',postcode:'04109',plaats:'Leipzig',tel:'0151 6677889'},
+      {voornaam:'David',achternaam:'Kowalski',adres:'Kirchweg 3',postcode:'10115',plaats:'Berlin',tel:'0151 1122334'},
+      {voornaam:'Sarah',achternaam:'Wald',adres:'Lindenallee 17',postcode:'90402',plaats:'Nürnberg',tel:'0151 7788990'},
+      {voornaam:'Lucas',achternaam:'Weiß',adres:'Julianaallee 44',postcode:'04109',plaats:'Leipzig',tel:''}
+    ]},
+    ro:{country:'România',gemeente1:'Biserica Emanuel',gemeente2:'Biserica Speranța',people:[
+      {voornaam:'Toma',achternaam:'Berariu',adres:'Strada Dealului 12',postcode:'010101',plaats:'București',tel:'0721 234567'},
+      {voornaam:'Miriam',achternaam:'Santos',adres:'Strada Trandafirilor 5',postcode:'400001',plaats:'Cluj-Napoca',tel:'0722 876543'},
+      {voornaam:'Ana',achternaam:'Moraru',adres:'Strada Morii 8',postcode:'300001',plaats:'Timișoara',tel:'0723 223344'},
+      {voornaam:'Robert',achternaam:'Ionescu',adres:'Piața Bisericii 3',postcode:'700001',plaats:'Iași',tel:'0724 334455'},
+      {voornaam:'Elisabeth',achternaam:'Moldovan',adres:'Strada Satului 21',postcode:'500001',plaats:'Brașov',tel:'0725 445566'},
+      {voornaam:'Daniel',achternaam:'Pescaru',adres:'Strada Școlii 9',postcode:'200001',plaats:'Craiova',tel:'0726 556677'},
+      {voornaam:'Cornelia',achternaam:'Brutaru',adres:'Aleea Juliana 44',postcode:'200001',plaats:'Craiova',tel:'0727 667788'},
+      {voornaam:'David',achternaam:'Kowalski',adres:'Strada Bisericii 3',postcode:'010101',plaats:'București',tel:'0721 112233'},
+      {voornaam:'Sara',achternaam:'Pădurariu',adres:'Aleea Teilor 17',postcode:'800001',plaats:'Galați',tel:'0728 778899'},
+      {voornaam:'Lucas',achternaam:'Alb',adres:'Aleea Juliana 44',postcode:'200001',plaats:'Craiova',tel:''}
+    ]},
+    hu:{country:'Magyarország',gemeente1:'Immánuel Gyülekezet',gemeente2:'Remény Gyülekezet',people:[
+      {voornaam:'Tamás',achternaam:'Hegyi',adres:'Domb utca 12',postcode:'1012',plaats:'Budapest',tel:'06 20 123 4567'},
+      {voornaam:'Miriam',achternaam:'Santos',adres:'Rózsa utca 5',postcode:'6720',plaats:'Szeged',tel:'06 20 876 5432'},
+      {voornaam:'Anna',achternaam:'Molnár',adres:'Malom út 8',postcode:'4024',plaats:'Debrecen',tel:'06 20 223 3445'},
+      {voornaam:'Robert',achternaam:'Jánosi',adres:'Templom tér 3',postcode:'3300',plaats:'Eger',tel:'06 20 334 4556'},
+      {voornaam:'Elisabeth',achternaam:'Kovács',adres:'Falu utca 21',postcode:'7621',plaats:'Pécs',tel:'06 20 445 5667'},
+      {voornaam:'Daniel',achternaam:'Halász',adres:'Iskola utca 9',postcode:'9021',plaats:'Győr',tel:'06 20 556 6778'},
+      {voornaam:'Cornelia',achternaam:'Pék',adres:'Juliána sugárút 44',postcode:'9021',plaats:'Győr',tel:'06 20 667 7889'},
+      {voornaam:'David',achternaam:'Kowalski',adres:'Templom út 3',postcode:'1013',plaats:'Budapest',tel:'06 20 112 2334'},
+      {voornaam:'Sára',achternaam:'Erdős',adres:'Hárs sugárút 17',postcode:'6000',plaats:'Kecskemét',tel:'06 20 778 8990'},
+      {voornaam:'Lucas',achternaam:'Fehér',adres:'Juliána sugárút 44',postcode:'9021',plaats:'Győr',tel:''}
+    ]},
+    ru:{country:'Россия',gemeente1:'Церковь Эммануил',gemeente2:'Церковь Надежда',people:[
+      {voornaam:'Фома',achternaam:'Горский',adres:'ул. Холмистая 12',postcode:'101000',plaats:'Москва',tel:'+7 900 123-45-67'},
+      {voornaam:'Мириам',achternaam:'Сантос',adres:'ул. Розовая 5',postcode:'190000',plaats:'Санкт-Петербург',tel:'+7 901 876-54-32'},
+      {voornaam:'Анна',achternaam:'Мельникова',adres:'ул. Мельничная 8',postcode:'630000',plaats:'Новосибирск',tel:'+7 902 223-34-45'},
+      {voornaam:'Роберт',achternaam:'Янсен',adres:'Церковная площадь 3',postcode:'620000',plaats:'Екатеринбург',tel:'+7 903 334-45-56'},
+      {voornaam:'Элизабет',achternaam:'Мельник',adres:'ул. Деревенская 21',postcode:'603000',plaats:'Нижний Новгород',tel:'+7 904 445-56-67'},
+      {voornaam:'Даниил',achternaam:'Рыбаков',adres:'ул. Школьная 9',postcode:'344000',plaats:'Ростов-на-Дону',tel:'+7 905 556-67-78'},
+      {voornaam:'Корнелия',achternaam:'Пекарь',adres:'аллея Джулианы 44',postcode:'344000',plaats:'Ростов-на-Дону',tel:'+7 906 667-78-89'},
+      {voornaam:'Давид',achternaam:'Ковальски',adres:'Церковная улица 3',postcode:'101001',plaats:'Москва',tel:'+7 900 112-23-34'},
+      {voornaam:'Сара',achternaam:'Лесная',adres:'Липовая аллея 17',postcode:'400000',plaats:'Волгоград',tel:'+7 907 778-89-90'},
+      {voornaam:'Лукас',achternaam:'Белов',adres:'аллея Джулианы 44',postcode:'344000',plaats:'Ростов-на-Дону',tel:''}
+    ]},
+    it:{country:'Italia',gemeente1:'Chiesa Emmanuele',gemeente2:'Chiesa Speranza',people:[
+      {voornaam:'Tommaso',achternaam:'Bergamo',adres:'Via del Colle 12',postcode:'00100',plaats:'Roma',tel:'333 1234567'},
+      {voornaam:'Miriam',achternaam:'Santos',adres:'Via delle Rose 5',postcode:'20100',plaats:'Milano',tel:'333 8765432'},
+      {voornaam:'Anna',achternaam:'Molinari',adres:'Via del Mulino 8',postcode:'80100',plaats:'Napoli',tel:'333 2233445'},
+      {voornaam:'Robert',achternaam:'Gianni',adres:'Piazza della Chiesa 3',postcode:'10100',plaats:'Torino',tel:'333 3344556'},
+      {voornaam:'Elisabeth',achternaam:'Muller',adres:'Via del Paese 21',postcode:'40100',plaats:'Bologna',tel:'333 4455667'},
+      {voornaam:'Daniele',achternaam:'Pescatore',adres:'Via della Scuola 9',postcode:'50100',plaats:'Firenze',tel:'333 5566778'},
+      {voornaam:'Cornelia',achternaam:'Fornaio',adres:'Viale Giuliana 44',postcode:'50100',plaats:'Firenze',tel:'333 6677889'},
+      {voornaam:'David',achternaam:'Kowalski',adres:'Via della Chiesa 3',postcode:'00100',plaats:'Roma',tel:'333 1122334'},
+      {voornaam:'Sara',achternaam:'Boschi',adres:'Viale dei Tigli 17',postcode:'90100',plaats:'Palermo',tel:'333 7788990'},
+      {voornaam:'Luca',achternaam:'Bianchi',adres:'Viale Giuliana 44',postcode:'50100',plaats:'Firenze',tel:''}
+    ]},
+    pt:{country:'Portugal',gemeente1:'Igreja Emanuel',gemeente2:'Igreja Esperança',people:[
+      {voornaam:'Tomás',achternaam:'Bergo',adres:'Rua da Colina 12',postcode:'1000-100',plaats:'Lisboa',tel:'912 345 678'},
+      {voornaam:'Miriam',achternaam:'Santos',adres:'Rua das Rosas 5',postcode:'4000-100',plaats:'Porto',tel:'913 876 543'},
+      {voornaam:'Ana',achternaam:'Moinho',adres:'Rua do Moinho 8',postcode:'3000-100',plaats:'Coimbra',tel:'914 223 344'},
+      {voornaam:'Robert',achternaam:'Jansen',adres:'Largo da Igreja 3',postcode:'4700-100',plaats:'Braga',tel:'915 334 455'},
+      {voornaam:'Elisabeth',achternaam:'Moleiro',adres:'Rua da Aldeia 21',postcode:'8000-100',plaats:'Faro',tel:'916 445 566'},
+      {voornaam:'Daniel',achternaam:'Pescador',adres:'Rua da Escola 9',postcode:'2000-100',plaats:'Santarém',tel:'917 556 677'},
+      {voornaam:'Cornelia',achternaam:'Padeira',adres:'Alameda Juliana 44',postcode:'2000-100',plaats:'Santarém',tel:'918 667 788'},
+      {voornaam:'David',achternaam:'Kowalski',adres:'Rua da Igreja 3',postcode:'1100-100',plaats:'Lisboa',tel:'911 122 334'},
+      {voornaam:'Sara',achternaam:'Bosque',adres:'Alameda das Tílias 17',postcode:'4900-100',plaats:'Viana do Castelo',tel:'919 778 899'},
+      {voornaam:'Lucas',achternaam:'Branco',adres:'Alameda Juliana 44',postcode:'2000-100',plaats:'Santarém',tel:''}
+    ]}
+  };
+  var _demoLoc=DEMO_LOCALE[LANG]||DEMO_LOCALE.nl;
+  var dp=_demoLoc.people;
   var cid=9001;
-  var cThomas={id:cid++,naam:'Thomas van Berg',voornaam:'Thomas',achternaam:'van Berg',type:'cursist',adres:'Bergstraat 12',postcode:'3512 AB',plaats:'Utrecht',land:'Nederland',tel:'06-12345678',contactFrequency:'weekly',extraZorg:false,andereWerker:false,geloof:'',niveau:'basis',highlightsGeschiedenis:'',opmerking:dtInterested,doopkandidaat:false,personTypes:['interested'],personType:'interested',gemeente:'',status:'actief'};
-  var cMiriam={id:cid++,naam:'Miriam Santos',voornaam:'Miriam',achternaam:'Santos',type:'cursist',adres:'Rozenstraat 5',postcode:'3021 CD',plaats:'Rotterdam',land:'Nederland',tel:'06-87654321',contactFrequency:'weekly',extraZorg:false,andereWerker:false,geloof:'',niveau:'gevorderd',highlightsGeschiedenis:dtAlmostDone,opmerking:dtCommunionQ,doopkandidaat:false,personTypes:['student'],personType:'student',gemeente:'',status:'actief'};
-  var cAnna={id:cid++,naam:'Anna de Groot',voornaam:'Anna',achternaam:'de Groot',type:'cursist',adres:'Molenweg 8',postcode:'1017 AB',plaats:'Amsterdam',land:'Nederland',tel:'06-22334455',contactFrequency:'biweekly',extraZorg:false,andereWerker:false,geloof:'',niveau:'gevorderd',highlightsGeschiedenis:'',opmerking:dtNewSabbath,doopkandidaat:false,personTypes:['sabbath'],personType:'sabbath',gemeente:'Immanuel Gemeente',status:'actief'};
-  var cRobert={id:cid++,naam:'Robert Jansen',voornaam:'Robert',achternaam:'Jansen',type:'cursist',adres:'Kerkplein 3',postcode:'2011 CD',plaats:'Haarlem',land:'Nederland',tel:'06-33445566',contactFrequency:'weekly',extraZorg:false,andereWerker:false,geloof:'',niveau:'gevorderd',highlightsGeschiedenis:dtBaptismPlanned,opmerking:'',doopkandidaat:true,personTypes:['doop'],personType:'doop',gemeente:'Immanuel Gemeente',status:'actief'};
-  var cElisabeth={id:cid++,naam:'Elisabeth Mulder',voornaam:'Elisabeth',achternaam:'Mulder',type:'lid',adres:'Dorpsstraat 21',postcode:'3811 AB',plaats:'Amersfoort',land:'Nederland',tel:'06-44556677',contactFrequency:'quarterly',extraZorg:false,andereWerker:false,geloof:'',niveau:'',highlightsGeschiedenis:'',opmerking:'',doopkandidaat:false,personTypes:['lid'],personType:'lid',gemeente:'Immanuel Gemeente',status:'actief'};
-  var cDaniel={id:cid++,naam:'Daniël Visser',voornaam:'Daniël',achternaam:'Visser',type:'lid',adres:'Schoolstraat 9',postcode:'7511 AB',plaats:'Enschede',land:'Nederland',tel:'06-55667788',contactFrequency:'monthly',extraZorg:false,andereWerker:false,geloof:'',niveau:'',highlightsGeschiedenis:'',opmerking:'',doopkandidaat:false,personTypes:['jeugd','lid'],personType:'jeugd',gemeente:'Hoop Gemeente',status:'actief'};
-  var cCornelia={id:cid++,naam:'Cornelia Bakker',voornaam:'Cornelia',achternaam:'Bakker',type:'lid',adres:'Julianalaan 44',postcode:'7521 CD',plaats:'Enschede',land:'Nederland',tel:'06-66778899',contactFrequency:'biweekly',extraZorg:true,andereWerker:false,geloof:'',niveau:'',highlightsGeschiedenis:dtWalkingTrouble,opmerking:'',doopkandidaat:false,personTypes:['elderly','lid'],personType:'elderly',gemeente:'Hoop Gemeente',status:'actief'};
-  var cDavid={id:cid++,naam:'David Kowalski',voornaam:'David',achternaam:'Kowalski',type:'cursist',adres:'Kerkweg 3',postcode:'1096 AB',plaats:'Amsterdam',land:'Nederland',tel:'06-11223344',contactFrequency:'monthly',extraZorg:true,andereWerker:false,geloof:'',niveau:'',highlightsGeschiedenis:'',opmerking:'',doopkandidaat:false,personTypes:['contact'],personType:'contact',gemeente:'',status:'actief'};
-  var cSarah={id:cid++,naam:'Sarah de Boer',voornaam:'Sarah',achternaam:'de Boer',type:'cursist',adres:'Lindelaan 17',postcode:'2311 AB',plaats:'Leiden',land:'Nederland',tel:'06-77889900',contactFrequency:'',extraZorg:false,andereWerker:true,geloof:'',niveau:'',highlightsGeschiedenis:'',opmerking:dtOtherWorker,doopkandidaat:false,personTypes:['contact'],personType:'contact',gemeente:'',status:'gepauzeerd'};
-  var cLucas={id:cid++,naam:'Lucas de Wit',voornaam:'Lucas',achternaam:'de Wit',type:'lid',adres:'Julianalaan 44',postcode:'7521 CD',plaats:'Enschede',land:'Nederland',tel:'',contactFrequency:'',extraZorg:false,andereWerker:false,geloof:'',niveau:'',highlightsGeschiedenis:'',opmerking:dtCorneliaChild,doopkandidaat:false,personTypes:['child'],personType:'child',gemeente:'Hoop Gemeente',status:'actief'};
+  var cThomas={id:cid++,naam:dp[0].voornaam+' '+dp[0].achternaam,voornaam:dp[0].voornaam,achternaam:dp[0].achternaam,type:'cursist',adres:dp[0].adres,postcode:dp[0].postcode,plaats:dp[0].plaats,land:_demoLoc.country,tel:dp[0].tel,contactFrequency:'weekly',extraZorg:false,andereWerker:false,geloof:'',niveau:'basis',highlightsGeschiedenis:'',opmerking:dtInterested,doopkandidaat:false,personTypes:['interested'],personType:'interested',gemeente:'',status:'actief'};
+  var cMiriam={id:cid++,naam:dp[1].voornaam+' '+dp[1].achternaam,voornaam:dp[1].voornaam,achternaam:dp[1].achternaam,type:'cursist',adres:dp[1].adres,postcode:dp[1].postcode,plaats:dp[1].plaats,land:_demoLoc.country,tel:dp[1].tel,contactFrequency:'weekly',extraZorg:false,andereWerker:false,geloof:'',niveau:'gevorderd',highlightsGeschiedenis:dtAlmostDone,opmerking:dtCommunionQ,doopkandidaat:false,personTypes:['student'],personType:'student',gemeente:'',status:'actief'};
+  var cAnna={id:cid++,naam:dp[2].voornaam+' '+dp[2].achternaam,voornaam:dp[2].voornaam,achternaam:dp[2].achternaam,type:'cursist',adres:dp[2].adres,postcode:dp[2].postcode,plaats:dp[2].plaats,land:_demoLoc.country,tel:dp[2].tel,contactFrequency:'biweekly',extraZorg:false,andereWerker:false,geloof:'',niveau:'gevorderd',highlightsGeschiedenis:'',opmerking:dtNewSabbath,doopkandidaat:false,personTypes:['sabbath'],personType:'sabbath',gemeente:_demoLoc.gemeente1,status:'actief'};
+  var cRobert={id:cid++,naam:dp[3].voornaam+' '+dp[3].achternaam,voornaam:dp[3].voornaam,achternaam:dp[3].achternaam,type:'cursist',adres:dp[3].adres,postcode:dp[3].postcode,plaats:dp[3].plaats,land:_demoLoc.country,tel:dp[3].tel,contactFrequency:'weekly',extraZorg:false,andereWerker:false,geloof:'',niveau:'gevorderd',highlightsGeschiedenis:dtBaptismPlanned,opmerking:'',doopkandidaat:true,personTypes:['doop'],personType:'doop',gemeente:_demoLoc.gemeente1,status:'actief'};
+  var cElisabeth={id:cid++,naam:dp[4].voornaam+' '+dp[4].achternaam,voornaam:dp[4].voornaam,achternaam:dp[4].achternaam,type:'lid',adres:dp[4].adres,postcode:dp[4].postcode,plaats:dp[4].plaats,land:_demoLoc.country,tel:dp[4].tel,contactFrequency:'quarterly',extraZorg:false,andereWerker:false,geloof:'',niveau:'',highlightsGeschiedenis:'',opmerking:'',doopkandidaat:false,personTypes:['lid'],personType:'lid',gemeente:_demoLoc.gemeente1,status:'actief'};
+  var cDaniel={id:cid++,naam:dp[5].voornaam+' '+dp[5].achternaam,voornaam:dp[5].voornaam,achternaam:dp[5].achternaam,type:'lid',adres:dp[5].adres,postcode:dp[5].postcode,plaats:dp[5].plaats,land:_demoLoc.country,tel:dp[5].tel,contactFrequency:'monthly',extraZorg:false,andereWerker:false,geloof:'',niveau:'',highlightsGeschiedenis:'',opmerking:'',doopkandidaat:false,personTypes:['jeugd','lid'],personType:'jeugd',gemeente:_demoLoc.gemeente2,status:'actief'};
+  var cCornelia={id:cid++,naam:dp[6].voornaam+' '+dp[6].achternaam,voornaam:dp[6].voornaam,achternaam:dp[6].achternaam,type:'lid',adres:dp[6].adres,postcode:dp[6].postcode,plaats:dp[6].plaats,land:_demoLoc.country,tel:dp[6].tel,contactFrequency:'biweekly',extraZorg:true,andereWerker:false,geloof:'',niveau:'',highlightsGeschiedenis:dtWalkingTrouble,opmerking:'',doopkandidaat:false,personTypes:['elderly','lid'],personType:'elderly',gemeente:_demoLoc.gemeente2,status:'actief'};
+  var cDavid={id:cid++,naam:dp[7].voornaam+' '+dp[7].achternaam,voornaam:dp[7].voornaam,achternaam:dp[7].achternaam,type:'cursist',adres:dp[7].adres,postcode:dp[7].postcode,plaats:dp[7].plaats,land:_demoLoc.country,tel:dp[7].tel,contactFrequency:'monthly',extraZorg:true,andereWerker:false,geloof:'',niveau:'',highlightsGeschiedenis:'',opmerking:'',doopkandidaat:false,personTypes:['contact'],personType:'contact',gemeente:'',status:'actief'};
+  var cSarah={id:cid++,naam:dp[8].voornaam+' '+dp[8].achternaam,voornaam:dp[8].voornaam,achternaam:dp[8].achternaam,type:'cursist',adres:dp[8].adres,postcode:dp[8].postcode,plaats:dp[8].plaats,land:_demoLoc.country,tel:dp[8].tel,contactFrequency:'',extraZorg:false,andereWerker:true,geloof:'',niveau:'',highlightsGeschiedenis:'',opmerking:dtOtherWorker,doopkandidaat:false,personTypes:['contact'],personType:'contact',gemeente:'',status:'gepauzeerd'};
+  var cLucas={id:cid++,naam:dp[9].voornaam+' '+dp[9].achternaam,voornaam:dp[9].voornaam,achternaam:dp[9].achternaam,type:'lid',adres:dp[9].adres,postcode:dp[9].postcode,plaats:dp[9].plaats,land:_demoLoc.country,tel:dp[9].tel,contactFrequency:'',extraZorg:false,andereWerker:false,geloof:'',niveau:'',highlightsGeschiedenis:'',opmerking:dtCorneliaChild,doopkandidaat:false,personTypes:['child'],personType:'child',gemeente:_demoLoc.gemeente2,status:'actief'};
   db.cursisten=[cThomas,cMiriam,cAnna,cRobert,cElisabeth,cDaniel,cCornelia,cDavid,cSarah,cLucas];
 
   // ---- Logbook entries: a full year of activity spread across every
@@ -35561,9 +35791,10 @@ function loadDemoData(){
     {id:pid++,text:dtPrayerBaptism,category:'work',createdAt:new Date(addDays(today,-60)).toISOString(),lastPrayedDate:null,prayedDays:[],status:'answered',closedAt:new Date(addDays(today,-40)).toISOString(),closedDays:15,closedTimes:6}
   ];
 
+  db.settings.demoDataLoaded=true;
   save();
   renderHome();
-  alert(tMap({nl:'Demo gegevens geladen! U kunt deze later verwijderen via Instellingen → Alle gegevens wissen.',en:'Demo data loaded! You can remove it later via Settings → Clear all data.',es:'¡Datos de demostración cargados! Puede eliminarlos más tarde en Configuración → Borrar todos los datos.',fr:'Données de démonstration chargées ! Vous pouvez les supprimer plus tard via Paramètres → Effacer toutes les données.',de:'Demodaten geladen! Sie können sie später über Einstellungen → Alle Daten löschen entfernen.',ro:'Date demonstrative încărcate! Le puteți elimina mai târziu din Setări → Ștergeți toate datele.',hu:'Demóadatok betöltve! Később eltávolíthatja őket a Beállítások → Összes adat törlése menüben.',ru:'Демо-данные загружены! Вы можете удалить их позже в Настройки → Удалить все данные.',it:'Dati demo caricati! Puoi rimuoverli più tardi da Impostazioni → Cancella tutti i dati.',pt:'Dados de demonstração carregados! Você pode removê-los depois em Configurações → Apagar todos os dados.'}));
+  if(!silent)alert(tMap({nl:'Demo gegevens geladen! U kunt deze later verwijderen via Instellingen → Alle gegevens wissen.',en:'Demo data loaded! You can remove it later via Settings → Clear all data.',es:'¡Datos de demostración cargados! Puede eliminarlos más tarde en Configuración → Borrar todos los datos.',fr:'Données de démonstration chargées ! Vous pouvez les supprimer plus tard via Paramètres → Effacer toutes les données.',de:'Demodaten geladen! Sie können sie später über Einstellungen → Alle Daten löschen entfernen.',ro:'Date demonstrative încărcate! Le puteți elimina mai târziu din Setări → Ștergeți toate datele.',hu:'Demóadatok betöltve! Később eltávolíthatja őket a Beállítások → Összes adat törlése menüben.',ru:'Демо-данные загружены! Вы можете удалить их позже в Настройки → Удалить все данные.',it:'Dati demo caricati! Puoi rimuoverli più tardi da Impostazioni → Cancella tutti i dati.',pt:'Dados de demonstração carregados! Você pode removê-los depois em Configurações → Apagar todos os dados.'}));
 }
 
 
