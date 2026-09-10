@@ -34556,8 +34556,19 @@ function openEditEntryModal(entryId,skipSummary){
   var catOpts=getCATEGORIES().filter(function(c){return !c.isTravel;}).map(function(c){
     return '<option value="'+c.label+'"'+(c.label===e.categorie?' selected':'')+'>'+getCatLabel(c.label)+'</option>';
   }).join('');
+  // The "Vrij onderwerp" (free/custom topic) option was missing from this
+  // select entirely - THEMAS only holds the fixed BS-lesson list, so nothing
+  // here ever produced a <option value="Vrij onderwerp">, unlike the main
+  // wizard's w-thema select and the quick-repeat popup's qr-thema select,
+  // which both add it explicitly. Reopening an entry that had a custom
+  // typed-in topic left this select matching NO option (so it silently
+  // defaulted to the blank "no topic" one) even though the ee-vrij text box
+  // below still showed the real custom text - saveEditEntry then read the
+  // select's blank value and wiped e.thema/e.themacode to empty on the very
+  // next save, even if thema was never touched.
   var themaOpts='<option value="">— '+t('no_topic')+' —</option>'
-    +THEMAS.map(function(th){
+    +'<option value="Vrij onderwerp" '+(e.themacode==='Vrij onderwerp'?'selected':'')+'>'+t('wizard_free_topic')+'</option>'
+    +THEMAS.filter(function(th){return th[0]!=='Vrij onderwerp';}).map(function(th){
       var sel=(e.themacode===th[0]||e.thema===th[0]+' - '+th[1]||e.thema===th[0])?'selected':'';
       var label=getThemaDisplay(th[0]+' - '+th[1]);
       return '<option value="'+th[0]+'" '+sel+'>'+label+'</option>';
