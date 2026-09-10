@@ -1827,11 +1827,9 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
 
     </div>
     <div class="about-footer">
-      <div style="display:flex;justify-content:center;margin-bottom:10px"><div id="about-isotope-mark" style="width:40px;height:40px;opacity:.65"></div></div>
       <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px" data-i18n="about_card">Over deze app</div>
-      <div style="font-size:15px;font-weight:700;color:var(--brand);margin-bottom:2px" id="about-app-name">IMS SDA Reform Mov.</div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:4px;line-height:1.5" id="about-org-full">International Missionary Society Seventh Day Adventist Church Reform Movement</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:2px" data-i18n="about_app_subtitle">Hour Registration App</div>
+      <div style="font-size:15px;font-weight:700;color:var(--brand);margin-bottom:6px" id="about-app-name">Workers Companion App</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.5" id="about-app-desc" data-i18n="welcome_subtitle">Meer dan een urenregistratie — het is je agenda, rapportage, contacten en bijbelstudie-metgezel, allemaal op één plek.</div>
       <div style="font-size:11px;color:var(--text3);font-weight:600;margin-bottom:14px" id="about-version">v1.0.0 · 2026</div>
       <div style="display:flex;gap:8px;justify-content:center;margin-bottom:6px">
         <button class="btn sm" id="about-updates-btn" onclick="openChangelog()" style="width:auto;padding:8px 14px;font-weight:500">Update 1</button>
@@ -1841,6 +1839,9 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
       <div style="font-size:11px;color:var(--text3);border-top:1px solid var(--border2);padding-top:12px;line-height:2">
         <span style="color:var(--text2);font-weight:500" data-i18n="dev_by">Ontwikkeld door:</span> Gabriel Porras | &copy; p2pgraphics
       </div>
+      <div style="font-size:11px;color:var(--text2);font-weight:500;margin-top:10px;margin-bottom:8px" data-i18n="dev_for">Ontwikkeld voor:</div>
+      <div style="display:flex;justify-content:center;margin-bottom:8px"><div id="about-isotope-mark" style="width:40px;height:40px;opacity:.65"></div></div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.5" id="about-org-full">International Missionary Society Seventh Day Adventist Church Reform Movement</div>
     </div>
   </div>
 
@@ -6438,7 +6439,7 @@ var TRANSLATIONS = {
     clear_data:'Alle gegevens wissen',
     about_card:'Over deze app',
     updates_btn:'Wat is er bijgewerkt?', updates_title:'Updates', updates_empty:'Nog geen updates vermeld.',
-    dev_by:'Ontwikkeld door', support_by:'Ondersteuning',
+    dev_by:'Ontwikkeld door', dev_for:'Ontwikkeld voor:', support_by:'Ondersteuning',
     // Wizard
     new_activity:'Nieuwe activiteit',
     autofill_lbl:'Automatisch ingevuld',
@@ -6785,7 +6786,7 @@ var TRANSLATIONS = {
     clear_data:'Clear all data',
     about_card:'About this app',
     updates_btn:'What has been updated?', updates_title:'Updates', updates_empty:'No updates listed yet.',
-    dev_by:'Developed by', support_by:'Support',
+    dev_by:'Developed by', dev_for:'Developed for:', support_by:'Support',
     new_activity:'New activity',
     autofill_lbl:'Auto-filled',
     autofill_clear:'Clear',
@@ -7199,7 +7200,7 @@ var TRANSLATIONS = {
     clear_data:'Borrar todos los datos',
     about_card:'Acerca de esta app',
     updates_btn:'¿Qué se ha actualizado?', updates_title:'Actualizaciones', updates_empty:'Aún no hay actualizaciones.',
-    dev_by:'Desarrollado por', support_by:'Apoyo',
+    dev_by:'Desarrollado por', dev_for:'Desarrollado para:', support_by:'Apoyo',
     new_activity:'Nueva actividad',
     autofill_lbl:'Autocompletado',
     autofill_clear:'Limpiar',
@@ -7490,7 +7491,7 @@ var TRANSLATIONS = {
     optional:'optionnel',
     wizard_choose_cat:'Choisir catégorie',days_taken:"jours pris",
     next_reminder_in:"Prochain rappel dans",minutes:"minutes",verse_title:"Verset du jour",demo_data:"Charger données démo",find_dupes_btn:"Rechercher les doublons",find_baddates_btn:"Rechercher les dates incorrectes",find_dupe_contacts_btn:"Rechercher les contacts en double",find_issues_lbl:"Rechercher et corriger",dupes_explain:"Des données en double peuvent apparaître si un fichier est importé deux fois, si une activité est enregistrée deux fois par erreur, ou si un contact est créé deux fois. Utilisez les boutons ci-dessous pour les trouver : Entrées recherche les activités enregistrées en double, Dates recherche les dates étranges ou impossibles, et Contacts recherche les contacts en double à fusionner.",find_dupes_btn_short:"Entrées",find_baddates_btn_short:"Dates",find_dupe_contacts_btn_short:"Contacts",
-    export_csv:"Tout exporter en CSV",clear_data:"Effacer toutes les données",about_card:"À propos",updates_btn:"Quoi de neuf ?",updates_title:"Mises à jour",updates_empty:"Aucune mise à jour pour le moment.",dev_by:"Développé par",support_by:"Support",
+    export_csv:"Tout exporter en CSV",clear_data:"Effacer toutes les données",about_card:"À propos",updates_btn:"Quoi de neuf ?",updates_title:"Mises à jour",updates_empty:"Aucune mise à jour pour le moment.",dev_by:"Développé par",dev_for:"Développé pour :",support_by:"Support",
     print_btn:"Imprimer/Exporter PDF",export_csv2:"Exporter CSV",print_pdf:"Imprimer/Exporter PDF",export_csv_btn:"Exporter CSV",
     signout_google:"Déconnexion Google",sync_now_btn:"Synchroniser maintenant",sync_now_syncing:"Synchronisation…",sync_now_done:"Synchronisé",sync_now_hint:"Récupère les dernières données de Drive et envoie les modifications locales. À faire si un autre appareil a récemment ajouté quelque chose.",force_update_btn:"Forcer la mise à jour",force_update_hint:"Efface les données temporaires de l'application et recharge la dernière version. Vos données restent en sécurité car elles sont stockées séparément. Faites cela si une mise à jour récente ne semble pas apparaître.",force_update_confirm:"Ceci efface les données temporaires de l'application et recharge la dernière version. Vos données restent en sécurité. Continuer ?",backup_download_btn:'Télécharger la sauvegarde complète',backup_restore_file_btn:'Restaurer depuis un fichier',
     drive_sign_in:"Connexion avec Google",
@@ -7614,7 +7615,7 @@ var TRANSLATIONS = {
     optional:'optional',
     wizard_choose_cat:'Kategorie wählen',days_taken:'Tage genommen',
     next_reminder_in:'Nächste Erinnerung in',minutes:'Minuten',verse_title:'Tagesvers',demo_data:'Demodaten laden',find_dupes_btn:'Doppelte Einträge suchen',find_baddates_btn:'Fehlerhafte Daten suchen',find_dupe_contacts_btn:'Doppelte Kontakte suchen',find_issues_lbl:'Suchen & beheben',dupes_explain:'Doppelte Daten können entstehen, wenn eine Datei zweimal importiert wird, eine Aktivität versehentlich zweimal erfasst wird oder ein Kontakt zweimal angelegt wird. Nutze die Schaltflächen unten, um sie zu finden: Einträge sucht doppelt erfasste Aktivitäten, Daten sucht seltsame oder unmögliche Datumsangaben, und Kontakte sucht doppelte Kontakte zum Zusammenführen.',find_dupes_btn_short:'Einträge',find_baddates_btn_short:'Daten',find_dupe_contacts_btn_short:'Kontakte',
-    export_csv:'Alles als CSV exportieren',clear_data:'Alle Daten löschen',about_card:'Über diese App',updates_btn:'Was wurde aktualisiert?',updates_title:'Updates',updates_empty:'Noch keine Updates aufgeführt.',dev_by:'Entwickelt von',support_by:'Unterstützung',
+    export_csv:'Alles als CSV exportieren',clear_data:'Alle Daten löschen',about_card:'Über diese App',updates_btn:'Was wurde aktualisiert?',updates_title:'Updates',updates_empty:'Noch keine Updates aufgeführt.',dev_by:'Entwickelt von',dev_for:'Entwickelt für:',support_by:'Unterstützung',
     print_btn:'Drucken/Exportieren PDF',export_csv2:'CSV exportieren',print_pdf:'Drucken/Exportieren PDF',export_csv_btn:'CSV exportieren',
     signout_google:'Google abmelden',sync_now_btn:'Jetzt synchronisieren',sync_now_syncing:'Synchronisiere…',sync_now_done:'Synchronisiert',sync_now_hint:'Ruft die neuesten Daten von Drive ab und sendet lokale Änderungen zurück. Mach das, wenn ein anderes Gerät kürzlich etwas hinzugefügt hat.',force_update_btn:'Update erzwingen',force_update_hint:'Löscht temporäre App-Daten und lädt die neueste Version neu. Deine Daten bleiben sicher, da sie separat gespeichert werden. Mach das, wenn eine kürzliche Korrektur nicht angekommen zu sein scheint.',force_update_confirm:'Dies löscht temporäre App-Daten und lädt die neueste Version neu. Deine Daten bleiben sicher. Fortfahren?',backup_download_btn:'Vollständiges Backup herunterladen',backup_restore_file_btn:'Aus Datei wiederherstellen',
     drive_sign_in:'Mit Google anmelden',
@@ -7751,7 +7752,7 @@ var TRANSLATIONS = {
     optional:'opțional',
     wizard_choose_cat:'Alege categorie',days_taken:'zile luate',
     next_reminder_in:'Următor reminder în',minutes:'minute',verse_title:'Versetul zilei',demo_data:'Încarcă date demo',find_dupes_btn:'Caută intrări duplicate',find_baddates_btn:'Caută date incorecte',find_dupe_contacts_btn:'Caută contacte duplicate',find_issues_lbl:'Caută și repară',dupes_explain:'Datele duplicate pot apărea atunci când un fișier este importat de două ori, o activitate este înregistrată din greșeală de două ori sau un contact este creat de două ori. Folosește butoanele de mai jos pentru a le găsi: Intrări caută activități înregistrate duplicat, Date caută date ciudate sau imposibile, iar Contacte caută contacte duplicate de îmbinat.',find_dupes_btn_short:'Intrări',find_baddates_btn_short:'Date',find_dupe_contacts_btn_short:'Contacte',
-    export_csv:'Exportă totul ca CSV',clear_data:'Șterge toate datele',about_card:'Despre aplicație',updates_btn:'Ce s-a actualizat?',updates_title:'Actualizări',updates_empty:'Nicio actualizare încă.',dev_by:'Dezvoltat de',support_by:'Suport',
+    export_csv:'Exportă totul ca CSV',clear_data:'Șterge toate datele',about_card:'Despre aplicație',updates_btn:'Ce s-a actualizat?',updates_title:'Actualizări',updates_empty:'Nicio actualizare încă.',dev_by:'Dezvoltat de',dev_for:'Dezvoltat pentru:',support_by:'Suport',
     print_btn:'Tipărește/Exportă PDF',export_csv2:'Exportă CSV',print_pdf:'Tipărește/Exportă PDF',export_csv_btn:'Exportă CSV',
     signout_google:'Deconectare Google',sync_now_btn:'Sincronizează acum',sync_now_syncing:'Se sincronizează…',sync_now_done:'Sincronizat',sync_now_hint:'Preia cele mai recente date din Drive și trimite modificările locale. Fă asta dacă alt dispozitiv a adăugat recent ceva.',force_update_btn:'Forțează actualizarea',force_update_hint:'Șterge datele temporare ale aplicației și reîncarcă cea mai recentă versiune. Datele tale rămân în siguranță deoarece sunt stocate separat. Fă asta dacă o remediere recentă nu pare să apară.',force_update_confirm:'Aceasta șterge datele temporare ale aplicației și reîncarcă cea mai recentă versiune. Datele tale rămân în siguranță. Continui?',backup_download_btn:'Descarcă backup complet',backup_restore_file_btn:'Restaurează din fișier',
     drive_sign_in:'Conectare cu Google',
@@ -7890,7 +7891,7 @@ var TRANSLATIONS = {
     optional:'opcionális',
     wizard_choose_cat:'Kategória választása',days_taken:'nap kivéve',
     next_reminder_in:'Következő emlékeztető',minutes:'perc',verse_title:'Napi ige',demo_data:'Demo adatok betöltése',find_dupes_btn:'Duplikált bejegyzések keresése',find_baddates_btn:'Hibás dátumok keresése',find_dupe_contacts_btn:'Duplikált kapcsolatok keresése',find_issues_lbl:'Keresés és javítás',dupes_explain:'Duplikált adatok akkor keletkezhetnek, ha egy fájlt kétszer importálsz, egy tevékenységet véletlenül kétszer rögzítesz, vagy egy kapcsolatot kétszer hozol létre. Az alábbi gombokkal kereshetsz rájuk: a Bejegyzések a duplán rögzített tevékenységeket keresi, a Dátumok a furcsa vagy lehetetlen dátumokat, a Kapcsolatok pedig az összevonandó duplikált kapcsolatokat.',find_dupes_btn_short:'Bejegyzések',find_baddates_btn_short:'Dátumok',find_dupe_contacts_btn_short:'Kapcsolatok',
-    export_csv:'Összes exportálása CSV-ként',clear_data:'Összes adat törlése',about_card:'Az alkalmazásról',updates_btn:'Mi változott?',updates_title:'Frissítések',updates_empty:'Még nincsenek frissítések.',dev_by:'Fejlesztette',support_by:'Támogatás',
+    export_csv:'Összes exportálása CSV-ként',clear_data:'Összes adat törlése',about_card:'Az alkalmazásról',updates_btn:'Mi változott?',updates_title:'Frissítések',updates_empty:'Még nincsenek frissítések.',dev_by:'Fejlesztette',dev_for:'Készült a következő számára:',support_by:'Támogatás',
     print_btn:'Nyomtatás/Exportálás PDF',export_csv2:'CSV exportálása',print_pdf:'Nyomtatás/Exportálás PDF',export_csv_btn:'CSV exportálása',
     signout_google:'Google kijelentkezés',sync_now_btn:'Szinkronizálás most',sync_now_syncing:'Szinkronizálás…',sync_now_done:'Szinkronizálva',sync_now_hint:'Lekéri a legújabb adatokat a Drive-ból, és visszaküldi a helyi módosításokat. Tedd ezt, ha egy másik eszköz nemrég adott hozzá valamit.',force_update_btn:'Frissítés kényszerítése',force_update_hint:'Törli az alkalmazás ideiglenes adatait, és újratölti a legfrissebb verziót. Az adataid biztonságban maradnak, mert külön vannak tárolva. Tedd ezt, ha egy nemrégi javítás nem jelenik meg.',force_update_confirm:'Ez törli az alkalmazás ideiglenes adatait, és újratölti a legfrissebb verziót. Az adataid biztonságban maradnak. Folytatod?',backup_download_btn:'Teljes biztonsági mentés letöltése',backup_restore_file_btn:'Visszaállítás fájlból',
     drive_sign_in:'Bejelentkezés Google-lel',
@@ -8029,7 +8030,7 @@ var TRANSLATIONS = {
     optional:'необяз.',
     wizard_choose_cat:'Выбрать категорию',days_taken:'дней взято',
     next_reminder_in:'Следующее напоминание через',minutes:'минут',verse_title:'Стих дня',demo_data:'Загрузить демо-данные',find_dupes_btn:'Найти дубликаты записей',find_baddates_btn:'Найти некорректные даты',find_dupe_contacts_btn:'Найти дубликаты контактов',find_issues_lbl:'Поиск и исправление',dupes_explain:'Дублирующиеся данные могут появиться, если файл был импортирован дважды, занятие было случайно записано дважды или контакт был создан дважды. Используйте кнопки ниже, чтобы найти их: «Записи» ищет дублирующиеся записи занятий, «Даты» ищет странные или невозможные даты, а «Контакты» ищет дублирующиеся контакты для объединения.',find_dupes_btn_short:'Записи',find_baddates_btn_short:'Даты',find_dupe_contacts_btn_short:'Контакты',
-    export_csv:'Экспортировать всё в CSV',clear_data:'Удалить все данные',about_card:'О приложении',updates_btn:'Что обновилось?',updates_title:'Обновления',updates_empty:'Пока нет обновлений.',dev_by:'Разработано',support_by:'Поддержка',
+    export_csv:'Экспортировать всё в CSV',clear_data:'Удалить все данные',about_card:'О приложении',updates_btn:'Что обновилось?',updates_title:'Обновления',updates_empty:'Пока нет обновлений.',dev_by:'Разработано',dev_for:'Разработано для:',support_by:'Поддержка',
     print_btn:'Печать/Экспорт PDF',export_csv2:'Экспорт CSV',print_pdf:'Печать/Экспорт PDF',export_csv_btn:'Экспорт CSV',
     signout_google:'Выйти из Google',sync_now_btn:'Синхронизировать сейчас',sync_now_syncing:'Синхронизация…',sync_now_done:'Синхронизировано',sync_now_hint:'Загружает последние данные с Drive и отправляет локальные изменения обратно. Сделайте это, если на другом устройстве недавно что-то добавили.',force_update_btn:'Принудительное обновление',force_update_hint:'Очищает временные данные приложения и загружает последнюю версию. Ваши данные остаются в безопасности, так как хранятся отдельно. Сделайте это, если недавнее исправление не появляется.',force_update_confirm:'Это очистит временные данные приложения и загрузит последнюю версию. Ваши данные останутся в безопасности. Продолжить?',backup_download_btn:'Скачать полную резервную копию',backup_restore_file_btn:'Восстановить из файла',
     drive_sign_in:'Войти через Google',
@@ -8151,7 +8152,7 @@ var TRANSLATIONS = {
     optional:'opzionale',
     wizard_choose_cat:'Scegli categoria',days_taken:'giorni presi',
     next_reminder_in:'Prossimo promemoria tra',minutes:'minuti',verse_title:'Versetto del giorno',demo_data:'Carica dati demo',find_dupes_btn:'Cerca voci duplicate',find_baddates_btn:'Cerca date errate',find_dupe_contacts_btn:'Cerca contatti duplicati',find_issues_lbl:'Cerca e correggi',dupes_explain:'I dati duplicati possono comparire quando un file viene importato due volte, un\'attività viene registrata per errore due volte, o un contatto viene creato due volte. Usa i pulsanti qui sotto per trovarli: Voci cerca attività registrate due volte, Date cerca date strane o impossibili, e Contatti cerca contatti duplicati da unire.',find_dupes_btn_short:'Voci',find_baddates_btn_short:'Date',find_dupe_contacts_btn_short:'Contatti',
-    export_csv:'Esporta tutto in CSV',clear_data:'Cancella tutti i dati',about_card:'Info app',updates_btn:'Cosa è stato aggiornato?',updates_title:'Aggiornamenti',updates_empty:'Nessun aggiornamento ancora.',dev_by:'Sviluppato da',support_by:'Supporto',
+    export_csv:'Esporta tutto in CSV',clear_data:'Cancella tutti i dati',about_card:'Info app',updates_btn:'Cosa è stato aggiornato?',updates_title:'Aggiornamenti',updates_empty:'Nessun aggiornamento ancora.',dev_by:'Sviluppato da',dev_for:'Sviluppato per:',support_by:'Supporto',
     print_btn:'Stampa/Esporta PDF',export_csv2:'Esporta CSV',print_pdf:'Stampa/Esporta PDF',export_csv_btn:'Esporta CSV',
     signout_google:'Disconnetti Google',sync_now_btn:'Sincronizza ora',sync_now_syncing:'Sincronizzazione…',sync_now_done:'Sincronizzato',sync_now_hint:'Recupera i dati più recenti da Drive e invia le modifiche locali. Fallo se un altro dispositivo ha aggiunto qualcosa di recente.',force_update_btn:'Forza aggiornamento',force_update_hint:'Cancella i dati temporanei dell\'app e ricarica la versione più recente. I tuoi dati restano al sicuro perché sono salvati separatamente. Fallo se una correzione recente non sembra apparire.',force_update_confirm:'Questo cancella i dati temporanei dell\'app e ricarica la versione più recente. I tuoi dati restano al sicuro. Continuare?',backup_download_btn:'Scarica backup completo',backup_restore_file_btn:'Ripristina da file',
     drive_sign_in:'Accedi con Google',
@@ -8273,7 +8274,7 @@ var TRANSLATIONS = {
     welcome_demo_confirm:'Carregar dados demo? Isso substitui os dados atuais.',
     wizard_time:'Hora',days_taken:'dias tirados',
     next_reminder_in:'Próximo lembrete em',minutes:'minutos',verse_title:'Versículo do dia',demo_data:'Carregar dados demo',find_dupes_btn:'Buscar registros duplicados',find_baddates_btn:'Buscar datas incorretas',find_dupe_contacts_btn:'Buscar contatos duplicados',find_issues_lbl:'Buscar e corrigir',dupes_explain:'Dados duplicados podem surgir ao importar um ficheiro duas vezes, registar uma atividade duas vezes por engano, ou criar um contacto duas vezes. Usa os botões abaixo para encontrá-los: Registos procura atividades registadas em duplicado, Datas procura datas estranhas ou impossíveis, e Contactos procura contactos duplicados para unir.',find_dupes_btn_short:'Registros',find_baddates_btn_short:'Datas',find_dupe_contacts_btn_short:'Contatos',
-    export_csv:'Exportar tudo em CSV',clear_data:'Apagar todos os dados',about_card:'Sobre o app',updates_btn:'O que foi atualizado?',updates_title:'Atualizações',updates_empty:'Ainda sem atualizações.',dev_by:'Desenvolvido por',support_by:'Suporte',
+    export_csv:'Exportar tudo em CSV',clear_data:'Apagar todos os dados',about_card:'Sobre o app',updates_btn:'O que foi atualizado?',updates_title:'Atualizações',updates_empty:'Ainda sem atualizações.',dev_by:'Desenvolvido por',dev_for:'Desenvolvido para:',support_by:'Suporte',
     print_btn:'Imprimir/Exportar PDF',export_csv2:'Exportar CSV',print_pdf:'Imprimir/Exportar PDF',export_csv_btn:'Exportar CSV',
     signout_google:'Sair do Google',sync_now_btn:'Sincronizar agora',sync_now_syncing:'Sincronizando…',sync_now_done:'Sincronizado',sync_now_hint:'Busca os dados mais recentes do Drive e envia as alterações locais. Faça isso se outro dispositivo adicionou algo recentemente.',force_update_btn:'Forçar atualização',force_update_hint:'Limpa os dados temporários do app e recarrega a versão mais recente. Seus dados permanecem seguros porque são armazenados separadamente. Faça isso se uma correção recente não aparecer.',force_update_confirm:'Isso limpa os dados temporários do app e recarrega a versão mais recente. Seus dados permanecem seguros. Continuar?',backup_download_btn:'Baixar backup completo',backup_restore_file_btn:'Restaurar do arquivo',
     drive_sign_in:'Entrar com Google',
@@ -12676,7 +12677,7 @@ function applySettings(){const s=db.settings;
   sv('setting-naam',s.naam||'');sv('setting-gemeente',s.gemeente||'');sv('setting-email',s.email||'');sv('setting-tel',s.tel||'');sv('setting-geboortedatum',s.geboortedatum||'');sv('goal-studies',s.goalStudies||'');sv('goal-evang',s.goalEvang||'');sv('goal-uren-week',s.goalUrenWeek||'');sv('goal-followup',s.goalFollowup||'');(function(){var _gvdEl=document.getElementById('goal-vacation-days');if(_gvdEl)_gvdEl.value=s.goalVacationDays!=null?s.goalVacationDays:'';})();sv('goal-km-rate',s.goalKmRate||'');sv('setting-adres',s.myAdres||'');sv('setting-adres-postcode',s.myAdresPostcode||'');sv('setting-adres-city',s.myAdresCity||'');sv('setting-adres-country',s.myAdresCountry||'');sv('setting-time-format',s.timeFormat||'24h');sv('setting-date-format',s.dateFormat||'dmy');sv('setting-currency',s.currency||'EUR');sv('setting-distance-unit',s.distanceUnit||'km');updateKmRateLabel();
   // Update About card
   var aname=document.getElementById('about-app-name');
-  if(aname)aname.textContent=getOrgShortName();
+  if(aname)aname.textContent=t('app_brand_name');
   var afullname=document.getElementById('about-org-full');
   if(afullname)afullname.innerHTML=getOrgName();
   var aver=document.getElementById('about-version');
