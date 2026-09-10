@@ -18720,7 +18720,7 @@ function orgHeaderHtml(sizePt,forceLang){
 
 var GC_EXPORT_CATS_WORKER=['churches','lid','doop','student','sabbath','jeugd','child','teen','interested','contact','workers','pastors','missionhouses','buildings'];
 var GC_EXPORT_INFRA_KEYS_WORKER=['workers','pastors','missionhouses','buildings'];
-function gcExportBtnLabel(){return tMap({nl:'Exporteren voor GC',en:'Export for GC',es:'Exportar para CG',fr:'Exporter pour CG',de:'Für GK exportieren',ro:'Exportă pentru CG',hu:'Exportálás a GK-nak',ru:'Экспорт для ГК',it:'Esporta per CG',pt:'Exportar para CG'});}
+function gcExportBtnLabel(){return tMap({nl:'Exporteren naar hoger niveau',en:'Export to higher level',es:'Exportar a nivel superior',fr:'Exporter vers un niveau supérieur',de:'An höhere Ebene exportieren',ro:'Exportă către nivel superior',hu:'Exportálás magasabb szintre',ru:'Экспорт на вышестоящий уровень',it:'Esporta a livello superiore',pt:'Exportar para nível superior'});}
 function gcShowChurchesLabel(){return tMap({nl:'Toon gemeentes',en:'Show churches',es:'Mostrar iglesias',fr:'Afficher les églises',de:'Gemeinden anzeigen',ro:'Arată bisericile',hu:'Gyülekezetek megjelenítése',ru:'Показать церкви',it:'Mostra chiese',pt:'Mostrar igrejas'});}
 function gcNoChurchLabel(){return tMap({nl:'Geen gemeente ingesteld',en:'No church set',es:'Sin iglesia asignada',fr:'Aucune église définie',de:'Keine Gemeinde festgelegt',ro:'Nicio biserică setată',hu:'Nincs gyülekezet megadva',ru:'Церковь не указана',it:'Nessuna chiesa impostata',pt:'Nenhuma igreja definida'});}
 function gcExportCatLabel(key){
@@ -18737,24 +18737,52 @@ function gcExportCatLabel(key){
 // the export modal, independent of whatever language the worker has the
 // app set to (see gcS() below).
 var GC_REPORT_STR={
-  en:{title:'Report for the General Conference',generated_on:'Generated on',overview:'Overview',infra:'Workers & infrastructure',churches:'Churches',note_off:'Church names withheld - only aggregate totals are shared for this export.',note_on:'This export includes church names and locations.',growth5yr:'Growth over the last 5 years',no_data:'No baptism-date data available.',print_pdf:'Print/Export PDF',lang_lbl:'Report language',
+  en:{title:'Report for higher level',generated_on:'Generated on',overview:'Overview',infra:'Workers & infrastructure',churches:'Churches',note_off:'Church names withheld - only aggregate totals are shared for this export.',note_on:'This export includes church names and locations.',growth5yr:'Growth over the last 5 years',no_data:'No baptism-date data available.',print_pdf:'Print/Export PDF',lang_lbl:'Report language',
     lbl_churches:'Number of churches',lbl_lid:'Members',lbl_doop:'Baptism candidates',lbl_student:'Bible students',lbl_sabbath:'Sabbath school visitors',lbl_jeugd:'Youth',lbl_child:'Children',lbl_teen:'Teens',lbl_interested:'Interested',lbl_contact:'Contacts',lbl_workers:'Number of workers',lbl_pastors:'Number of pastors',lbl_missionhouses:'Main churches/mission houses',lbl_buildings:'Own buildings'},
-  es:{title:'Informe para la Asociación General',generated_on:'Generado el',overview:'Resumen',infra:'Obreros e infraestructura',churches:'Iglesias',note_off:'Solo se comparten totales — no se comparten nombres ni ubicaciones de las iglesias.',note_on:'Esta exportación incluye nombres y ubicaciones de las iglesias.',growth5yr:'Crecimiento en los últimos 5 años',no_data:'No hay datos de fecha de bautismo disponibles.',print_pdf:'Imprimir/Exportar PDF',lang_lbl:'Idioma del informe',
+  es:{title:'Informe para nivel superior',generated_on:'Generado el',overview:'Resumen',infra:'Obreros e infraestructura',churches:'Iglesias',note_off:'Solo se comparten totales — no se comparten nombres ni ubicaciones de las iglesias.',note_on:'Esta exportación incluye nombres y ubicaciones de las iglesias.',growth5yr:'Crecimiento en los últimos 5 años',no_data:'No hay datos de fecha de bautismo disponibles.',print_pdf:'Imprimir/Exportar PDF',lang_lbl:'Idioma del informe',
     lbl_churches:'Número de iglesias',lbl_lid:'Miembros',lbl_doop:'Candidatos al bautismo',lbl_student:'Estudiantes bíblicos',lbl_sabbath:'Visitantes de escuela sabática',lbl_jeugd:'Jóvenes',lbl_child:'Niños',lbl_teen:'Adolescentes',lbl_interested:'Interesados',lbl_contact:'Contactos',lbl_workers:'Número de obreros',lbl_pastors:'Número de pastores',lbl_missionhouses:'Iglesias principales/casas de misión',lbl_buildings:'Edificios propios'}
 };
 function gcS(key,lang){
   var d=GC_REPORT_STR[lang]||GC_REPORT_STR.en;
   return d[key]!==undefined?d[key]:(GC_REPORT_STR.en[key]||key);
 }
+// #1040: "Report for {whatever the exporter typed as their higher level}",
+// falling back to the generic gcS('title', lang) phrase when the field was
+// left blank - same idea as gcHigherLevelFallback() but scoped to the
+// report's own EN/ES-only language (see gcExportPdfWorker) rather than the
+// app's 10-language LANG.
+function gcReportTitle(lang){
+  var label=gcHigherLevelLabel();
+  if(!label)return gcS('title',lang);
+  return (lang==='es'?'Informe para ':'Report for ')+label;
+}
 function gcInfraValues(){
   var g=(db.settings.gcInfra)||{};
   return {workers:g.workers||0,pastors:g.pastors||0,missionhouses:g.missionhouses||0,buildings:g.buildings||0};
 }
+// #1040: this export used to be hardcoded to "GC" (General Conference), but
+// the level a report actually goes to depends on where this installation
+// sits in the org chart - a field/Asociación reports up to its Union, a
+// Union reports up to a Division or the GC directly, etc. Rather than bake
+// in one destination, the exporting side just names their own higher level
+// here (free text, e.g. "Unión Colombia", "División", "GC") and every label
+// in the modal/PDF fills that in instead of assuming "GC". Saved to
+// db.settings so it's remembered across exports, same pattern as gcInfra.
+function gcHigherLevelLabel(){
+  return (db.settings&&db.settings.higherLevelLabel)||'';
+}
+function gcHigherLevelFallback(){
+  return tMap({nl:'hoger niveau',en:'higher level',es:'nivel superior',fr:'niveau supérieur',de:'höhere Ebene',ro:'nivel superior',hu:'magasabb szint',ru:'вышестоящий уровень',it:'livello superiore',pt:'nível superior'});
+}
 function openGcExportModalWorker(){
   var infra=gcInfraValues();
   var h='<div style="padding:20px">';
-  h+='<div style="font-size:16px;font-weight:700;margin-bottom:4px">'+tMap({nl:'Export voor Delegates / Generale Conferentie',en:'Export for Delegates / General Conference',es:'Exportar para Delegados / Asociación General',fr:'Export pour Délégués / Conférence Générale',de:'Export für Delegierte / Generalkonferenz',ro:'Export pentru Delegați / Conferința Generală',hu:'Export a küldötteknek / Generálkonferenciának',ru:'Экспорт для делегатов / Генеральной конференции',it:'Export per Delegati / Conferenza Generale',pt:'Exportar para Delegados / Conferência Geral'})+'</div>';
-  h+='<div style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.4">'+tMap({nl:'Kies welke cijfers meegaan in de PDF. Individuele namen worden nooit gedeeld — alleen aantallen.',en:'Choose which numbers to include in the PDF. Individual names are never shared — only counts.',es:'Elige qué cifras incluir en el PDF. Nunca se comparten nombres individuales — solo totales.',fr:'Choisissez les chiffres à inclure dans le PDF. Les noms individuels ne sont jamais partagés — seulement les totaux.',de:'Wähle, welche Zahlen in die PDF aufgenommen werden. Einzelne Namen werden nie geteilt — nur Anzahlen.',ro:'Alege ce cifre să fie incluse în PDF. Numele individuale nu sunt niciodată partajate — doar totaluri.',hu:'Válaszd ki, mely számok kerüljenek a PDF-be. Egyéni nevek soha nincsenek megosztva — csak számok.',ru:'Выберите, какие цифры включить в PDF. Имена никогда не передаются — только количества.',it:'Scegli quali numeri includere nel PDF. I nomi individuali non vengono mai condivisi — solo i totali.',pt:'Escolha quais números incluir no PDF. Nomes individuais nunca são partilhados — apenas totais.'})+'</div>';
+  h+='<div style="font-size:16px;font-weight:700;margin-bottom:4px">'+tMap({nl:'Rapport exporteren naar een hoger niveau',en:'Export report to a higher level',es:'Exportar informe a un nivel superior',fr:'Exporter le rapport vers un niveau supérieur',de:'Bericht an eine höhere Ebene exportieren',ro:'Exportă raportul către un nivel superior',hu:'Jelentés exportálása magasabb szintre',ru:'Экспорт отчёта на вышестоящий уровень',it:'Esporta il report a un livello superiore',pt:'Exportar relatório para um nível superior'})+'</div>';
+  h+='<div style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.4">'+tMap({nl:'Kies welke cijfers meegaan in de PDF. Individuele namen worden nooit gedeeld — alleen aantallen.',en:'Choose which numbers to include in the PDF. Individual names are never shared — only counts.',es:'Elige qué cifras incluir en el PDF. Nunca se comparten nombres individuales — solo totales.',fr:'Choisissez les chiffres à inclure dans le PDF. Les noms individuels ne sont jamais partagés — seulement les totaux.',de:'Wähle, welche Zahlen in die PDF aufgenommen werden. Einzelne Namen werden nie geteilt — nur Anzahlen.',ro:'Alege ce cifre să fie incluse în PDF. Numele individuale nu sunt niciodată partajate — doar totaluri.',hu:'Válaszd ki, mely számok kerüljenek a PDF-be. Egyéni nevek soha nincsenek megosztva — csak számok.',ru:'Выберите, какие цифры включить в PDF. Имена никогда не передаются — только количества.',it:'Scegli quali numeri includere nel PDF. I nomi individuali non vengono mai condivisi — solo i totali.',pt:'Escolha quais números incluir no PDF. Nomes individuais nunca são partilhados — apenas totais.'})+'</div>';
+  h+='<div style="margin-bottom:14px">';
+  h+='<label style="display:block;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">'+tMap({nl:'Naam van dit hogere niveau',en:'Name of this higher level',es:'Nombre de este nivel superior',fr:'Nom de ce niveau supérieur',de:'Name dieser höheren Ebene',ro:'Numele acestui nivel superior',hu:'Ennek a magasabb szintnek a neve',ru:'Название этого вышестоящего уровня',it:'Nome di questo livello superiore',pt:'Nome deste nível superior'})+'</label>';
+  h+='<input type="text" id="gc-higher-level-w" value="'+escapeHtml(gcHigherLevelLabel())+'" placeholder="'+tMap({nl:'bv. Unie, Divisie, GC...',en:'e.g. Union, Division, GC...',es:'p. ej. Unión, División, CG...',fr:'p. ex. Union, Division, CG...',de:'z. B. Union, Division, GK...',ro:'ex. Uniune, Diviziune, CG...',hu:'pl. Unió, Divízió, GK...',ru:'напр. Униона, Дивизион, ГК...',it:'es. Unione, Divisione, CG...',pt:'ex. União, Divisão, CG...'})+'" style="width:100%;box-sizing:border-box;font:inherit;padding:9px 11px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text)">';
+  h+='</div>';
   h+='<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">';
   GC_EXPORT_CATS_WORKER.forEach(function(key){
     h+='<label style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;background:var(--surface2);cursor:pointer">';
@@ -18808,6 +18836,11 @@ function gcExportGenerateWorker(){
     infra[key]=el?Math.max(0,parseInt(el.value,10)||0):0;
   });
   db.settings.gcInfra=infra;
+  // #1040: remembered the same way gcInfra is - typed once, reused on every
+  // future export until the worker changes it (e.g. a field that always
+  // reports to its Union won't have to retype "Union" every time).
+  var higherLevelEl=document.getElementById('gc-higher-level-w');
+  db.settings.higherLevelLabel=higherLevelEl?higherLevelEl.value.trim():'';
   save();
   closeModals();
   gcExportPdfWorker(selected,sharePrivate,infra,lang);
@@ -18933,9 +18966,10 @@ function gcExportPdfWorker(selectedKeys,sharePrivate,infra,lang){
     +'@media print{.print-btn{display:none}}';
   var _printFrame=_gcCreatePrintFrameWorker();
   var w=_printFrame.contentWindow;
-  w.document.write('<html><head><title>'+gcS('title',lang)+'</title><style>'+style+'</style></head><body><div class="page-wrap">');
+  var reportTitle=gcReportTitle(lang);
+  w.document.write('<html><head><title>'+reportTitle+'</title><style>'+style+'</style></head><body><div class="page-wrap">');
   w.document.write(orgHeaderHtml(11,lang));
-  w.document.write('<div class="title">'+gcS('title',lang)+'</div>');
+  w.document.write('<div class="title">'+reportTitle+'</div>');
   w.document.write('<div class="meta">'+gcS('generated_on',lang)+' '+dateStr+'</div>');
   if(funnelKeys.length){w.document.write('<div class="section-title">'+gcS('overview',lang)+'</div>');w.document.write(funnelListHtml);}
   if(churchesHtml)w.document.write(churchesHtml);
