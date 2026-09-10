@@ -29732,11 +29732,29 @@ function agendaFollowUpReschedSave(planId){
     p.completionAsked=false;
     p.reminded=false;
     p.followUpAction='reschedule';
+    // #1032: without touch(p), this edit carried no updatedAt timestamp, so
+    // mergeArraysById's sync merge (see agendaQuickConfirm's own touch(p)
+    // call for the same reason) could let a stale copy from another device
+    // silently overwrite the new date on the next Drive sync.
+    touch(p);
     savePlanned();
   }
   closeModals();
   renderHomeAgenda();
   renderHomeUpcoming();
+  // #1032: this reschedule is triggered from the calendar day panel
+  // (calSelectDay -> renderCalendar), but until now nothing here actually
+  // redrew any calendar view afterward - only the Home agenda/upcoming
+  // lists got refreshed. db.planned itself was updated correctly (the new
+  // date passes every calendar filter fine), so the item was never really
+  // missing - the calendar the user was looking at (compact Logboek
+  // calendar, full-screen calendar, or Home mini calendar) just kept
+  // showing its stale pre-reschedule snapshot until a full nav-away-and-back
+  // forced a redraw. Mirrors refreshBackgroundScreenAfterEntryEdit's
+  // pattern for the same "screen behind a popup" problem.
+  if(currentScreen==='log'&&logView==='calendar'&&typeof renderCalendar==='function')renderCalendar();
+  if(currentScreen==='home'&&typeof renderHomeCalendar==='function')renderHomeCalendar();
+  if(typeof fcRefreshFull==='function')fcRefreshFull();
   setCalExportPref(wantsCal);
   if(p && wantsCal){
     p.calExported=true;
