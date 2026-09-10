@@ -16532,7 +16532,7 @@ function renderWiz(){
       </div>`;
     }
     c.innerHTML=`<div class="wiz-q">${t('wizard_with_who')}</div>
-      <div id="w-cursist-field" onclick="openWCursistPicker()" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);cursor:pointer;background:var(--surface)">
+      <div id="w-cursist-field" onclick="openWCursistPicker(this)" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);cursor:pointer;background:var(--surface)">
         <span id="w-cursist-field-label" style="font-size:14px;color:${wSelCu?'var(--text)':'var(--text3)'}">${escapeHtml(wFieldLabel)}</span>
         <svg width="16" height="16" style="color:var(--text3);flex-shrink:0"><use href="#ico-chevron-right"/></svg>
       </div>
@@ -16659,11 +16659,18 @@ function filterContactChecklist(searchId,wrapId){
 }
 // Popup version of the "Met wie?" contact picker (see the wizard-step
 // comment at the 'cursist' step above) - builds the same grouped,
-// searchable Niet-leden/Leden/paused list that step used to render inline,
-// but inside a showModal() bottom sheet, opened by tapping the compact
-// w-cursist-field. Row markup/ids (w-pick-row, w-cursist-list) unchanged so
-// selectWCursist() and filterContactChecklist() work exactly as before.
-function openWCursistPicker(){
+// searchable Niet-leden/Leden/paused list that step used to render inline.
+// Per user feedback this should NOT be a full-width showModal() bottom
+// sheet - it should be a small popover anchored right next to the tapped
+// w-cursist-field, same anchored-popover pattern as fcOpenYearDayPopup
+// (create the element off-screen, measure it, position near anchorEl's
+// rect with viewport clamping, wire an outside-click/resize/scroll
+// listener to auto-close it). Row markup/ids (w-pick-row, w-cursist-list)
+// unchanged so selectWCursist() and filterContactChecklist() work exactly
+// as before.
+var _wcpPopEl=null;
+function openWCursistPicker(anchorEl){
+  closeWCursistPicker();
   const wPickPh=tMap({nl:'Zoeken...',en:'Search...',es:'Buscar...',fr:'Rechercher...',de:'Suchen...',ro:'Caută...',hu:'Keresés...',ru:'Поиск...',it:'Cerca...',pt:'Pesquisar...'});
   const wPickRow=(id,naam,isPlaceholder)=>{
     const sel=String(draft.cursistId||'')===String(id);
@@ -16675,15 +16682,56 @@ function openWCursistPicker(){
   if(wPickGroups.nietLeden.length)wPickList+=`<div class="cc-hdr" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px;padding:0 6px">${nietLedenSectionLbl()}</div>`+wPickGroups.nietLeden.map(cu=>wPickRow(cu.id,cu.naam)).join('');
   if(wPickGroups.leden.length)wPickList+=`<div class="cc-hdr" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px;padding:0 6px">${ledenSectionLbl()}</div>`+wPickGroups.leden.map(cu=>wPickRow(cu.id,cu.naam)).join('');
   if(wPickGroups.paused.length)wPickList+=`<div class="cc-hdr" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px;padding:0 6px">${pausedSectionLbl()}</div>`+wPickGroups.paused.map(cu=>wPickRow(cu.id,cu.naam)).join('');
-  showModal(`<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px">
-      <div style="font-size:16px;font-weight:700">${t('wizard_with_who')}</div>
-      <button type="button" onclick="closeModals()" style="background:none;border:none;font-size:22px;line-height:1;color:var(--text3);cursor:pointer;padding:0 4px">&times;</button>
+  const h=`<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px 8px">
+      <div style="font-size:15px;font-weight:700">${t('wizard_with_who')}</div>
+      <button type="button" onclick="closeWCursistPicker()" style="background:none;border:none;font-size:20px;line-height:1;color:var(--text3);cursor:pointer;padding:0 4px">&times;</button>
     </div>
+    <div style="padding:0 14px 12px">
     <div id="wcp-search-row" style="margin-bottom:8px">
       <button type="button" onclick="wcpExpandSearch()" style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface2);color:var(--text3);font-size:13px;cursor:pointer"><svg width="14" height="14"><use href="#ico-search"/></svg>${wPickPh}</button>
     </div>
-    <div id="w-cursist-list" style="max-height:50vh;overflow-y:auto">${wPickList}</div>
-    <div style="margin-top:10px"><button class="btn sm full" onclick="closeModals();showAddCursist()">${t('add_cursist')}</button></div>`);
+    <div id="w-cursist-list" style="max-height:min(50vh,320px);overflow-y:auto;overscroll-behavior:contain">${wPickList}</div>
+    <div style="margin-top:10px"><button class="btn sm full" onclick="closeWCursistPicker();showAddCursist()">${t('add_cursist')}</button></div>
+    </div>`;
+
+  var pop=document.createElement('div');
+  pop.id='wcp-popover';
+  pop.style.cssText='position:fixed;background:var(--surface);border-radius:14px;box-shadow:var(--shadow-md);z-index:10000;width:320px;max-width:calc(100vw - 16px);max-height:'+(window.innerHeight-16)+'px;overflow-y:auto';
+  pop.innerHTML=h;
+  document.body.appendChild(pop);
+
+  var rect=anchorEl&&anchorEl.getBoundingClientRect?anchorEl.getBoundingClientRect():{top:innerHeight/2,bottom:innerHeight/2,left:innerWidth/2,right:innerWidth/2,width:0};
+  var popW=pop.offsetWidth, popH=pop.offsetHeight;
+  var top=rect.bottom+8;
+  if(top+popH>window.innerHeight-8)top=rect.top-popH-8;
+  if(top<8)top=8;
+  if(top+popH>window.innerHeight-8)top=Math.max(8,window.innerHeight-8-popH);
+  var left=rect.left;
+  if(left+popW>window.innerWidth-8)left=window.innerWidth-8-popW;
+  if(left<8)left=8;
+  pop.style.top=top+'px';
+  pop.style.left=left+'px';
+
+  _wcpPopEl=pop;
+  setTimeout(function(){
+    document.addEventListener('mousedown',wcpOutsideClick);
+    window.addEventListener('resize',closeWCursistPicker);
+    window.addEventListener('scroll',wcpOutsideScroll,true);
+  },10);
+}
+function wcpOutsideClick(ev){
+  if(_wcpPopEl&&!_wcpPopEl.contains(ev.target))closeWCursistPicker();
+}
+function wcpOutsideScroll(ev){
+  if(_wcpPopEl&&ev.target&&_wcpPopEl.contains(ev.target))return;
+  closeWCursistPicker();
+}
+function closeWCursistPicker(){
+  if(_wcpPopEl&&_wcpPopEl.parentNode)_wcpPopEl.parentNode.removeChild(_wcpPopEl);
+  _wcpPopEl=null;
+  document.removeEventListener('mousedown',wcpOutsideClick);
+  window.removeEventListener('resize',closeWCursistPicker);
+  window.removeEventListener('scroll',wcpOutsideScroll,true);
 }
 // Collapses to a small search icon by default (per user feedback - a
 // full-width bar shown up front felt heavier than needed for a popup that's
@@ -16722,7 +16770,7 @@ function selectWCursist(id){
     fieldLbl.textContent=cu?cu.naam:t('wizard_no_contact');
     fieldLbl.style.color=cu?'var(--text)':'var(--text3)';
   }
-  closeModals();
+  closeWCursistPicker();
 }
 function toggleWizMultiStudent(){
   var cb=document.getElementById('w-multi-toggle'),wrap=document.getElementById('w-multi-wrap');
