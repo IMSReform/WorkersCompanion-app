@@ -1386,6 +1386,50 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
   <!-- Tab-specific subbar (changes per tab) -->
   <div class="g-subbar" id="g-subbar"></div>
 </header>
+<script>
+// #1030: this whole app is one large HTML file, and the real language
+// logic (setLanguage/applyLanguage, called from finishBoot() at the very
+// bottom of the file) only runs once the browser has downloaded and parsed
+// everything above it - including the embedded Bible translations and
+// Bible Study Handbook content, which make up most of the file's size. On
+// a slow/spotty connection that first full parse can genuinely take a
+// minute or more, and until it finishes, a visitor just sees this file's
+// static HTML source as-is - which is hardcoded Dutch (e.g. the
+// "Goedemorgen" placeholder above), regardless of which language they
+// last chose. That's what made a Spanish-speaking worker sit looking at
+// Dutch text they couldn't read while the rest of the app was still
+// loading in the background.
+//
+// This tiny script sits right after the header, so the browser reaches it
+// almost immediately (it doesn't need to wait for the multi-megabyte
+// content further down) and can already read the previously saved
+// language straight out of localStorage - no network, no dependency on
+// anything else in the file having loaded yet - and correct the one piece
+// of visible "frozen" text before the user has time to read it wrong.
+// Everything here mirrors the real app's own storage shape (LS_KEY,
+// __zdaEnc, settings.lang) exactly, but doesn't call into any app
+// function, since none of those are defined yet at this point in the
+// file; the real render further down still overwrites this correctly once
+// it runs, this is purely a first-paint correction.
+(function(){
+  try{
+    var GREET={nl:['Goedemorgen','Goedemiddag','Goedenavond'],en:['Good morning','Good afternoon','Good evening'],es:['Buenos días','Buenas tardes','Buenas noches'],fr:['Bonjour','Bon après-midi','Bonsoir'],de:['Guten Morgen','Guten Tag','Guten Abend'],ro:['Bună dimineața','Bună ziua','Bună seara'],hu:['Jó reggelt','Jó napot','Jó estét'],ru:['Доброе утро','Добрый день','Добрый вечер'],it:['Buongiorno','Buon pomeriggio','Buonasera'],pt:['Bom dia','Boa tarde','Boa noite']};
+    var key='zda_v4_'+new Date().getFullYear();
+    var raw=localStorage.getItem(key);
+    if(!raw)return;
+    var parsed=JSON.parse(raw);
+    if(parsed&&parsed.__zdaEnc)return; // full-encryption mode: can't read this without the passphrase, leave as-is
+    var lang=parsed&&parsed.settings&&parsed.settings.lang;
+    if(!lang||lang==='nl'||!GREET[lang])return;
+    var hr=new Date().getHours();
+    var words=GREET[lang];
+    var word=hr<12?words[0]:hr<18?words[1]:words[2];
+    var gEl=document.getElementById('home-greeting');
+    if(gEl)gEl.textContent=word;
+    document.documentElement.lang=lang;
+  }catch(e){}
+})();
+</script>
 <div class="app">
 
 <!-- ══ SIGN IN ══ -->
