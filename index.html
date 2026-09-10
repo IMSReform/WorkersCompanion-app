@@ -1558,7 +1558,6 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
           <option value="fr">🇫🇷 Français</option>
           <option value="de">🇩🇪 Deutsch</option>
           <option value="ro">🇷🇴 Română</option>
-          <option value="hu">🇭🇺 Magyar</option>
           <option value="ru">🇷🇺 Русский</option>
           <option value="it">🇮🇹 Italiano</option>
           <option value="pt">🇵🇹 Português</option>
@@ -8559,7 +8558,7 @@ function setLanguage(lang){
   var langSel=document.getElementById('lang-select');
   if(langSel){_suppressSettingsChange=true;langSel.value=lang;_suppressSettingsChange=false;}
   var langFlag=document.getElementById('lang-flag-indicator');
-  var LANG_META={nl:{flag:'🇳🇱',name:'NL'},en:{flag:'🇬🇧',name:'EN'},es:{flag:'🇪🇸',name:'ES'},fr:{flag:'🇫🇷',name:'FR'},de:{flag:'🇩🇪',name:'DE'},ro:{flag:'🇷🇴',name:'RO'},hu:{flag:'🇭🇺',name:'HU'},ru:{flag:'🇷🇺',name:'RU'},it:{flag:'🇮🇹',name:'IT'},pt:{flag:'🇵🇹',name:'PT'}};
+  var LANG_META={nl:{flag:'🇳🇱',name:'NL'},en:{flag:'🇬🇧',name:'EN'},es:{flag:'🇪🇸',name:'ES'},fr:{flag:'🇫🇷',name:'FR'},de:{flag:'🇩🇪',name:'DE'},ro:{flag:'🇷🇴',name:'RO'},ru:{flag:'🇷🇺',name:'RU'},it:{flag:'🇮🇹',name:'IT'},pt:{flag:'🇵🇹',name:'PT'}};
   if(langFlag){var m=LANG_META[lang]||{flag:'🌐',name:lang.toUpperCase()};langFlag.textContent=m.flag+' '+m.name;}
   // Re-render all visible screens
   applyLanguage();
@@ -11070,6 +11069,20 @@ function migrateSettings(){
   migrateDuplicateCursistIds();
   migrateLidPersonType();
   migrateCompanionPhotos();
+  migrateHungarianLanguage();
+}
+// Hungarian is removed from the language picker (for now - the translation
+// strings themselves are left in place throughout the app in case it comes
+// back later, only the selectable option is gone). A worker who already had
+// it picked would otherwise be stuck on a language they can no longer
+// re-select from Settings, so fall them back to English (the app's current
+// default for new users, #1020) the same way a removed setting elsewhere
+// gets migrated rather than left dangling.
+function migrateHungarianLanguage(){
+  if(db.settings&&db.settings.lang==='hu'){
+    db.settings.lang='en';
+    if(typeof saveLocal==='function')saveLocal();
+  }
 }
 // One-time repair: the Excel/legacy-report importer used to put a standalone
 // "Reizen - X" row's hours in `uren` (worked time) instead of `reisUren`
@@ -32498,7 +32511,6 @@ var PRESENTER_LANGS = [
   {code:'fr',flag:'🇫🇷',name:'Français'},
   {code:'de',flag:'🇩🇪',name:'Deutsch'},
   {code:'ro',flag:'🇷🇴',name:'Română'},
-  {code:'hu',flag:'🇭🇺',name:'Magyar'},
   {code:'ru',flag:'🇷🇺',name:'Русский'},
   {code:'it',flag:'🇮🇹',name:'Italiano'},
   {code:'pt',flag:'🇵🇹',name:'Português'},
