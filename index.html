@@ -13499,9 +13499,16 @@ function renderSubbar(screen){
     // it shows the Contact/Interested/.../Member status cards (see
     // renderCursistenGrouped); every other option in this list shows one
     // flat list instead (see the generic flat branch in renderCursisten).
+    // Remembers the last-picked sort/group option across screens and app
+    // restarts (Gabriel: "does it keep memory which option I have for
+    // sorting... for the next time I open the app?" -> "yes.. it makes
+    // sense") instead of always resetting to "By type" whenever this subbar
+    // gets rebuilt, which is what it did before (the select's value only
+    // ever lived in the DOM, never saved anywhere).
     var cs=document.createElement('select');cs.id='cursist-sort';cs.style.cssText='max-width:80px;font-size:12px;';
-    cs.onchange=function(){renderCursisten();};
+    cs.onchange=function(){db.settings.cursistSortMode=cs.value;save();renderCursisten();};
     cs.innerHTML='<option value="grouped">'+t('sort_grouped')+'</option><option value="az">A–Z</option><option value="za">Z–A</option><option value="studies">'+t('sort_studies')+'</option><option value="gemeente">'+t('sort_gemeente')+'</option><option value="inactive">'+t('sort_inactive')+'</option><option value="belwhatsapp">'+t('sort_belwhatsapp')+'</option><option value="archived">'+t('sort_archived')+'</option>';
+    cs.value=db.settings.cursistSortMode||'grouped';
     sb.appendChild(cs);
     // Search (wider) — leading minimalist search icon instead of an emoji
     var csWrap=document.createElement('div');
