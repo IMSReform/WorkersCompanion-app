@@ -767,6 +767,13 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(26,29,35,.5);z-index:100;overflow-y:auto;padding:14px;backdrop-filter:blur(4px)}
 .modal-bg.show{display:block}
 .modal-box{background:#fff;border-radius:var(--r-lg);padding:20px;max-width:480px;margin:20px auto;box-shadow:var(--shadow-lg)}
+/* Wider variant for the contact study-history modal (Gabriel: "it should
+   not be anymore in a thin/small pop up, but responsive in a bigger
+   screen"). Stays the normal narrow width on phones - there's no room to
+   spare there - and only opens up once the viewport actually has the
+   space, matching the .sti-cols column layout switch above. */
+.modal-box.wide{max-width:480px}
+@media(min-width:768px){.modal-box.wide{max-width:900px}}
 .modal-title{font-size:17px;font-weight:700;margin-bottom:14px}
 #chart-modal{display:none;position:fixed;inset:0;background:rgba(26,29,35,.55);z-index:150;padding:14px;overflow-y:auto;backdrop-filter:blur(6px)}
 #chart-modal.show{display:block}
@@ -1073,14 +1080,31 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
 .cat-hours{font-size:13px;font-weight:600;flex-shrink:0;white-space:nowrap}
 .cat-pct{font-size:11px;color:var(--text3);min-width:28px;text-align:right}
 /* ═══ BIJBELSTUDIES timeline ═══ */
-.study-timeline-item{display:flex;gap:10px;padding:6px 0;align-items:baseline}
+.study-timeline-item{display:flex;flex-direction:column;gap:1px;padding:5px 0;cursor:pointer;border-radius:6px}
+.study-timeline-item:hover{background:var(--surface2)}
 .sti-editable{cursor:pointer;border-radius:3px;transition:background .1s;padding:1px 3px}
 .sti-editable:hover{background:var(--brand-light);color:var(--brand)}
+/* .sti-cols holds date/hours/name - stacked on phone (unchanged from
+   before), laid out as tidy columns once there's room for it. Actions
+   (repeat/delete) get their own column too so they don't crowd the name.
+   The note (.sti-note, below) deliberately stays OUTSIDE this grid and
+   full-width - Gabriel: "let the information of the entries appear in
+   columns... except comments in columns" - a note can run to a full
+   sentence or more, so squeezing it into a column would either clip it or
+   blow the column widths out for every other row. */
+.sti-cols{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .sti-date{font-size:12px;color:var(--text3);white-space:nowrap;min-width:52px;flex-shrink:0}
 .sti-content{flex:1;min-width:0}
 .sti-name{font-size:13px;font-weight:600;color:var(--text)}
 .sti-theme{font-size:11px;color:var(--text3);margin-top:1px}
-.sti-note{font-size:12px;color:var(--amber);font-style:italic;margin-top:2px}
+.sti-note{font-size:12px;color:var(--amber);font-style:italic;margin-top:2px;white-space:pre-wrap}
+@media(min-width:768px){
+  /* On a wide screen (see .modal-box.wide below) the timeline reads better
+     as an actual table-like row - date, hours and the topic/name each in
+     their own column - instead of the phone's stacked lines. */
+  .sti-cols{display:grid;grid-template-columns:96px 56px 1fr auto;gap:12px}
+  .sti-date{min-width:0}
+}
 /* Contact avatar/name/study-count side column next to a contact's study
    list — same narrow-column-with-tiny-gap-on-phone, wider-on-desktop
    pattern as .day-group/.day-col above. */
@@ -2098,7 +2122,7 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
 
 <!-- CURSIST DETAIL MODAL -->
 <div class="modal-bg" id="modal-cursist-detail" onclick="closeModals()">
-  <div class="modal-box" id="modal-cursist-detail-content" onclick="event.stopPropagation()"></div>
+  <div class="modal-box wide" id="modal-cursist-detail-content" onclick="event.stopPropagation()"></div>
 </div>
 
 <!-- TO-DO HISTORY MODAL -->
@@ -20292,23 +20316,31 @@ function openCursistDetail(id){
     var isStudy=entry.categorie==='Bijbelstudie geven';
     var timeSuffix=isCall&&entry.tijd?' \u00b7 '+entry.tijd:'';
     var cmi=isCall?contactMethodInfo(entry):null;
-    return'<div class="study-timeline-item" id="sti-'+eid+'" style="flex-direction:column;align-items:stretch;gap:1px;padding:5px 0">'
-      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
-        +'<div class="sti-date sti-editable" title="Klik om datum te bewerken" onclick="inlineEditField('+eidArg+','+cidArg+',\'datum\',this)">'+formatDateShort(entry.datum)+timeSuffix+'</div>'
+    // Read-only, tap-to-view row (Gabriel: "Don't make the info in the
+    // studies history in contacts be editable... it shows the usual small
+    // pop up with the filled in information") - the row itself opens
+    // openEntryDetailModal (the same small read-only popup already used
+    // everywhere else an entry can be viewed), with an explicit Edit button
+    // inside it for anyone who actually wants to change something. This
+    // replaces the old per-field inlineEditField taps on date/hours/note,
+    // which made it too easy to change a value by accident while just
+    // browsing history.
+    var nameHtml=isCall
+      ?'<div class="sti-name" style="display:flex;align-items:center;gap:5px"><svg width="12" height="12" style="color:var(--brand);flex-shrink:0"><use href="#'+cmi.icon+'"/></svg>'+cmi.label+'</div>'
+      :'<div class="sti-name">'+(getThemaDisplay(entry.thema||entry.omschrijving||getCatLabel(entry.categorie)))+'</div>';
+    var themeHtml=(!isCall&&isStudy&&entry.themacode&&entry.thema&&entry.themacode!=='Vrij onderwerp'?'<div class="sti-theme">'+entry.themacode+'</div>':'')
+      +(!isCall&&!isStudy?'<div class="sti-theme">'+getCatLabel(entry.categorie)+'</div>':'');
+    return'<div class="study-timeline-item" id="sti-'+eid+'" onclick="openEntryDetailModal('+eidArg+')">'
+      +'<div class="sti-cols">'
+        +'<div class="sti-date">'+formatDateShort(entry.datum)+timeSuffix+'</div>'
+        +'<div style="font-size:12px;font-weight:600;color:var(--text2)">'+(parseFloat(entry.uren)||0)+t('hours_abbr')+'</div>'
+        +'<div class="sti-content">'+nameHtml+themeHtml+'</div>'
         +'<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">'
-          +'<span class="sti-editable" style="font-size:12px;font-weight:600;color:var(--text2)" onclick="inlineEditField('+eidArg+','+cidArg+',\'uren\',this)">'+(parseFloat(entry.uren)||0)+t('hours_abbr')+'</span>'
           +'<button class="row-del" style="padding:2px 6px;font-size:11px" onclick="event.stopPropagation();quickRepeatFromLogEntry('+eidArg+')" title="'+(t('repeat_lbl')||'Herhaal')+'"><svg width="12" height="12"><use href="#ico-refresh"/></svg></button>'
           +'<button class="row-del" style="padding:2px 6px;font-size:11px" onclick="event.stopPropagation();deleteStudyEntry('+eidArg+','+cidArg+')">\u2715</button>'
         +'</div>'
       +'</div>'
-      +(isCall
-        ?'<div class="sti-name" style="cursor:pointer;display:flex;align-items:center;gap:5px" onclick="openEntryDetailModal('+eidArg+')"><svg width="12" height="12" style="color:var(--brand);flex-shrink:0"><use href="#'+cmi.icon+'"/></svg>'+cmi.label+'</div>'
-        :'<div class="sti-name sti-editable" title="\u270e" onclick="openEntryDetailModal('+eidArg+')" style="cursor:pointer">'
-          +(getThemaDisplay(entry.thema||entry.omschrijving||getCatLabel(entry.categorie)))
-        +'</div>')
-      +(!isCall&&isStudy&&entry.themacode&&entry.thema&&entry.themacode!=='Vrij onderwerp'?'<div class="sti-theme">'+entry.themacode+'</div>':'')
-      +(!isCall&&!isStudy?'<div class="sti-theme">'+getCatLabel(entry.categorie)+'</div>':'')
-      +(entry.opmerking?'<div class="sti-note sti-editable" onclick="inlineEditField('+eidArg+','+cidArg+',\'opmerking\',this)">'+entry.opmerking+'</div>':'')
+      +(entry.opmerking?'<div class="sti-note">'+entry.opmerking+'</div>':'')
     +'</div>';
   }
 
@@ -20345,17 +20377,23 @@ function openCursistDetail(id){
       var yid=idPrefix+'-'+id+'-y'+(yr==='?'?'unk':yr);
       var yearOpen=yi===0;
       var yearLbl=yr==='?'?(t('imported_no_year')||'Unknown'):yr;
-      var monthsHtml=months.map(function(mo,mi){
+      // Months are no longer their own collapsible level (Gabriel: "Don't
+      // accordion close the months, only the years") - once a year is open,
+      // every month inside it is just a plain, always-visible label
+      // followed by its rows. filterStudyRows still toggles this div's own
+      // display to hide/show it entirely when a search has no matches left
+      // in that month, and its id keeps the 'hy-<contact>-<month>' shape
+      // that relies on for that - only the click-to-toggle/arrow are gone.
+      var monthsHtml=months.map(function(mo){
         var rows=byYear[yr][mo].slice().reverse().map(timelineRow).join('');
         var mid=idPrefix+'-'+id+'-'+mo.replace('?','unk');
-        var monthOpen=yearOpen&&mi===0;
         var monthLbl=mo==='?'?(t('imported_no_year')||'Unknown'):MONTHS_FULL[parseInt(mo.slice(5,7),10)-1];
-        return '<div style="border-bottom:1px solid var(--border);padding-left:10px">'
-          +'<div onclick="var f=document.getElementById(\''+mid+'\');var a=document.getElementById(\''+mid+'-arrow\');var wasOpen=f.style.display!==\'none\';f.style.display=wasOpen?\'none\':\'block\';a.textContent=wasOpen?\'\u25b6\':\'\u25bc\';" style="display:flex;align-items:center;justify-content:space-between;padding:6px 2px;cursor:pointer;user-select:none">'
+        return '<div id="'+mid+'" style="border-bottom:1px solid var(--border);padding-left:10px">'
+          +'<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 2px">'
           +'<span style="font-size:12px;font-weight:500;color:var(--text3)">'+monthLbl+'</span>'
-          +'<span style="display:flex;align-items:center;gap:6px"><span style="font-size:11px;color:var(--text3)">'+byYear[yr][mo].length+'</span><span id="'+mid+'-arrow" style="font-size:11px;color:var(--text3)">'+(monthOpen?'\u25bc':'\u25b6')+'</span></span>'
+          +'<span style="font-size:11px;color:var(--text3)">'+byYear[yr][mo].length+'</span>'
           +'</div>'
-          +'<div id="'+mid+'" style="display:'+(monthOpen?'block':'none')+'">'+rows+'</div>'
+          +rows
           +'</div>';
       }).join('');
       return '<div style="border-bottom:1px solid var(--border)">'
@@ -20597,20 +20635,25 @@ function openLidDetail(id){
     var timeSuffix=isCall&&entry.tijd?' \u00b7 '+entry.tijd:'';
     var cmi=isCall?contactMethodInfo(entry):null;
     var nameLbl=entry.omschrijving||(isVisit?'Bezoek':getCatLabel(entry.categorie));
-    return'<div class="study-timeline-item" id="sti-'+eid+'" style="flex-direction:column;align-items:stretch;gap:1px;padding:5px 0">'
-      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
-        +'<div class="sti-date sti-editable" title="Klik om datum te bewerken" onclick="inlineEditField('+eidArg+','+cidArg+',\'datum\',this)">'+formatDateShort(entry.datum)+timeSuffix+'</div>'
+    // Same read-only, tap-to-view pattern as the Cursist detail timeline
+    // (see the matching comment there) - the row opens the small read-only
+    // openEntryDetailModal popup instead of letting date/hours/note be
+    // edited in place.
+    var nameHtml=isCall
+      ?'<div class="sti-name" style="display:flex;align-items:center;gap:5px"><svg width="12" height="12" style="color:var(--brand);flex-shrink:0"><use href="#'+cmi.icon+'"/></svg>'+cmi.label+'</div>'
+      :'<div class="sti-name">'+nameLbl+'</div>';
+    var themeHtml=(!isCall&&!isVisit?'<div class="sti-theme">'+getCatLabel(entry.categorie)+'</div>':'');
+    return'<div class="study-timeline-item" id="sti-'+eid+'" onclick="openEntryDetailModal('+eidArg+')">'
+      +'<div class="sti-cols">'
+        +'<div class="sti-date">'+formatDateShort(entry.datum)+timeSuffix+'</div>'
+        +'<div style="font-size:12px;font-weight:600;color:var(--text2)">'+(parseFloat(entry.uren)||0)+t('hours_abbr')+'</div>'
+        +'<div class="sti-content">'+nameHtml+themeHtml+'</div>'
         +'<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">'
-          +'<span class="sti-editable" style="font-size:12px;font-weight:600;color:var(--text2)" onclick="inlineEditField('+eidArg+','+cidArg+',\'uren\',this)">'+(parseFloat(entry.uren)||0)+t('hours_abbr')+'</span>'
           +'<button class="row-del" style="padding:2px 6px;font-size:11px" onclick="event.stopPropagation();quickRepeatFromLogEntry('+eidArg+')" title="'+(t('repeat_lbl')||'Herhaal')+'"><svg width="12" height="12"><use href="#ico-refresh"/></svg></button>'
           +'<button class="row-del" style="padding:2px 6px;font-size:11px" onclick="event.stopPropagation();deleteStudyEntry('+eidArg+','+cidArg+');closeModals();openLidDetail('+cidArg+')">\u2715</button>'
         +'</div>'
       +'</div>'
-      +(isCall
-        ?'<div class="sti-name" style="cursor:pointer;display:flex;align-items:center;gap:5px" onclick="openEntryDetailModal('+eidArg+')"><svg width="12" height="12" style="color:var(--brand);flex-shrink:0"><use href="#'+cmi.icon+'"/></svg>'+cmi.label+'</div>'
-        :'<div class="sti-name sti-editable" title="\u270e" onclick="openEntryDetailModal('+eidArg+')" style="cursor:pointer">'+nameLbl+'</div>')
-      +(!isCall&&!isVisit?'<div class="sti-theme">'+getCatLabel(entry.categorie)+'</div>':'')
-      +(entry.opmerking?'<div class="sti-note sti-editable" onclick="inlineEditField('+eidArg+','+cidArg+',\'opmerking\',this)">'+entry.opmerking+'</div>':'')
+      +(entry.opmerking?'<div class="sti-note">'+entry.opmerking+'</div>':'')
     +'</div>';
   }
 
@@ -20648,17 +20691,23 @@ function openLidDetail(id){
       var yid=idPrefix+'-'+id+'-y'+(yr==='?'?'unk':yr);
       var yearOpen=yi===0;
       var yearLbl=yr==='?'?(t('imported_no_year')||'Unknown'):yr;
-      var monthsHtml=months.map(function(mo,mi){
+      // Months are no longer their own collapsible level (Gabriel: "Don't
+      // accordion close the months, only the years") - once a year is open,
+      // every month inside it is just a plain, always-visible label
+      // followed by its rows. filterStudyRows still toggles this div's own
+      // display to hide/show it entirely when a search has no matches left
+      // in that month, and its id keeps the 'hy-<contact>-<month>' shape
+      // that relies on for that - only the click-to-toggle/arrow are gone.
+      var monthsHtml=months.map(function(mo){
         var rows=byYear[yr][mo].slice().reverse().map(timelineRow).join('');
         var mid=idPrefix+'-'+id+'-'+mo.replace('?','unk');
-        var monthOpen=yearOpen&&mi===0;
         var monthLbl=mo==='?'?(t('imported_no_year')||'Unknown'):MONTHS_FULL[parseInt(mo.slice(5,7),10)-1];
-        return '<div style="border-bottom:1px solid var(--border);padding-left:10px">'
-          +'<div onclick="var f=document.getElementById(\''+mid+'\');var a=document.getElementById(\''+mid+'-arrow\');var wasOpen=f.style.display!==\'none\';f.style.display=wasOpen?\'none\':\'block\';a.textContent=wasOpen?\'\u25b6\':\'\u25bc\';" style="display:flex;align-items:center;justify-content:space-between;padding:6px 2px;cursor:pointer;user-select:none">'
+        return '<div id="'+mid+'" style="border-bottom:1px solid var(--border);padding-left:10px">'
+          +'<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 2px">'
           +'<span style="font-size:12px;font-weight:500;color:var(--text3)">'+monthLbl+'</span>'
-          +'<span style="display:flex;align-items:center;gap:6px"><span style="font-size:11px;color:var(--text3)">'+byYear[yr][mo].length+'</span><span id="'+mid+'-arrow" style="font-size:11px;color:var(--text3)">'+(monthOpen?'\u25bc':'\u25b6')+'</span></span>'
+          +'<span style="font-size:11px;color:var(--text3)">'+byYear[yr][mo].length+'</span>'
           +'</div>'
-          +'<div id="'+mid+'" style="display:'+(monthOpen?'block':'none')+'">'+rows+'</div>'
+          +rows
           +'</div>';
       }).join('');
       return '<div style="border-bottom:1px solid var(--border)">'
@@ -35028,7 +35077,7 @@ function renderVrijOnderwerpSection(){
     if(p.themacode&&p.themacode.indexOf('BS ')===0)return false;
     return true;
   });
-  if(!vrijEntries.length&&!vrijPlanned.length)return '';
+  if(!vrijEntries.length)return '';
   var bySubject={};
   vrijEntries.forEach(function(e){
     var subj=e.thema||'Onbekend';
@@ -35041,7 +35090,17 @@ function renderVrijOnderwerpSection(){
     if(!bySubjectPlanned[subj])bySubjectPlanned[subj]=[];
     bySubjectPlanned[subj].push(p);
   });
-  var subjects=Object.keys(Object.assign({},bySubject,bySubjectPlanned)).sort();
+  // Only a topic that's actually been GIVEN at least once gets its own row
+  // here - a topic that's merely planned (typed into a plan's Vrij
+  // onderwerp field but not logged yet) used to get a whole new row of its
+  // own the moment it was planned, which cluttered this list with
+  // not-yet-real topics. Gabriel: "Planned studies shouldn't appear in the
+  // Bible studies list, only show the name of the study when a new study
+  // has been filled in [i.e. actually given]." A planned session of a
+  // topic that's already been given elsewhere still shows inside that
+  // topic's own row below (see `if(planned.length)`) - only the "planned
+  // only, never given" case is dropped here.
+  var subjects=Object.keys(bySubject).sort();
   var geplandLbl=tMap({nl:'Gepland',en:'Planned',es:'Planificado',fr:'Planifié',de:'Geplant',ro:'Planificat',hu:'Tervezve',ru:'Запланировано',it:'Pianificato',pt:'Planeado'});
   var h='<div class="card" style="padding:12px 14px;margin-bottom:10px">';
   h+='<div class="card-label" style="margin-bottom:8px">'+(LANG==='en'?'Other Bible Studies':LANG==='es'?'Otros Estudios Bíblicos':LANG==='fr'?'Autres études bibliques':LANG==='de'?'Andere Bibelstudien':LANG==='ro'?'Alte studii biblice':LANG==='hu'?'Egyéb bibliatan':LANG==='ru'?'Другие изучения':'Andere Bijbelstudies')+'</div>';
