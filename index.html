@@ -36293,6 +36293,10 @@ function duplicateEditEntry(entryId){
       e.thema=tm?thema.value+' - '+tm[1]:thema.value;
     }
     e.omschrijving=e.thema;
+    // Same categorie auto-correction as saveEditEntry above - picking a real
+    // topic here always means this was a Bible study, so keep it out of the
+    // Andere Bijbelstudies blind spot even when duplicating/"Save as new".
+    if(e.categorie!=='Bijbelstudie geven')e.categorie='Bijbelstudie geven';
   } else if(thema){
     e.themacode='';e.thema='';
   }
@@ -36439,6 +36443,20 @@ function saveEditEntry(entryId){
       e.thema=tm?thema.value+' - '+tm[1]:thema.value;
     }
     e.omschrijving=e.thema;
+    // Bug fix (Gabriel: "I entered a new study.. but it doesn't appear in
+    // other studies"): unlike the main wizard - where the Thema step only
+    // ever shows up after Bijbelstudie geven is chosen as the category, so a
+    // topic can never end up attached to the wrong category - this edit
+    // modal shows the Thema select for every category. Editing an entry
+    // that was something else (e.g. a Bezoek/visit) and only filling in the
+    // topic field here, without also flipping Categorie to Bijbelstudie
+    // geven by hand, silently saved a study topic on a non-study entry.
+    // renderVrijOnderwerpSection (Andere Bijbelstudies) and every other
+    // Bijbelstudies bucketing in the app key off categorie==='Bijbelstudie
+    // geven', so that topic then never showed up anywhere. Picking a real
+    // topic here always means "this was a Bible study", so bring the
+    // category along automatically instead of requiring a second manual step.
+    if(e.categorie!=='Bijbelstudie geven')e.categorie='Bijbelstudie geven';
   } else if(thema){
     e.themacode='';e.thema='';
   }
