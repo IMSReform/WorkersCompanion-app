@@ -775,6 +775,14 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
 .modal-box.wide{max-width:480px}
 @media(min-width:768px){.modal-box.wide{max-width:900px}}
 .modal-title{font-size:17px;font-weight:700;margin-bottom:14px}
+/* showModalCentered()'s own box - normally a fixed 420px phone-width
+   popup (the max-width used to be baked into that function's inline
+   style). The Edit Entry modal opts into .wide via showModalCentered's
+   new opts.wide param so it can grow on desktop like .modal-box.wide
+   above; every other showModalCentered() caller is untouched. */
+.pmc-box{max-width:420px}
+.pmc-box.wide{max-width:420px}
+@media(min-width:768px){.pmc-box.wide{max-width:760px}}
 #chart-modal{display:none;position:fixed;inset:0;background:rgba(26,29,35,.55);z-index:150;padding:14px;overflow-y:auto;backdrop-filter:blur(6px)}
 #chart-modal.show{display:block}
 .chart-modal-box{background:var(--surface);border-radius:var(--r-lg);padding:20px;max-width:500px;margin:20px auto;box-shadow:var(--shadow-lg)}
@@ -29646,14 +29654,22 @@ function showModal(content){
 // the Rapport month/year picker where a bottom sheet just wastes space and
 // puts the content awkwardly low, unlike the President app's own picker
 // which already opens centered.
-function showModalCentered(content){
+function showModalCentered(content,opts){
   var existing = document.getElementById('plan-modal-overlay');
   if(existing) existing.remove();
   var overlay = document.createElement('div');
   overlay.id = 'plan-modal-overlay';
   var aboveFullscreen = document.getElementById('full-cal-overlay') ? 10000 : 200;
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:'+aboveFullscreen+';display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto';
-  overlay.innerHTML = '<div style="background:var(--surface);border-radius:16px;width:100%;max-width:420px;max-height:calc(100vh - 32px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:20px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">' + content + '</div>';
+  // Optional "wide" variant (Gabriel: the Edit Entry popup opened from a
+  // contact's history "is still a phone width... make it also responsive")
+  // - max-width lives in the .pmc-box/.pmc-box.wide CSS classes below
+  // instead of this inline style, so the @media rule there can override it;
+  // every other showModalCentered() caller (month/year picker, project
+  // wizard, etc.) keeps the original fixed 420px phone-width popup as-is by
+  // simply not passing opts.wide.
+  var wideClass=(opts&&opts.wide)?' wide':'';
+  overlay.innerHTML = '<div class="pmc-box'+wideClass+'" style="background:var(--surface);border-radius:16px;width:100%;max-height:calc(100vh - 32px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:20px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">' + content + '</div>';
   overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
   document.body.appendChild(overlay);
 }
@@ -36127,7 +36143,7 @@ function openEditEntryModal(entryId,skipSummary){
     +t('save_as_new_btn')+'</button>';
   h+='</div>'; // close ee-full-form
   h+='</div>';
-  showModalCentered(h);
+  showModalCentered(h,{wide:true});
 }
 
 function duplicateEditEntry(entryId){
