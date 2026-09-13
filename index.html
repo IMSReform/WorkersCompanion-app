@@ -1213,6 +1213,18 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
    phone/tablet layout is untouched. */
 .dash-2col-wrap{display:block}
 .dash-2col-wrap>div{min-width:0}
+/* Flat, ungrouped Contacts list (Gabriel: "if it's off... let all the
+   contacts appear in one list (2 columns in computer) sorted
+   alphabetically" - the group-by-type toggle, see renderCursistenFlat).
+   CSS multi-column instead of a grid, since this wraps one continuous
+   alphabetical run of rows rather than pairing up fixed sections - each
+   row's own height varies (accordion expand/collapse), so a simple
+   top-to-bottom-then-next-column flow reads better here than a grid ever
+   would. Single column on phone/tablet; break-inside:avoid keeps one
+   contact's row (and its date/repeat/delete buttons) from being split
+   across the column break. */
+.cursisten-flat-2col{column-count:1}
+.cursisten-flat-2col .cursist-acc-item{break-inside:avoid;-webkit-column-break-inside:avoid}
 @media(min-width:900px){
   /* align-items:stretch (the grid default) so both columns match the taller
      one's height instead of each hugging its own content — otherwise a
@@ -1242,6 +1254,7 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
      zeroed margin so both columns' cards start level with each other,
      instead of the left column sitting ~22px higher than the right one. */
   .cursisten-2col-wrap>div>.settings-section-title{margin-top:0}
+  .cursisten-flat-2col{column-count:2;column-gap:24px}
   /* Rapport → Bijbelstudies list only (the chart+category split above it
      already has its own side-by-side treatment via .rp-split-wrap). */
   #rp-bijbelstudies-list.rp-bs-2col{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
@@ -13485,6 +13498,21 @@ function renderSubbar(screen){
     // (No separate person-type filter dropdown here anymore - the default
     // "recent" sort now groups people by status into their own labeled
     // cards, which does that job visually instead.)
+    // Group-by-type on/off toggle (task: "add a toggle to separate by type,
+    // on/off .. if it's off, let all the contacts appear in one list, 2
+    // columns on computer, sorted alphabetically"). Only meaningful while
+    // "Recent"/default sort is active - the other explicit sort choices
+    // (A-Z, study count, church, etc.) already show one flat list on their
+    // own - so it's grayed out (but still clickable, it just won't visibly
+    // change anything) for those to avoid implying it does something it
+    // doesn't there.
+    var grpBtn=document.createElement('button');
+    var grpOn=getCursistGroupByType();
+    grpBtn.className='g-subbar-btn'+(grpOn?' active':'');
+    grpBtn.title=tMap({nl:'Groeperen op type',en:'Group by type',es:'Agrupar por tipo',fr:'Grouper par type',de:'Nach Typ gruppieren',ro:'Grupează după tip',hu:'Csoportosítás típus szerint',ru:'Группировать по типу',it:'Raggruppa per tipo',pt:'Agrupar por tipo'});
+    grpBtn.innerHTML='<svg width="12" height="12" style="vertical-align:-1px;margin-right:3px"><use href="#ico-dashboard"/></svg>'+tMap({nl:'Type',en:'Type',es:'Tipo',fr:'Type',de:'Typ',ro:'Tip',hu:'Típus',ru:'Тип',it:'Tipo',pt:'Tipo'});
+    grpBtn.onclick=function(){toggleCursistGroupByType();};
+    sb.appendChild(grpBtn);
     // Search (wider) — leading minimalist search icon instead of an emoji
     var csWrap=document.createElement('div');
     csWrap.style.cssText='position:relative;flex:3;min-width:100px;display:flex;align-items:center';
@@ -19085,6 +19113,30 @@ function buildCursistAccBody(cu,preOpenCallHist){
   h+='</div>'; // cursist-acc-body
   return h;
 }
+// Gabriel: "make the contacts list first surname and then name" - the
+// Contacts tab list shows "Achternaam, Voornaam" whenever a contact has
+// those split fields on file (see the c-voornaam/c-achternaam inputs and
+// saveCursist/saveEditCursist above), falling back to the plain cu.naam
+// for older/imported contacts that only ever had one combined name field.
+// This only changes how this ONE list displays a name - every other place
+// a contact's name appears (wizard pickers, contact-detail popup title,
+// PDF exports, calendar, etc.) still uses cu.naam as-is, since those read
+// more naturally as "Voornaam Achternaam" and weren't part of this request.
+function cursistDisplayName(cu){
+  var a=(cu.achternaam||'').trim(),v=(cu.voornaam||'').trim();
+  if(a&&v)return a+', '+v;
+  if(a)return a;
+  return cu.naam||'';
+}
+// Same surname-first logic as cursistDisplayName, but as a flat sortable
+// string (no comma) - used wherever this list sorts alphabetically (the
+// A-Z/Z-A sort options and the new "one flat list" toggle below), so the
+// sort order matches what's actually shown.
+function cursistSortName(cu){
+  var a=(cu.achternaam||'').trim(),v=(cu.voornaam||'').trim();
+  if(a||v)return (a+' '+v).trim();
+  return cu.naam||'';
+}
 function renderCursistCard(cu,badgeLabel){
   var isLid=cu.type==='lid';
   var studyCat=isLid?'Evangeliseren intern':'Bijbelstudie geven';
@@ -19121,8 +19173,9 @@ function renderCursistCard(cu,badgeLabel){
   var detailCall=isLid?'openLidDetail('+cu.id+')':'openCursistDetail('+cu.id+')';
   var h='<div class="cursist-acc-item">';
   h+='<div class="cursist-acc-head" style="cursor:pointer" onclick="'+detailCall+'">';
-  h+='<div style="position:relative;flex-shrink:0"><div class="cc-avatar" style="width:36px;height:36px;font-size:13px'+(isLid?';background:var(--blue);color:#fff':'')+'">'+cu.naam.charAt(0).toUpperCase()+'</div>'+(urgTier?'<span class="urg-dot '+urgTier+'"></span>':'')+'</div>';
-  h+='<div style="flex:1;min-width:0"><div class="cc-name" style="font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+cu.naam+getPersonTypeBadge(cu)+badgeHtml+'</div>'+headRight+'</div>';
+  var cuDispName=cursistDisplayName(cu);
+  h+='<div style="position:relative;flex-shrink:0"><div class="cc-avatar" style="width:36px;height:36px;font-size:13px'+(isLid?';background:var(--blue);color:#fff':'')+'">'+(cuDispName.charAt(0)||'?').toUpperCase()+'</div>'+(urgTier?'<span class="urg-dot '+urgTier+'"></span>':'')+'</div>';
+  h+='<div style="flex:1;min-width:0"><div class="cc-name" style="font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+cuDispName+getPersonTypeBadge(cu)+badgeHtml+'</div>'+headRight+'</div>';
   // Call/WhatsApp stay visible even when collapsed - these are quick actions
   // on the PERSON, not detail that only matters once you open the row.
   h+='<div style="display:flex;align-items:center;gap:4px;flex-shrink:0">';
@@ -19874,11 +19927,11 @@ function renderCursisten(){
   // Any other explicit sort choice (A-Z, study count, etc.) is a request
   // for one flat ranked list instead, so that still applies across everyone.
   if(sortMode==='recent'){
-    el.innerHTML=renderCursistenGrouped(enriched)+renderArchiveSuggestCard()+renderCursistenArchiveAccordion();
+    el.innerHTML=(getCursistGroupByType()?renderCursistenGrouped(enriched):renderCursistenFlat(enriched))+renderArchiveSuggestCard()+renderCursistenArchiveAccordion();
     return;
   }
-  if(sortMode==='az')enriched.sort((a,b)=>a.naam.localeCompare(b.naam,'nl'));
-  else if(sortMode==='za')enriched.sort((a,b)=>b.naam.localeCompare(a.naam,'nl'));
+  if(sortMode==='az')enriched.sort((a,b)=>cursistSortName(a).localeCompare(cursistSortName(b),'nl'));
+  else if(sortMode==='za')enriched.sort((a,b)=>cursistSortName(b).localeCompare(cursistSortName(a),'nl'));
   else if(sortMode==='studies')enriched.sort((a,b)=>b.studies.length-a.studies.length);
 
   // Both the cursist and lid branches used to build their own near-duplicate
@@ -19936,6 +19989,34 @@ function renderCursistenGrouped(enrichedList){
   });
   h+='</div>';
   return anyShown?h:'<div class="empty">'+t('no_cursisten')+'</div>';
+}
+// Whether the Contacts list is currently split into status groups
+// (Contact/Interested/Bible student/.../Member - see renderCursistenGrouped)
+// or shown as one flat alphabetical list (see renderCursistenFlat below).
+// Defaults to on (grouped), matching the behavior this toggle was added
+// next to (task: "add a toggle to separate by type, on/off").
+function getCursistGroupByType(){
+  return db.settings.cursistenGroupByType!==false;
+}
+function toggleCursistGroupByType(){
+  db.settings.cursistenGroupByType=!getCursistGroupByType();
+  save();
+  renderCursisten();
+  renderSubbar('cursisten');
+}
+// The "off" state of the group-by-type toggle: every (non-archived, already
+// search-filtered) contact in one flat list, sorted alphabetically by
+// surname (cursistSortName - same order the display now reads in, see
+// cursistDisplayName) instead of split into status cards. Gabriel: "let all
+// the contacts appear in one list (2 columns in computer) sorted
+// alphabetically" - the 2-column part is CSS multi-column layout
+// (.cursisten-flat-2col, desktop-only) so a long alphabetical list reads
+// top-to-bottom-then-next-column, like a phone book, rather than one very
+// long single column.
+function renderCursistenFlat(enrichedList){
+  var sorted=enrichedList.slice().sort(function(a,b){return cursistSortName(a).localeCompare(cursistSortName(b),'nl');});
+  var rows=sorted.map(function(cu){return renderCursistCard(cu);}).join('');
+  return '<div class="card cursisten-flat-2col" style="padding:4px 16px">'+rows+'</div>';
 }
 // Small select next to each Contacts card's subtitle that sets a default
 // follow-up frequency for everyone in that group at once. Anyone with their
