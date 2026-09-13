@@ -1213,10 +1213,10 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
    phone/tablet layout is untouched. */
 .dash-2col-wrap{display:block}
 .dash-2col-wrap>div{min-width:0}
-/* Flat, ungrouped Contacts list (Gabriel: "if it's off... let all the
-   contacts appear in one list (2 columns in computer) sorted
-   alphabetically" - the group-by-type toggle, see renderCursistenFlat).
-   CSS multi-column instead of a grid, since this wraps one continuous
+/* Flat, ungrouped Contacts list - every cursist-sort option except "By
+   type" (see renderCursisten's sortMode==='grouped' branch vs. the shared
+   flat fallback below it). CSS multi-column instead of a grid, since this
+   wraps one continuous
    alphabetical run of rows rather than pairing up fixed sections - each
    row's own height varies (accordion expand/collapse), so a simple
    top-to-bottom-then-next-column flow reads better here than a grid ever
@@ -6458,7 +6458,7 @@ var TRANSLATIONS = {
     // Cursisten
     cursisten_tab:'Cursisten', leden_tab:'Leden',
     add_cursist:'+ Cursist toevoegen', add_lid:'+ Lid toevoegen',
-    sort_recent:'Recente studie', sort_az:'A \u2013 Z', sort_za:'Z \u2013 A',
+    sort_grouped:'Op type', sort_az:'A \u2013 Z', sort_za:'Z \u2013 A',
     sort_studies:'Meeste studies', sort_instroom:'In- & uitstroom', sort_gemeente:'Op gemeente', no_gemeente_lbl:'Geen gemeente',
     bible_study:'Bibelstunde',evangelism_type:'Evangelisation',pastoral_type:'Pastoral',travel_type:'Reise',admin_type:'Verwaltung',
     no_cursisten:'Nog geen cursisten toegevoegd.',
@@ -6815,7 +6815,7 @@ var TRANSLATIONS = {
     all_months:'All months', all_types:'All types',
     cursisten_tab:'Students', leden_tab:'Members',
     add_cursist:'+ Add student', add_lid:'+ Add member',
-    sort_recent:'Recent study', sort_az:'A \u2013 Z', sort_za:'Z \u2013 A',
+    sort_grouped:'By type', sort_az:'A \u2013 Z', sort_za:'Z \u2013 A',
     sort_studies:'Most studies', sort_instroom:'In- & outflow', sort_gemeente:'By church', no_gemeente_lbl:'No church set',
     no_cursisten:'No students added yet.',
     no_leden:'No members added yet.',
@@ -7229,7 +7229,7 @@ var TRANSLATIONS = {
     all_months:'Todos los meses', all_types:'Todos los tipos',
     cursisten_tab:'Estudiantes', leden_tab:'Miembros',
     add_cursist:'+ A\u00f1adir estudiante', add_lid:'+ A\u00f1adir miembro',
-    sort_recent:'Estudio reciente', sort_az:'A \u2013 Z', sort_za:'Z \u2013 A',
+    sort_grouped:'Por tipo', sort_az:'A \u2013 Z', sort_za:'Z \u2013 A',
     sort_studies:'M\u00e1s estudios', sort_instroom:'Entrada y salida', sort_gemeente:'Por iglesia', no_gemeente_lbl:'Sin iglesia',
     no_cursisten:'A\u00fan no se han a\u00f1adido estudiantes.',
     no_leden:'A\u00fan no se han a\u00f1adido miembros.',
@@ -7483,7 +7483,7 @@ var TRANSLATIONS = {
     cal_hint:"Clic sur mois pour sélectionner · double-clic vers Journal",lesson_progress:"Progrès leçon",first_n:"premières",last_study_lbl:"Dernière étude",days_ago_lbl:"j. passés",call_btn:"Appeler",whatsapp_btn:"WhatsApp",study_history:"Historique études",add_note:"+ note",add_contact_btn:"+ Ajouter contact",add_lid_btn:"+ Ajouter membre",studies_tab:"Études",edit_btn:"Modifier",delete_btn:"Supprimer",visit_history:"Historique visites",visits_lbl:"Visites",days_ago2:"Jours passés",register_visit:"+ Enregistrer visite",no_visits:"Aucune visite.",adjust_goals:"Ajuster objectifs",never_visited2:"Jamais visité",
     nav_dashboard:"Tableau", nav_log:"Journal", nav_cursisten:"Contacts", nav_rapport:"Rapport", nav_bijbelstudies:"Études Bibliques",
     worktype_card:"Type de travail", worktype_sub:"Ajuste ce que vous voyez dans l'application", worktype_bijbelwerker:"Pasteur / Ouvrier biblique", worktype_kantoor:"Bureau / Secrétariat", church_role_lbl:"Fonction ecclésiastique", church_role_hint:"Partagé avec le président (par ex. pour le rapport de la CG) - laissez vide si aucune de ces options ne vous concerne.", church_role_none:"Aucune", church_role_predikant:"Pasteur", church_role_ouderling:"Ancien", church_role_kantoorwerker:"Employé de bureau", church_role_bijbelwerker:"Ouvrier biblique / Évangéliste", wizard_new_gemeente:"+ Nouvelle église...",
-    cursisten_tab:"Contacts", leden_tab:"Membres",
+    cursisten_tab:"Contacts", leden_tab:"Membres", sort_grouped:'Par type',
     import_card:"Importer des données",
     cat_manage:"Gérer les catégories",
     cat_add:"+ Ajouter",new_cat_ph:"Nom nouvelle catégorie...",import_hint:"Faites glisser un fichier CSV, JSON ou PDF ici.",import_btn:"Cliquez ou déposez un fichier",
@@ -7608,7 +7608,7 @@ var TRANSLATIONS = {
     you_lbl:'Sie',expected_lbl:'Erwartet',days_remaining:'Tage verbleibend',of_lbl:'von',study_lbl:'Studie',plan_on_day:'Diesen Tag planen',lesson_progress:'Lernfortschritt',first_n:'ersten',last_study_lbl:'Letzte Studie',days_ago_lbl:'T. her',call_btn:'Anrufen',whatsapp_btn:'WhatsApp',study_history:'Studienhistorie',add_note:'+ Notiz',add_contact_btn:'+ Kontakt hinzufügen',add_lid_btn:'+ Mitglied hinzufügen',studies_tab:'Studien',edit_btn:'Bearbeiten',delete_btn:'Löschen',visit_history:'Besuchshistorie',visits_lbl:'Besuche',days_ago2:'Tage her',register_visit:'+ Besuch registrieren',no_visits:'Noch keine Besuche.',adjust_goals:'Ziele anpassen',never_visited2:'Noch nie besucht',
     nav_dashboard:'Übersicht', nav_log:'Logbuch', nav_cursisten:'Kontakte', nav_rapport:'Bericht', nav_bijbelstudies:'Bibelstudien',
     worktype_card:'Art der Arbeit', worktype_sub:'Passt an, was du in der App siehst', worktype_bijbelwerker:'Prediger / Bibelarbeiter', worktype_kantoor:'Büro / Sekretariat', church_role_lbl:'Kirchliche Funktion', church_role_hint:'Wird mit dem Präsidenten geteilt (z.B. für den GK-Bericht) - leer lassen, wenn keine davon auf dich zutrifft.', church_role_none:'Keine', church_role_predikant:'Prediger', church_role_ouderling:'Ältester', church_role_kantoorwerker:'Büromitarbeiter', church_role_bijbelwerker:'Bibelarbeiter / Evangelist', wizard_new_gemeente:'+ Neue Gemeinde...',
-    cursisten_tab:'Kontakte', leden_tab:'Mitglieder',
+    cursisten_tab:'Kontakte', leden_tab:'Mitglieder', sort_grouped:'Nach Typ',
     import_card:'Daten importieren',
     cat_manage:'Kategorien verwalten',
     cat_add:'+ Hinzufügen',new_cat_ph:'Name neue Kategorie...',import_hint:'CSV-, JSON- oder PDF-Datei hier ablegen.',import_btn:'Datei klicken oder ablegen',
@@ -7745,7 +7745,7 @@ var TRANSLATIONS = {
     cal_hint:'Clic pe lună pentru a selecta · dublu clic la Jurnal',lesson_progress:'Progres lecție',first_n:'primele',last_study_lbl:'Ultimul studiu',days_ago_lbl:'z. în urmă',call_btn:'Sună',whatsapp_btn:'WhatsApp',study_history:'Istoric studii',add_note:'+ notă',add_contact_btn:'+ Adaugă contact',add_lid_btn:'+ Adaugă membru',studies_tab:'Studii',edit_btn:'Editează',delete_btn:'Șterge',visit_history:'Istoric vizite',visits_lbl:'Vizite',days_ago2:'Zile în urmă',register_visit:'+ Înregistrează vizită',no_visits:'Nicio vizită.',adjust_goals:'Ajustează obiective',never_visited2:'Niciodată vizitat',
     nav_dashboard:'Tablou', nav_log:'Jurnal', nav_cursisten:'Contacte', nav_rapport:'Raport', nav_bijbelstudies:'Studii Biblice',
     worktype_card:'Tip de muncă', worktype_sub:'Ajustează ce vezi în aplicație', worktype_bijbelwerker:'Pastor / Lucrător biblic', worktype_kantoor:'Birou / Secretariat', church_role_lbl:'Funcție bisericească', church_role_hint:'Este partajată cu președintele (de ex. pentru raportul CG) - lasă necompletat dacă niciuna nu se aplică.', church_role_none:'Niciuna', church_role_predikant:'Pastor', church_role_ouderling:'Bătrân', church_role_kantoorwerker:'Lucrător de birou', church_role_bijbelwerker:'Lucrător biblic / Evanghelist', wizard_new_gemeente:'+ Biserică nouă...',
-    cursisten_tab:'Contacte', leden_tab:'Membri',
+    cursisten_tab:'Contacte', leden_tab:'Membri', sort_grouped:'După tip',
     import_card:'Importă date',
     cat_manage:'Gestionează categorii',
     cat_add:'+ Adaugă',new_cat_ph:'Nume categorie nouă...',import_hint:'Trage un fișier CSV, JSON sau PDF aici.',import_btn:'Faceți clic sau trageți fișierul',
@@ -8007,7 +8007,7 @@ var TRANSLATIONS = {
     bible_study:'Bibliatan.',evangelism_type:'Evangelizáció',pastoral_type:'Lelkigondozás',travel_type:'Utazás',admin_type:'Adminisztráció',
     sort_inactive:'Inaktív kapcsolatok',sort_belwhatsapp:'Hívás/WhatsApp állapot',never_called:'Még soha nem hívva',sort_archived:'Archiválva',no_archived_contacts:'Nincs archivált kapcsolat',contact_status_lbl:'Állapot',contact_status_hint:'Ez a kapcsolat archiválva van, és többé nem jelenik meg az alapértelmezett listában vagy a nyomon követésben.',status_actief:'Aktív',status_geen_contact:'Nem szeretne több kapcsolatot',status_verhuisd:'Elköltözött',status_overleden:'Elhunyt',status_gepauzeerd:'Szüneteltetve',status_andere_werker:'Másik munkatárs kapcsolata',ct_paused:'Szüneteltetve',ct_archive:'Archívum',ct_deceased:'Elhunyt',enc_card:'Titkosítás',enc_intro:'Válaszd ki, hogy az adataid (jegyzetek, imakérések) titkosítva legyenek-e tárolva - helyben és a Google Drive-on. Magát a jelszót sosem tároljuk vagy osztjuk meg sehol, csak addig jegyezzük meg, amíg az alkalmazás nyitva van.',enc_mode_none:'Nincs',enc_mode_none_hint:'Mint most - egyszerű, olvasható JSON, jelszó nem szükséges.',enc_mode_partial:'Részleges',enc_mode_partial_hint:'A jegyzetek, imakérések és a kapcsolatok telefonszáma, e-mail címe és lakcíme titkosítva vannak - minden más továbbra is működik, jelszó nélkül is.',enc_mode_full:'Teljes',enc_mode_full_hint:'Minden adat titkosítva - jelszó szükséges az alkalmazás megnyitásához.',enc_footnote:'Megjegyzés: a teljes biztonsági mentés (lentebb, a Biztonsági mentések → "Letöltés" alatt) mindig olvasható marad, hogy eszközváltás esetén jelszó nélkül is hozzáférhess. Ha elveszíted a jelszót, senki - még mi sem - tudja visszaállítani a titkosított adatokat.',enc_status_none:'Nem aktív.',enc_status_locked:'Zárolva - add meg a jelszavad a feloldáshoz.',enc_status_unlocked:'Feloldva erre a munkamenetre.',enc_unlock_btn:'Feloldás',enc_change_pw_btn:'Jelszó módosítása',enc_disable_confirm:'Biztosan kikapcsolod a titkosítást? Minden adat újra olvasható szövegként lesz tárolva.',enc_disabled_done:'Titkosítás kikapcsolva.',enc_setup_title:'Jelszó beállítása',enc_pw_label:'Jelszó',enc_pw_confirm_label:'Jelszó megismétlése',enc_setup_confirm_btn:'Titkosítás bekapcsolása',enc_pw_too_short:'A jelszónak legalább 6 karakter hosszúnak kell lennie.',enc_pw_mismatch:'A jelszavak nem egyeznek.',enc_setup_done:'Kész. Jegyezd meg jól ezt a jelszót - sehol sincs tárolva.',enc_unlock_title:'Jelszó szükséges',enc_unlock_hint:'Add meg a jelszavad a folytatáshoz.',enc_pw_wrong:'Helytelen jelszó.',enc_change_pw_title:'Jelszó módosítása',enc_change_pw_hint:'Minden adat újra titkosítva lesz az új jelszóval.',enc_new_pw_label:'Új jelszó',enc_gate_title:'Alkalmazás zárolva',enc_gate_hint:'Ezek az adatok teljesen titkosítva vannak. Add meg a jelszavad a folytatáshoz.',archive_suggest_title:'Archiválás megfontolása?',archive_suggest_sub:'Ezeket a kapcsolatokat 2+ éve nem keresték fel. Ellenőrizd, hogy archiválni kell-e őket.',review_btn:'Ellenőrzés',not_now_btn:'Most nem',more_lbl:'további',
     loading_verse:'Ige betöltése...',
-    sort_recent:'Legutóbbi tanulmány', sort_az:'A – Z', sort_za:'Z – A',
+    sort_grouped:'Típus szerint', sort_az:'A – Z', sort_za:'Z – A',
     sort_studies:'Legtöbb tanulmány', sort_instroom:'Be- és kiáramlás', sort_gemeente:'Gyülekezet szerint', no_gemeente_lbl:'Nincs gyülekezet',
     sort_inactive:'Inaktív kapcsolatok',
     loading_verse:'Ige betöltése...',
@@ -8019,7 +8019,7 @@ var TRANSLATIONS = {
     cal_hint:'Нажмите на месяц — выбор · двойной клик в Журнал',lesson_progress:'Прогресс урока',first_n:'первых',last_study_lbl:'Последнее изучение',days_ago_lbl:'дн. назад',call_btn:'Позвонить',whatsapp_btn:'WhatsApp',study_history:'История изучений',add_note:'+ заметка',add_contact_btn:'+ Добавить контакт',add_lid_btn:'+ Добавить члена',studies_tab:'Изучения',edit_btn:'Изменить',delete_btn:'Удалить',visit_history:'История посещений',visits_lbl:'Посещения',days_ago2:'Дней назад',register_visit:'+ Записать посещение',no_visits:'Посещений нет.',adjust_goals:'Изменить цели',never_visited2:'Никогда не посещали',
     nav_dashboard:'Обзор', nav_log:'Журнал', nav_cursisten:'Контакты', nav_rapport:'Отчёт', nav_bijbelstudies:'Библейские изучения',
     worktype_card:'Тип работы', worktype_sub:'Настраивает, что вы видите в приложении', worktype_bijbelwerker:'Пастор / Библейский работник', worktype_kantoor:'Офис / Секретариат', church_role_lbl:'Церковная должность', church_role_hint:'Передаётся президенту (например, для отчёта ГК) - оставьте пустым, если ничего из этого к вам не относится.', church_role_none:'Нет', church_role_predikant:'Пастор', church_role_ouderling:'Старейшина', church_role_kantoorwerker:'Офисный работник', church_role_bijbelwerker:'Библейский работник / Евангелист', wizard_new_gemeente:'+ Новая церковь...',
-    cursisten_tab:'Контакты', leden_tab:'Члены',
+    cursisten_tab:'Контакты', leden_tab:'Члены', sort_grouped:'По типу',
     import_card:'Импорт данных',
     cat_manage:'Управление категориями',
     cat_add:'+ Добавить',new_cat_ph:'Название новой категории...',import_hint:'Перетащите файл CSV, JSON или PDF сюда.',import_btn:'Нажмите или перетащите файл',
@@ -8264,7 +8264,7 @@ var TRANSLATIONS = {
     drive_sign_in:'Accedi con Google',
     drive_connected:'Connesso',
     drive_not_connected:'Non connesso — solo locale.',data_card:'Dati',plan_on_day:'Pianifica questo giorno',
-    sort_recent:'Recenti',sort_az:'A-Z',sort_za:'Z-A',sort_studies:'Più studi',sort_instroom:'Flusso in/out',sort_gemeente:'Per chiesa',no_gemeente_lbl:'Nessuna chiesa',sort_inactive:'Contatti inattivi',sort_belwhatsapp:'Stato chiamata/WhatsApp',never_called:'Mai chiamato',sort_archived:'Archiviati',no_archived_contacts:'Nessun contatto archiviato',contact_status_lbl:'Stato',contact_status_hint:'Questo contatto è archiviato e non appare più nell\'elenco predefinito o nei promemoria.',status_actief:'Attivo',status_geen_contact:'Non vuole più contatti',status_verhuisd:'Trasferito',status_overleden:'Deceduto',status_gepauzeerd:'In pausa',status_andere_werker:'Contatto di un altro collaboratore',ct_paused:'In pausa',ct_archive:'Archivio',ct_deceased:'Deceduto',enc_card:'Crittografia',enc_intro:'Scegli se i tuoi dati (note, richieste di preghiera) vengono salvati in modo crittografato - localmente e su Google Drive. La password stessa non viene mai salvata né condivisa da nessuna parte, viene solo ricordata finché l\'app è aperta.',enc_mode_none:'Nessuna',enc_mode_none_hint:'Come ora - JSON semplicemente leggibile, nessuna password necessaria.',enc_mode_partial:'Parziale',enc_mode_partial_hint:'Vengono crittografate le note, le richieste di preghiera e telefono, email e indirizzo dei contatti - il resto continua a funzionare normalmente, anche senza password.',enc_mode_full:'Completa',enc_mode_full_hint:'Tutti i dati crittografati - è necessaria una password per aprire l\'app.',enc_footnote:'Nota: un backup completo (più sotto, in Backup → "Scarica") rimane sempre leggibile, così puoi accedervi anche senza password se cambi dispositivo. Se perdi la password, nessuno - nemmeno noi - può recuperare i dati crittografati.',enc_status_none:'Non attiva.',enc_status_locked:'Bloccato - inserisci la password per sbloccare.',enc_status_unlocked:'Sbloccato per questa sessione.',enc_unlock_btn:'Sblocca',enc_change_pw_btn:'Cambia password',enc_disable_confirm:'Sei sicuro di voler disattivare la crittografia? Tutto verrà nuovamente salvato come testo leggibile.',enc_disabled_done:'Crittografia disattivata.',enc_setup_title:'Imposta una password',enc_pw_label:'Password',enc_pw_confirm_label:'Ripeti la password',enc_setup_confirm_btn:'Attiva crittografia',enc_pw_too_short:'La password deve avere almeno 6 caratteri.',enc_pw_mismatch:'Le password non corrispondono.',enc_setup_done:'Fatto. Ricorda bene questa password - non viene salvata da nessuna parte.',enc_unlock_title:'Password richiesta',enc_unlock_hint:'Inserisci la password per continuare.',enc_pw_wrong:'Password errata.',enc_change_pw_title:'Cambia password',enc_change_pw_hint:'Tutto verrà nuovamente crittografato con la nuova password.',enc_new_pw_label:'Nuova password',enc_gate_title:'App bloccata',enc_gate_hint:'Questi dati sono completamente crittografati. Inserisci la password per continuare.',archive_suggest_title:'Considerare l\'archiviazione?',archive_suggest_sub:'Questi contatti non sono stati visitati da 2+ anni. Valuta se archiviarli.',review_btn:'Rivedi',not_now_btn:'Non ora',more_lbl:'altri',
+    sort_grouped:'Per tipo',sort_az:'A-Z',sort_za:'Z-A',sort_studies:'Più studi',sort_instroom:'Flusso in/out',sort_gemeente:'Per chiesa',no_gemeente_lbl:'Nessuna chiesa',sort_inactive:'Contatti inattivi',sort_belwhatsapp:'Stato chiamata/WhatsApp',never_called:'Mai chiamato',sort_archived:'Archiviati',no_archived_contacts:'Nessun contatto archiviato',contact_status_lbl:'Stato',contact_status_hint:'Questo contatto è archiviato e non appare più nell\'elenco predefinito o nei promemoria.',status_actief:'Attivo',status_geen_contact:'Non vuole più contatti',status_verhuisd:'Trasferito',status_overleden:'Deceduto',status_gepauzeerd:'In pausa',status_andere_werker:'Contatto di un altro collaboratore',ct_paused:'In pausa',ct_archive:'Archivio',ct_deceased:'Deceduto',enc_card:'Crittografia',enc_intro:'Scegli se i tuoi dati (note, richieste di preghiera) vengono salvati in modo crittografato - localmente e su Google Drive. La password stessa non viene mai salvata né condivisa da nessuna parte, viene solo ricordata finché l\'app è aperta.',enc_mode_none:'Nessuna',enc_mode_none_hint:'Come ora - JSON semplicemente leggibile, nessuna password necessaria.',enc_mode_partial:'Parziale',enc_mode_partial_hint:'Vengono crittografate le note, le richieste di preghiera e telefono, email e indirizzo dei contatti - il resto continua a funzionare normalmente, anche senza password.',enc_mode_full:'Completa',enc_mode_full_hint:'Tutti i dati crittografati - è necessaria una password per aprire l\'app.',enc_footnote:'Nota: un backup completo (più sotto, in Backup → "Scarica") rimane sempre leggibile, così puoi accedervi anche senza password se cambi dispositivo. Se perdi la password, nessuno - nemmeno noi - può recuperare i dati crittografati.',enc_status_none:'Non attiva.',enc_status_locked:'Bloccato - inserisci la password per sbloccare.',enc_status_unlocked:'Sbloccato per questa sessione.',enc_unlock_btn:'Sblocca',enc_change_pw_btn:'Cambia password',enc_disable_confirm:'Sei sicuro di voler disattivare la crittografia? Tutto verrà nuovamente salvato come testo leggibile.',enc_disabled_done:'Crittografia disattivata.',enc_setup_title:'Imposta una password',enc_pw_label:'Password',enc_pw_confirm_label:'Ripeti la password',enc_setup_confirm_btn:'Attiva crittografia',enc_pw_too_short:'La password deve avere almeno 6 caratteri.',enc_pw_mismatch:'Le password non corrispondono.',enc_setup_done:'Fatto. Ricorda bene questa password - non viene salvata da nessuna parte.',enc_unlock_title:'Password richiesta',enc_unlock_hint:'Inserisci la password per continuare.',enc_pw_wrong:'Password errata.',enc_change_pw_title:'Cambia password',enc_change_pw_hint:'Tutto verrà nuovamente crittografato con la nuova password.',enc_new_pw_label:'Nuova password',enc_gate_title:'App bloccata',enc_gate_hint:'Questi dati sono completamente crittografati. Inserisci la password per continuare.',archive_suggest_title:'Considerare l\'archiviazione?',archive_suggest_sub:'Questi contatti non sono stati visitati da 2+ anni. Valuta se archiviarli.',review_btn:'Rivedi',not_now_btn:'Non ora',more_lbl:'altri',
     loading_verse:'Caricamento versetto...',drive_card:'Google Drive',sync_history_title:'Cronologia salvataggi',sync_history_empty:'Ancora nessun salvataggio.',
     backup_title:'Backup',backup_refresh:'Aggiorna',backup_sub:'Ogni giorno viene salvato automaticamente un backup (ultimi 21 giorni). Puoi tornare a un giorno precedente se qualcosa è stato cancellato per errore.',backup_needs_drive:'Accedi con Google per abilitare i backup.',backup_empty:'Ancora nessun backup — ne viene creato uno automaticamente ogni giorno.',backup_restore_btn:'Ripristina',backup_restore_confirm:'Ripristinare il backup del',backup_restore_error:'Impossibile ripristinare questo backup.',backup_restored:'Backup ripristinato.',
     no_cursisten:'Nessun contatto aggiunto.',no_leden:'Nessun membro aggiunto.',
@@ -8386,7 +8386,7 @@ var TRANSLATIONS = {
     drive_sign_in:'Entrar com Google',
     drive_connected:'Conectado',
     drive_not_connected:'Sem conexão — apenas local.',data_card:'Dados',plan_on_day:'Planejar este dia',
-    sort_recent:'Recentes',sort_az:'A-Z',sort_za:'Z-A',sort_studies:'Mais estudos',sort_instroom:'Entrada e saída',sort_gemeente:'Por igreja',no_gemeente_lbl:'Sem igreja',sort_inactive:'Contatos inativos',sort_belwhatsapp:'Status de chamada/WhatsApp',never_called:'Nunca ligou',sort_archived:'Arquivados',no_archived_contacts:'Nenhum contato arquivado',contact_status_lbl:'Status',contact_status_hint:'Este contato está arquivado e não aparece mais na lista padrão nem no acompanhamento.',status_actief:'Ativo',status_geen_contact:'Não deseja mais contato',status_verhuisd:'Mudou-se',status_overleden:'Falecido',status_gepauzeerd:'Pausado',status_andere_werker:'Contato de outro colaborador',ct_paused:'Pausado',ct_archive:'Arquivo',ct_deceased:'Falecido',enc_card:'Encriptação',enc_intro:'Escolha se os seus dados (notas, pedidos de oração) são guardados encriptados - localmente e no Google Drive. A própria palavra-passe nunca é guardada nem partilhada em lado nenhum, é apenas memorizada enquanto a app está aberta.',enc_mode_none:'Nenhuma',enc_mode_none_hint:'Como agora - JSON simplesmente legível, sem necessidade de palavra-passe.',enc_mode_partial:'Parcial',enc_mode_partial_hint:'São encriptados as notas, os pedidos de oração e o telefone, e-mail e morada dos contactos - o resto continua a funcionar normalmente, mesmo sem palavra-passe.',enc_mode_full:'Completa',enc_mode_full_hint:'Todos os dados encriptados - é necessária uma palavra-passe para abrir a app.',enc_footnote:'Nota: uma cópia de segurança completa (mais abaixo, em Cópias de segurança → "Transferir") permanece sempre legível, para que possa aceder-lhe sem palavra-passe se mudar de dispositivo. Se perder a palavra-passe, ninguém - nem sequer nós - pode recuperar dados encriptados.',enc_status_none:'Não ativa.',enc_status_locked:'Bloqueado - introduza a sua palavra-passe para desbloquear.',enc_status_unlocked:'Desbloqueado para esta sessão.',enc_unlock_btn:'Desbloquear',enc_change_pw_btn:'Alterar palavra-passe',enc_disable_confirm:'Tem a certeza de que quer desativar a encriptação? Tudo voltará a ser guardado como texto legível.',enc_disabled_done:'Encriptação desativada.',enc_setup_title:'Definir uma palavra-passe',enc_pw_label:'Palavra-passe',enc_pw_confirm_label:'Repita a palavra-passe',enc_setup_confirm_btn:'Ativar encriptação',enc_pw_too_short:'A palavra-passe deve ter pelo menos 6 caracteres.',enc_pw_mismatch:'As palavras-passe não coincidem.',enc_setup_done:'Concluído. Memorize bem esta palavra-passe - não é guardada em lado nenhum.',enc_unlock_title:'Palavra-passe necessária',enc_unlock_hint:'Introduza a sua palavra-passe para continuar.',enc_pw_wrong:'Palavra-passe incorreta.',enc_change_pw_title:'Alterar palavra-passe',enc_change_pw_hint:'Tudo será novamente encriptado com a nova palavra-passe.',enc_new_pw_label:'Nova palavra-passe',enc_gate_title:'App bloqueada',enc_gate_hint:'Estes dados estão completamente encriptados. Introduza a sua palavra-passe para continuar.',archive_suggest_title:'Considerar arquivar?',archive_suggest_sub:'Esses contatos não são visitados há 2+ anos. Avalie se devem ser arquivados.',review_btn:'Revisar',not_now_btn:'Agora não',more_lbl:'mais',
+    sort_grouped:'Por tipo',sort_az:'A-Z',sort_za:'Z-A',sort_studies:'Mais estudos',sort_instroom:'Entrada e saída',sort_gemeente:'Por igreja',no_gemeente_lbl:'Sem igreja',sort_inactive:'Contatos inativos',sort_belwhatsapp:'Status de chamada/WhatsApp',never_called:'Nunca ligou',sort_archived:'Arquivados',no_archived_contacts:'Nenhum contato arquivado',contact_status_lbl:'Status',contact_status_hint:'Este contato está arquivado e não aparece mais na lista padrão nem no acompanhamento.',status_actief:'Ativo',status_geen_contact:'Não deseja mais contato',status_verhuisd:'Mudou-se',status_overleden:'Falecido',status_gepauzeerd:'Pausado',status_andere_werker:'Contato de outro colaborador',ct_paused:'Pausado',ct_archive:'Arquivo',ct_deceased:'Falecido',enc_card:'Encriptação',enc_intro:'Escolha se os seus dados (notas, pedidos de oração) são guardados encriptados - localmente e no Google Drive. A própria palavra-passe nunca é guardada nem partilhada em lado nenhum, é apenas memorizada enquanto a app está aberta.',enc_mode_none:'Nenhuma',enc_mode_none_hint:'Como agora - JSON simplesmente legível, sem necessidade de palavra-passe.',enc_mode_partial:'Parcial',enc_mode_partial_hint:'São encriptados as notas, os pedidos de oração e o telefone, e-mail e morada dos contactos - o resto continua a funcionar normalmente, mesmo sem palavra-passe.',enc_mode_full:'Completa',enc_mode_full_hint:'Todos os dados encriptados - é necessária uma palavra-passe para abrir a app.',enc_footnote:'Nota: uma cópia de segurança completa (mais abaixo, em Cópias de segurança → "Transferir") permanece sempre legível, para que possa aceder-lhe sem palavra-passe se mudar de dispositivo. Se perder a palavra-passe, ninguém - nem sequer nós - pode recuperar dados encriptados.',enc_status_none:'Não ativa.',enc_status_locked:'Bloqueado - introduza a sua palavra-passe para desbloquear.',enc_status_unlocked:'Desbloqueado para esta sessão.',enc_unlock_btn:'Desbloquear',enc_change_pw_btn:'Alterar palavra-passe',enc_disable_confirm:'Tem a certeza de que quer desativar a encriptação? Tudo voltará a ser guardado como texto legível.',enc_disabled_done:'Encriptação desativada.',enc_setup_title:'Definir uma palavra-passe',enc_pw_label:'Palavra-passe',enc_pw_confirm_label:'Repita a palavra-passe',enc_setup_confirm_btn:'Ativar encriptação',enc_pw_too_short:'A palavra-passe deve ter pelo menos 6 caracteres.',enc_pw_mismatch:'As palavras-passe não coincidem.',enc_setup_done:'Concluído. Memorize bem esta palavra-passe - não é guardada em lado nenhum.',enc_unlock_title:'Palavra-passe necessária',enc_unlock_hint:'Introduza a sua palavra-passe para continuar.',enc_pw_wrong:'Palavra-passe incorreta.',enc_change_pw_title:'Alterar palavra-passe',enc_change_pw_hint:'Tudo será novamente encriptado com a nova palavra-passe.',enc_new_pw_label:'Nova palavra-passe',enc_gate_title:'App bloqueada',enc_gate_hint:'Estes dados estão completamente encriptados. Introduza a sua palavra-passe para continuar.',archive_suggest_title:'Considerar arquivar?',archive_suggest_sub:'Esses contatos não são visitados há 2+ anos. Avalie se devem ser arquivados.',review_btn:'Revisar',not_now_btn:'Agora não',more_lbl:'mais',
     loading_verse:'Carregando versículo...',drive_card:'Google Drive',sync_history_title:'Histórico de salvamento',sync_history_empty:'Ainda sem salvamentos.',
     backup_title:'Backups',backup_refresh:'Atualizar',backup_sub:'Todos os dias um backup é salvo automaticamente (últimos 21 dias). Você pode voltar a um dia anterior se algo foi apagado por acidente.',backup_needs_drive:'Entre com o Google para ativar os backups.',backup_empty:'Ainda não há backups — um é criado automaticamente todos os dias.',backup_restore_btn:'Restaurar',backup_restore_confirm:'Restaurar backup de',backup_restore_error:'Não foi possível restaurar este backup.',backup_restored:'Backup restaurado.',
     no_cursisten:'Nenhum contato adicionado.',no_leden:'Nenhum membro adicionado.',
@@ -13490,29 +13490,19 @@ function renderSubbar(screen){
     populateLogMonths();
 
   } else if(screen==='cursisten'){
-    // Sort dropdown (compact)
+    // Sort dropdown (compact). Gabriel: the separate group-by-type on/off
+    // toggle button added here first ("add a toggle to separate by type")
+    // was pointless duplication - every OTHER choice in this same dropdown
+    // (A-Z, study count, church, etc.) already shows one flat, ungrouped
+    // list on its own, so "grouped vs not" is just another sort option, not
+    // a second control next to the first. Folded in as "By type" - selecting
+    // it shows the Contact/Interested/.../Member status cards (see
+    // renderCursistenGrouped); every other option in this list shows one
+    // flat list instead (see the generic flat branch in renderCursisten).
     var cs=document.createElement('select');cs.id='cursist-sort';cs.style.cssText='max-width:80px;font-size:12px;';
     cs.onchange=function(){renderCursisten();};
-    cs.innerHTML='<option value="recent">'+t('sort_recent')+'</option><option value="az">A–Z</option><option value="za">Z–A</option><option value="studies">'+t('sort_studies')+'</option><option value="gemeente">'+t('sort_gemeente')+'</option><option value="inactive">'+t('sort_inactive')+'</option><option value="belwhatsapp">'+t('sort_belwhatsapp')+'</option><option value="archived">'+t('sort_archived')+'</option>';
+    cs.innerHTML='<option value="grouped">'+t('sort_grouped')+'</option><option value="az">A–Z</option><option value="za">Z–A</option><option value="studies">'+t('sort_studies')+'</option><option value="gemeente">'+t('sort_gemeente')+'</option><option value="inactive">'+t('sort_inactive')+'</option><option value="belwhatsapp">'+t('sort_belwhatsapp')+'</option><option value="archived">'+t('sort_archived')+'</option>';
     sb.appendChild(cs);
-    // (No separate person-type filter dropdown here anymore - the default
-    // "recent" sort now groups people by status into their own labeled
-    // cards, which does that job visually instead.)
-    // Group-by-type on/off toggle (task: "add a toggle to separate by type,
-    // on/off .. if it's off, let all the contacts appear in one list, 2
-    // columns on computer, sorted alphabetically"). Only meaningful while
-    // "Recent"/default sort is active - the other explicit sort choices
-    // (A-Z, study count, church, etc.) already show one flat list on their
-    // own - so it's grayed out (but still clickable, it just won't visibly
-    // change anything) for those to avoid implying it does something it
-    // doesn't there.
-    var grpBtn=document.createElement('button');
-    var grpOn=getCursistGroupByType();
-    grpBtn.className='g-subbar-btn'+(grpOn?' active':'');
-    grpBtn.title=tMap({nl:'Groeperen op type',en:'Group by type',es:'Agrupar por tipo',fr:'Grouper par type',de:'Nach Typ gruppieren',ro:'Grupează după tip',hu:'Csoportosítás típus szerint',ru:'Группировать по типу',it:'Raggruppa per tipo',pt:'Agrupar por tipo'});
-    grpBtn.innerHTML='<svg width="12" height="12" style="vertical-align:-1px;margin-right:3px"><use href="#ico-dashboard"/></svg>'+tMap({nl:'Type',en:'Type',es:'Tipo',fr:'Type',de:'Typ',ro:'Tip',hu:'Típus',ru:'Тип',it:'Tipo',pt:'Tipo'});
-    grpBtn.onclick=function(){toggleCursistGroupByType();};
-    sb.appendChild(grpBtn);
     // Search (wider) — leading minimalist search icon instead of an emoji
     var csWrap=document.createElement('div');
     csWrap.style.cssText='position:relative;flex:3;min-width:100px;display:flex;align-items:center';
@@ -19737,7 +19727,7 @@ function renderCursisten(){
   // archived contacts (status other than 'actief') by default - they're not
   // deleted, just hidden from every normal view, unless the user explicitly
   // picks the "archived" filter to review/reactivate them.
-  const sortMode=document.getElementById('cursist-sort')?.value||'recent';
+  const sortMode=document.getElementById('cursist-sort')?.value||'grouped';
   const list=db.cursisten.filter(function(cu){
     if(csQ){var h=normNameForMatch((cu.naam||'')+' '+(cu.adres||'')+' '+(cu.plaats||'')+' '+(cu.opmerking||''));if(h.indexOf(csQ)<0)return false;}
     var isArchived=!!(cu.status&&cu.status!=='actief');
@@ -19920,14 +19910,14 @@ function renderCursisten(){
     return{...cu,studies,lastStudy:lastContact,daysSince,givenCodes:getCompletedThemaCodes(studies)};
   });
 
-  // Default "recent" sort groups everyone into labeled cards by status
-  // (Contact → Interested → Candidate for baptism → Member), a progression
-  // rather than an arbitrary split - life-stage tags like Youth/Elderly/
-  // Child stay as badges on the row instead of becoming their own groups.
-  // Any other explicit sort choice (A-Z, study count, etc.) is a request
-  // for one flat ranked list instead, so that still applies across everyone.
-  if(sortMode==='recent'){
-    el.innerHTML=(getCursistGroupByType()?renderCursistenGrouped(enriched):renderCursistenFlat(enriched))+renderArchiveSuggestCard()+renderCursistenArchiveAccordion();
+  // Default "By type" ("grouped") sort groups everyone into labeled cards by
+  // status (Contact → Interested → Candidate for baptism → Member), a
+  // progression rather than an arbitrary split - life-stage tags like
+  // Youth/Elderly/Child stay as badges on the row instead of becoming their
+  // own groups. Every other explicit sort choice (A-Z, study count, etc.) is
+  // a request for one flat list instead - see the shared fallback below.
+  if(sortMode==='grouped'){
+    el.innerHTML=renderCursistenGrouped(enriched)+renderArchiveSuggestCard()+renderCursistenArchiveAccordion();
     return;
   }
   if(sortMode==='az')enriched.sort((a,b)=>cursistSortName(a).localeCompare(cursistSortName(b),'nl'));
@@ -19936,9 +19926,12 @@ function renderCursisten(){
 
   // Both the cursist and lid branches used to build their own near-duplicate
   // markup here; now they share the one accordion-row renderer instead (see
-  // renderCursistCard), wrapped in a single card by wrapCursistenList.
+  // renderCursistCard). Every non-grouped sort mode lands here, so this is
+  // also the "off" state of the old group-by-type toggle Gabriel asked to
+  // fold into this same dropdown: one flat list, 2 columns on desktop (see
+  // .cursisten-flat-2col) instead of split into status cards.
   const rowsHtml=enriched.map(cu=>renderCursistCard(cu)).join('');
-  el.innerHTML=wrapCursistenList(rowsHtml);
+  el.innerHTML='<div class="card cursisten-flat-2col" style="padding:4px 16px">'+rowsHtml+'</div>';
 }
 // Groups contacts into status cards - Contact (default/no status yet),
 // Interested, Bible student, Sabbath school visitor, Candidate for baptism,
@@ -19992,32 +19985,11 @@ function renderCursistenGrouped(enrichedList){
 }
 // Whether the Contacts list is currently split into status groups
 // (Contact/Interested/Bible student/.../Member - see renderCursistenGrouped)
-// or shown as one flat alphabetical list (see renderCursistenFlat below).
-// Defaults to on (grouped), matching the behavior this toggle was added
-// next to (task: "add a toggle to separate by type, on/off").
-function getCursistGroupByType(){
-  return db.settings.cursistenGroupByType!==false;
-}
-function toggleCursistGroupByType(){
-  db.settings.cursistenGroupByType=!getCursistGroupByType();
-  save();
-  renderCursisten();
-  renderSubbar('cursisten');
-}
-// The "off" state of the group-by-type toggle: every (non-archived, already
-// search-filtered) contact in one flat list, sorted alphabetically by
-// surname (cursistSortName - same order the display now reads in, see
-// cursistDisplayName) instead of split into status cards. Gabriel: "let all
-// the contacts appear in one list (2 columns in computer) sorted
-// alphabetically" - the 2-column part is CSS multi-column layout
-// (.cursisten-flat-2col, desktop-only) so a long alphabetical list reads
-// top-to-bottom-then-next-column, like a phone book, rather than one very
-// long single column.
-function renderCursistenFlat(enrichedList){
-  var sorted=enrichedList.slice().sort(function(a,b){return cursistSortName(a).localeCompare(cursistSortName(b),'nl');});
-  var rows=sorted.map(function(cu){return renderCursistCard(cu);}).join('');
-  return '<div class="card cursisten-flat-2col" style="padding:4px 16px">'+rows+'</div>';
-}
+// is now purely the cursist-sort dropdown's "By type" option (sortMode===
+// 'grouped') - see renderCursisten above. Every other sort choice there
+// (A-Z, study count, church, etc.) already shows one flat, 2-column-on-
+// desktop list (.cursisten-flat-2col) on its own, so there's no separate
+// on/off setting alongside it anymore.
 // Small select next to each Contacts card's subtitle that sets a default
 // follow-up frequency for everyone in that group at once. Anyone with their
 // own frequency chosen on their individual contact card keeps that instead
