@@ -12288,7 +12288,15 @@ function receiptPhotoRemoveLabel(){return tMap({nl:'Verwijderen',en:'Remove',es:
 // state straight from _pendingReceiptPhotos (see resetReceiptPhotoWidget).
 function receiptPhotoFieldHtml(widgetId){
   var wid=widgetId||'receipt-photo-widget';
-  var pickerInput='<input type="file" accept="image/*" capture="environment" onchange="onReceiptPhotoPicked(this,\''+wid+'\')" style="display:none">';
+  // capture="environment" used to force straight-to-camera - fine on a phone,
+  // but on a MacBook (no rear/"environment" camera) some browsers just fail
+  // to open anything at all when that attribute is present, so the whole
+  // "add photo" button silently did nothing on desktop (Gabriel: "doesn't
+  // work in the macbook air"). Dropping it still lets mobile browsers offer
+  // their native camera-or-library chooser - it only skips straight to the
+  // camera, which isn't required here - while desktop now always gets the
+  // normal file picker.
+  var pickerInput='<input type="file" accept="image/*" onchange="onReceiptPhotoPicked(this,\''+wid+'\')" style="display:none">';
   var h='<div id="'+wid+'" style="margin-top:10px">';
   h+='<span class="form-label">'+receiptPhotoLabel()+'</span>';
   if(_pendingReceiptPhotos.length){
@@ -22961,10 +22969,17 @@ function getAutofillSuggestion(categorie, cursistId){
     return true;
   }).sort(function(a,b){return b.datum>a.datum?1:-1;});
   if(!past.length)return null;
-  // Build frequency map for km and uren
+  // Build frequency map for km and uren. Km is only ever suggested when
+  // this is scoped to one specific contact (cursistId set) - Gabriel: "don't
+  // fill it in when it's a new activity. Only fill in based on previous
+  // entries of a person, not just the previous entry, but the previous
+  // entry of the same type/categorie." Pooling km across every past entry
+  // of a category (e.g. for contact-less categories like Vergaderen) was
+  // producing an unrelated stale number like "40" on brand-new activities.
+  // Uren stays generic since that wasn't the complaint.
   var kms={},uren={};
   past.forEach(function(e){
-    if(e.km){var k=String(e.km);kms[k]=(kms[k]||0)+1;}
+    if(cursistId&&e.km){var k=String(e.km);kms[k]=(kms[k]||0)+1;}
     if(e.uren){var u=String(e.uren);uren[u]=(uren[u]||0)+1;}
   });
   var topKm=Object.entries(kms).sort(function(a,b){return b[1]-a[1];})[0];
@@ -22977,7 +22992,8 @@ function getAutofillSuggestion(categorie, cursistId){
     if(travelPast.length){
       var tKms={},tUrens={};
       travelPast.forEach(function(e){
-        if(e.km){var k=String(e.km);tKms[k]=(tKms[k]||0)+1;}
+        // Same rule as above: only pool km when scoped to this contact.
+        if(cursistId&&e.km){var k=String(e.km);tKms[k]=(tKms[k]||0)+1;}
         if(e.uren){var u=String(e.uren);tUrens[u]=(tUrens[u]||0)+1;}
       });
       var topTKm=Object.entries(tKms).sort(function(a,b){return b[1]-a[1];})[0];
@@ -36150,6 +36166,21 @@ function duplicateEditEntry(entryId){
   }
   var eeBaseDate=parseLocalDate(e.datum);
   var eeRepeatGroupId=eeRepeatVal?('rpt-'+e.id):null;
+  // Bug fix (Gabriel: "it takes the original entry one is copying and the
+  // other one with changes... at the end one has 2 entries every week"):
+  // "Save as new" by itself is meant to leave the original entry alone and
+  // add a second, edited copy alongside it - that's the whole point of
+  // "new" vs. just saving over the original. But turning on Repeat here
+  // means "make this a recurring series starting now", so the untouched
+  // original (still sitting in db.entries at its old date) became a
+  // redundant duplicate of the series' own first occurrence - same
+  // category/contact/date, just a different id. Once repeat is on, the
+  // original is superseded by occurrence 0 of the new series, so remove it
+  // instead of leaving both around.
+  if(eeRepeatVal){
+    recordTombstone('entries',orig.id);
+    db.entries=db.entries.filter(function(x){return x.id!==orig.id;});
+  }
   for(var eeI=0;eeI<eeRepeatCount;eeI++){
     var occ=(eeI===0)?e:Object.assign({},e,{id:genEntryId()});
     if(eeI>0){
