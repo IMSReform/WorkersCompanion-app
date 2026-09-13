@@ -1109,7 +1109,16 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
 .sti-content{flex:1;min-width:0}
 .sti-name{font-size:13px;font-weight:600;color:var(--text)}
 .sti-theme{font-size:11px;color:var(--text3);margin-top:1px}
-.sti-note{font-size:12px;color:var(--amber);font-style:italic;margin-top:2px;white-space:pre-wrap}
+/* Gabriel: "move the comments under description.. and make it gray, not
+   the brown color" - this used to be var(--amber) (the same gold/brown as
+   the app's amber accent elsewhere) AND live outside .sti-cols as a
+   full-width sibling, so it started flush at the row's left edge instead
+   of lining up under the name/theme text above it, which sit indented
+   past the date/hours columns. Now nested inside .sti-content (see below)
+   so it inherits that same indent, and recolored to a plain gray so it
+   reads as a quiet continuation of the description, not a separate
+   highlighted callout. */
+.sti-note{font-size:12px;color:var(--text2);font-style:italic;margin-top:2px;white-space:pre-wrap}
 @media(min-width:768px){
   /* On a wide screen (see .modal-box.wide below) the timeline reads better
      as an actual table-like row - date, hours and the topic/name each in
@@ -20413,17 +20422,17 @@ function openCursistDetail(id){
       :'<div class="sti-name">'+(getThemaDisplay(entry.thema||entry.omschrijving||getCatLabel(entry.categorie)))+'</div>';
     var themeHtml=(!isCall&&isStudy&&entry.themacode&&entry.thema&&entry.themacode!=='Vrij onderwerp'?'<div class="sti-theme">'+entry.themacode+'</div>':'')
       +(!isCall&&!isStudy?'<div class="sti-theme">'+getCatLabel(entry.categorie)+'</div>':'');
+    var noteHtml=entry.opmerking?'<div class="sti-note">'+entry.opmerking+'</div>':'';
     return'<div class="study-timeline-item" id="sti-'+eid+'" onclick="openEntryDetailModal('+eidArg+')">'
       +'<div class="sti-cols">'
         +'<div class="sti-date">'+formatDateShort(entry.datum)+timeSuffix+'</div>'
         +'<div style="font-size:12px;font-weight:600;color:var(--text2)">'+(parseFloat(entry.uren)||0)+t('hours_abbr')+'</div>'
-        +'<div class="sti-content">'+nameHtml+themeHtml+'</div>'
+        +'<div class="sti-content">'+nameHtml+themeHtml+noteHtml+'</div>'
         +'<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">'
           +'<button class="row-del" style="padding:2px 6px;font-size:11px" onclick="event.stopPropagation();quickRepeatFromLogEntry('+eidArg+')" title="'+(t('repeat_lbl')||'Herhaal')+'"><svg width="12" height="12"><use href="#ico-refresh"/></svg></button>'
           +'<button class="row-del" style="padding:2px 6px;font-size:11px" onclick="event.stopPropagation();deleteStudyEntry('+eidArg+','+cidArg+')">\u2715</button>'
         +'</div>'
       +'</div>'
-      +(entry.opmerking?'<div class="sti-note">'+entry.opmerking+'</div>':'')
     +'</div>';
   }
 
@@ -20726,17 +20735,17 @@ function openLidDetail(id){
       ?'<div class="sti-name" style="display:flex;align-items:center;gap:5px"><svg width="12" height="12" style="color:var(--brand);flex-shrink:0"><use href="#'+cmi.icon+'"/></svg>'+cmi.label+'</div>'
       :'<div class="sti-name">'+nameLbl+'</div>';
     var themeHtml=(!isCall&&!isVisit?'<div class="sti-theme">'+getCatLabel(entry.categorie)+'</div>':'');
+    var noteHtml=entry.opmerking?'<div class="sti-note">'+entry.opmerking+'</div>':'';
     return'<div class="study-timeline-item" id="sti-'+eid+'" onclick="openEntryDetailModal('+eidArg+')">'
       +'<div class="sti-cols">'
         +'<div class="sti-date">'+formatDateShort(entry.datum)+timeSuffix+'</div>'
         +'<div style="font-size:12px;font-weight:600;color:var(--text2)">'+(parseFloat(entry.uren)||0)+t('hours_abbr')+'</div>'
-        +'<div class="sti-content">'+nameHtml+themeHtml+'</div>'
+        +'<div class="sti-content">'+nameHtml+themeHtml+noteHtml+'</div>'
         +'<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">'
           +'<button class="row-del" style="padding:2px 6px;font-size:11px" onclick="event.stopPropagation();quickRepeatFromLogEntry('+eidArg+')" title="'+(t('repeat_lbl')||'Herhaal')+'"><svg width="12" height="12"><use href="#ico-refresh"/></svg></button>'
           +'<button class="row-del" style="padding:2px 6px;font-size:11px" onclick="event.stopPropagation();deleteStudyEntry('+eidArg+','+cidArg+');closeModals();openLidDetail('+cidArg+')">\u2715</button>'
         +'</div>'
       +'</div>'
-      +(entry.opmerking?'<div class="sti-note">'+entry.opmerking+'</div>':'')
     +'</div>';
   }
 
@@ -36127,7 +36136,27 @@ function openEditEntryModal(entryId,skipSummary){
   h+='<div><span class="form-label">'+t('wizard_date')+'</span><input type="date" id="ee-datum" value="'+(e.datum||'')+'" style="width:100%"></div>';
   h+='<div><span class="form-label">'+t('wizard_hours')+'</span><input type="number" id="ee-uren" min="0" step="0.25" value="'+(e.uren||0)+'" style="width:100%"></div>';
   h+='</div>';
-  h+='<div style="margin-bottom:8px"><span class="form-label">'+t('wizard_time')+' <span style="font-size:11px;color:var(--text3);font-weight:400">('+(t('optional')||'opt.')+')</span></span>'+renderTimePicker('ee-tijd',e.tijd||'')+'</div>';
+  // Herhalen used to live in its own section way down past the Save/Cancel
+  // buttons (Gabriel: "move herhalen... right next to the time and before
+  // Km. There's a space there") - the Tijdstip row only ever filled its
+  // left column, leaving the right half of this grid row empty, so the
+  // repeat select now shares that row instead of the picker sitting alone
+  // above an unused gap. onEeRepeatChange()/the repeat-count field below
+  // still work purely off element ids, unaffected by moving the select.
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;align-items:end">';
+  h+='<div><span class="form-label">'+t('wizard_time')+' <span style="font-size:11px;color:var(--text3);font-weight:400">('+(t('optional')||'opt.')+')</span></span>'+renderTimePicker('ee-tijd',e.tijd||'')+'</div>';
+  h+='<div><span class="form-label">'+t('repeat_lbl')+'</span>';
+  h+='<select id="ee-repeat" onchange="onEeRepeatChange()" style="width:100%">';
+  h+='<option value="">'+t('repeat_none')+'</option>';
+  h+='<option value="weekly">'+t('repeat_weekly')+'</option>';
+  h+='<option value="biweekly">'+t('repeat_biweekly')+'</option>';
+  h+='<option value="monthly">'+t('repeat_monthly')+'</option>';
+  h+='</select></div>';
+  h+='</div>';
+  h+='<div id="ee-repeat-count-wrap" style="display:none;margin-bottom:8px">';
+  h+='<span class="form-label">'+t('repeat_count_lbl')+'</span>';
+  h+='<input type="number" id="ee-repeat-count" value="8" min="2" max="52" style="width:100%">';
+  h+='</div>';
   h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">';
   h+='<div><span class="form-label">Km</span><input type="number" id="ee-km" min="0" value="'+(e.kmHeen!=null?e.kmHeen:(e.km||0))+'" style="width:100%">'+kmRetourBlockHtml('ee',e.kmRetour)+'</div>';
   h+='<div><span class="form-label">'+t('wizard_travel_hours')+'</span><input type="number" id="ee-reisuren" min="0" step="0.25" value="'+(e.reisUren||0)+'" style="width:100%"></div>';
@@ -36189,27 +36218,8 @@ function openEditEntryModal(entryId,skipSummary){
   h+='<button class="btn primary" onclick="saveEditEntry('+entryIdArg+')" style="flex:1">'
     +t('save_btn')+'</button>';
   h+='</div>';
-  // Repeat (weekly/every-2-weeks/monthly) - same option already offered
-  // when creating a brand-new activity from the main wizard, the quick-repeat
-  // popup, and the standalone "+ Activiteit plannen" modal, added here too
-  // per Gabriel's feedback ("I don't see it in this edit entry from
-  // calendar"). Tied to the "Guardar como nuevo"/"Save as new" button below
-  // rather than the main Guardar button - this edit form's own save always
-  // overwrites just this one entry, same as before, but "save as new" with a
-  // repeat option chosen generates a whole series of new entries/plans
-  // starting from whatever date is in the form, one interval apart, instead
-  // of only ever making a single copy.
-  h+='<div style="margin-top:12px"><span class="form-label">'+t('repeat_lbl')+'</span>';
-  h+='<select id="ee-repeat" onchange="onEeRepeatChange()" style="margin-bottom:8px">';
-  h+='<option value="">'+t('repeat_none')+'</option>';
-  h+='<option value="weekly">'+t('repeat_weekly')+'</option>';
-  h+='<option value="biweekly">'+t('repeat_biweekly')+'</option>';
-  h+='<option value="monthly">'+t('repeat_monthly')+'</option>';
-  h+='</select>';
-  h+='<div id="ee-repeat-count-wrap" style="display:none;margin-bottom:8px">';
-  h+='<span class="form-label">'+t('repeat_count_lbl')+'</span>';
-  h+='<input type="number" id="ee-repeat-count" value="8" min="2" max="52" style="width:100%">';
-  h+='</div></div>';
+  // Repeat select (weekly/every-2-weeks/monthly) now lives up next to
+  // Tijdstip, right after the Datum/Uren fields - see the comment there.
   // Save the currently-filled-in form as a brand-new entry instead of
   // overwriting the original — lets you tweak the date/study/etc. and log
   // it as a repeat without losing the original entry. With a repeat option
