@@ -366,7 +366,11 @@ html.dark .settings-box{border-color:rgba(255,255,255,.06)}
    Estudiantes/Miembros groups (built separately, see renderHome) marks a
    real boundary; within a group the rows just stack. */
 .followup-item{display:flex;align-items:center;gap:10px;padding:9px 0}
-.fu-avatar{width:34px;height:34px;border-radius:50%;background:var(--green-light);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+/* Same solid brand/blue fill as .cc-avatar in the Contacts tab (Gabriel:
+   "the contacts have a different color than in contacts tab") - this card
+   shows the same people, so the avatar shouldn't look like a different
+   color scheme depending on which screen you're looking from. */
+.fu-avatar{width:34px;height:34px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
 .fu-name{font-size:13px;font-weight:600}
 .fu-meta{font-size:11px;color:var(--text3);margin-top:1px}
 .todo-row{display:flex;align-items:center;gap:10px;padding:8px 0;transition:opacity .4s ease}
