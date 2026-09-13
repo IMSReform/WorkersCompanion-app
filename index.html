@@ -1118,7 +1118,7 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
    so it inherits that same indent, and recolored to a plain gray so it
    reads as a quiet continuation of the description, not a separate
    highlighted callout. */
-.sti-note{font-size:12px;color:var(--text2);font-style:italic;margin-top:2px;white-space:pre-wrap}
+.sti-note{font-size:12px;color:var(--text2);margin-top:2px;white-space:pre-wrap}
 @media(min-width:768px){
   /* On a wide screen (see .modal-box.wide below) the timeline reads better
      as an actual table-like row - date, hours and the topic/name each in
@@ -19138,7 +19138,7 @@ function buildCursistAccBody(cu,preOpenCallHist){
     }
   }
   h+='</div>'; // acc-info-list
-  if(cu.opmerking)h+='<div style="margin-top:6px;font-size:12px;color:var(--text3);font-style:italic">'+cu.opmerking+'</div>';
+  if(cu.opmerking)h+='<div style="margin-top:6px;font-size:12px;color:var(--text3)">'+cu.opmerking+'</div>';
   h+='<div class="card-label" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;margin:10px 0 6px" onclick="toggleCursistInlineHist('+cu.id+')">';
   h+='<span>'+t('study_history_lbl')+'</span><svg id="cih-arrow-'+cu.id+'" width="11" height="11" style="color:var(--brand);transition:transform .2s;flex-shrink:0"><use href="#ico-chevron-right"/></svg></div>';
   h+='<div id="cih-body-'+cu.id+'" style="display:none">';
@@ -28403,7 +28403,15 @@ function fcTitle(){
   return short[fcWeekStart.getMonth()]+' – '+short[end.getMonth()]+' '+end.getFullYear();
 }
 function renderFullCalHeader(){
-  var h='<div class="fc-header" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:12px 10px 10px;border-bottom:1px solid var(--border);flex-shrink:0;box-sizing:border-box;width:100%">';
+  // Unlike .g-header (which gets its top safe-area inset via a dedicated
+  // CSS rule), this header is built entirely inline and had a plain 12px
+  // top padding - fine on older iPhones, but on iPhone 13 Pro (and any
+  // notch/Dynamic-Island device) that put the close (X)/title/Vandaag row
+  // right under the status bar, visually overlapping the clock/battery and
+  // leaving the X unreachable since it sits first in that same crowded
+  // strip (Gabriel: "the header of the full calendar is on top of the
+  // iphone own information.. and I cannot close that window").
+  var h='<div class="fc-header" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:calc(12px + env(safe-area-inset-top)) 10px 10px;border-bottom:1px solid var(--border);flex-shrink:0;box-sizing:border-box;width:100%">';
   h+='<button onclick="closeFullCalendar()" style="background:none;border:none;font-size:26px;line-height:1;color:var(--text3);cursor:pointer;padding:0 4px;flex-shrink:0" aria-label="Close">&times;</button>';
   h+='<div id="fc-title" style="font-size:16px;font-weight:700;flex:1;min-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+fcTitle()+'</div>';
   // #976: search toggle - a magnifier button that swaps the whole body for a
@@ -30885,6 +30893,14 @@ function agendaFollowUp(planId,type,link){
     p.skipped=true;
     p.followUpAction=type;
     p.followUpDate=ymdLocal();
+    // Same #1032 fix as agendaQuickConfirm/agendaFollowUpReschedSave: without
+    // an updatedAt timestamp here, the next Drive sync's merge could let a
+    // stale pre-skip copy of this plan (still not skipped) from another
+    // device silently win, which is exactly why picking "No follow-up
+    // needed" (or message/call) kept reappearing later instead of staying
+    // dismissed (Gabriel: "when I say no... and I choose no consequence..
+    // it keeps coming back").
+    touch(p);
     savePlanned();
   }
   closeModals();
@@ -36416,18 +36432,23 @@ function duplicateEditEntry(entryId){
   // other one with changes... at the end one has 2 entries every week"):
   // "Save as new" by itself is meant to leave the original entry alone and
   // add a second, edited copy alongside it - that's the whole point of
-  // "new" vs. just saving over the original. But turning on Repeat here
-  // means "make this a recurring series starting now", so the untouched
-  // original (still sitting in db.entries at its old date) became a
-  // redundant duplicate of the series' own first occurrence - same
-  // category/contact/date, just a different id. Once repeat is on, the
-  // original is superseded by occurrence 0 of the new series, so remove it
-  // instead of leaving both around.
-  if(eeRepeatVal){
-    recordTombstone('entries',orig.id);
-    db.entries=db.entries.filter(function(x){return x.id!==orig.id;});
-  }
-  for(var eeI=0;eeI<eeRepeatCount;eeI++){
+  // "new" vs. just saving over the original. Turning on Repeat here means
+  // "make this a recurring series starting now", and occurrence 0 (same
+  // date as the original) would otherwise be a redundant duplicate of it -
+  // BUT deleting the original to avoid that duplicate (the previous fix,
+  // below) turned out to erase real edits the original never asked to
+  // lose: clearing the note here so future weekly copies wouldn't all
+  // repeat the same comment also wiped that note off the untouched
+  // original entry it came from (Gabriel: "I deleted the opmerkingen in an
+  // entry.. to save it as nieuw.. but the app deleted the opmerkingen from
+  // the original"). So instead of removing the original, just skip
+  // generating a same-date occurrence 0 at all - the original already
+  // covers that date - and start the new series at the next interval.
+  //
+  // (Previous approach, now removed: recordTombstone('entries',orig.id);
+  // db.entries=db.entries.filter(function(x){return x.id!==orig.id;});)
+  var eeRepeatStart=eeRepeatVal?1:0;
+  for(var eeI=eeRepeatStart;eeI<eeRepeatCount;eeI++){
     var occ=(eeI===0)?e:Object.assign({},e,{id:genEntryId()});
     if(eeI>0){
       var occD=new Date(eeBaseDate);
