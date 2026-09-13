@@ -7284,7 +7284,7 @@ var TRANSLATIONS = {
     reminder_text_lbl:'Texto del recordatorio',
     test_reminder:'Probar recordatorio',
     my_data:'Mis datos',
-    name_lbl:'Nombre', name_ph:'Escribe tu nombre', gemeente_lbl:'Congregaci\u00f3n', gemeente_ph:'Escribe tu congregaci\u00f3n', email_lbl:'Correo electr\u00f3nico', email_hint:'Se usa para enviarte por correo tu informe aprobado.', tel_hint:'Se usa para que el presidente pueda llamarte o escribirte por WhatsApp.', birthday_lbl:'Fecha de nacimiento', birthday_hint:'Se comparte con el presidente para que vea tu cumpleaños en Próximos eventos.',
+    name_lbl:'Nombre', name_ph:'Escribe tu nombre', gemeente_lbl:'Iglesia', gemeente_ph:'Escribe tu iglesia', email_lbl:'Correo electr\u00f3nico', email_hint:'Se usa para enviarte por correo tu informe aprobado.', tel_hint:'Se usa para que el presidente pueda llamarte o escribirte por WhatsApp.', birthday_lbl:'Fecha de nacimiento', birthday_hint:'Se comparte con el presidente para que vea tu cumpleaños en Próximos eventos.',
     import_card:'Importar datos',
     cat_manage:'Gestionar categorías',
     cat_add:'+ Añadir',new_cat_ph:'Nombre nueva categoría...',
@@ -7362,7 +7362,7 @@ var TRANSLATIONS = {
     up_to_date:'\u00a1Todo al d\u00eda!',
     export_csv2:'Exportar CSV',
     print_btn:'Imprimir/Exportar PDF',
-    gemeente_lbl:'Congregación',
+    gemeente_lbl:'Iglesia',
     greeting_morning:'Buenos días',
     greeting_afternoon:'Buenas tardes',
     greeting_evening:'Buenas noches',
@@ -7398,7 +7398,7 @@ var TRANSLATIONS = {
     wizard_free_topic:'Describe el tema',
     wizard_free_placeholder:'Tema libre...',
     wizard_notes_title:'Notas y seguimiento',
-    wizard_gemeente:'Congregación / ubicación',
+    wizard_gemeente:'Iglesia / ubicación',
     wizard_gemeente_ph:'ej. Rotterdam, Utrecht...',
     wizard_notes_lbl:'Notas',
     wizard_notes_ph:'¿Cómo va? ¿Algo notable?',
@@ -21316,6 +21316,18 @@ function entryEffectiveAard(e){
     rawAard=(cu&&isLidCursist(cu))?'Gemeentebediening':'Evangelisatie';
   }
   return rawAard;
+}
+// Same rule the main wizard uses (draft.needsGemeente, see the step that
+// sets showGemeente) to decide whether a category is church-related enough
+// to need a Gemeente field at all - reused here so the edit-entry modal's
+// ee-gemeente field can be conditionally shown/hidden by category instead
+// of always appearing (Gabriel: "What does church have to do in that pop
+// up? I think you could remove it from there.." - it's genuinely needed for
+// Preken/Vergaderen/etc, just shouldn't show for e.g. a Bijbelstudie entry).
+function categoryNeedsGemeente(catLabel){
+  var cat=findCatByLabel(catLabel);
+  var aard=cat&&cat.aard;
+  return aard==='Gemeentebediening'||aard==='Commissie'||catLabel==='Vergaderen'||catLabel==='Buitenlandse zending'||catLabel==='Predicacion'||catLabel==='Vervoer';
 }
 
 function _buildRapportInner(){
@@ -36073,6 +36085,7 @@ function openEditEntryModal(entryId,skipSummary){
     });
   ensureChurches();
   var eeIsNewChurch=!!(e.gemeente&&db.churches.indexOf(e.gemeente)===-1);
+  var eeNeedsGemeente=categoryNeedsGemeente(e.categorie);
   var churchOpts=db.churches.slice().sort(function(a,b){return a.localeCompare(b);}).map(function(g){
     return '<option value="'+g.replace(/"/g,'&quot;')+'" '+(e.gemeente===g?'selected':'')+'>'+g+'</option>';
   }).join('');
@@ -36132,6 +36145,12 @@ function openEditEntryModal(entryId,skipSummary){
   h+='<div id="ee-full-form" style="display:'+(skipSummary?'block':'none')+'">';
   h+='<div style="font-size:15px;font-weight:700;margin-bottom:14px">'
     +(LANG==='en'?'Edit entry':LANG==='es'?'Editar registro':LANG==='fr'?'Modifier entrée':LANG==='de'?'Eintrag bearbeiten':LANG==='ro'?'Editare intrare':LANG==='hu'?'Bejegyzés szerkesztése':LANG==='ru'?'Редактировать запись':'Invoer bewerken')+'</div>';
+  // Grouped into 3 labeled sections (Gabriel: "I wonder how this whole
+  // entry edit could be seen grouped/organized... idea: wat+how much,
+  // Categorie+met wie, thema+opmerkingen?") - reuses the same
+  // .settings-section-title header style as Settings, with a top border on
+  // the 2nd/3rd headers as the visual divider line he asked for.
+  h+='<div class="settings-section-title settings-section-title-first">'+tMap({nl:'Wat & hoeveel',en:'What & how much',es:'Qué y cuánto',fr:'Quoi et combien',de:'Was & wie viel',ro:'Ce și cât',hu:'Mi és mennyi',ru:'Что и сколько',it:'Cosa e quanto',pt:'O quê e quanto'})+'</div>';
   h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">';
   h+='<div><span class="form-label">'+t('wizard_date')+'</span><input type="date" id="ee-datum" value="'+(e.datum||'')+'" style="width:100%"></div>';
   h+='<div><span class="form-label">'+t('wizard_hours')+'</span><input type="number" id="ee-uren" min="0" step="0.25" value="'+(e.uren||0)+'" style="width:100%"></div>';
@@ -36163,6 +36182,7 @@ function openEditEntryModal(entryId,skipSummary){
   h+='</div>';
   h+='<div style="margin-bottom:8px"><span class="form-label">'+t('col_kosten')+' ('+currencySymbol()+')</span><input type="number" id="ee-kosten" min="0" step="0.01" value="'+(e.kosten||0)+'" style="width:100%"></div>';
   h+=receiptPhotoFieldHtml('ee-receipt-photo-widget');
+  h+='<div class="settings-section-title" style="margin-top:22px;padding-top:14px;border-top:1px solid var(--border)">'+tMap({nl:'Categorie & met wie',en:'Category & with whom',es:'Categoría y con quién',fr:'Catégorie et avec qui',de:'Kategorie & mit wem',ro:'Categorie și cu cine',hu:'Kategória és kivel',ru:'Категория и с кем',it:'Categoria e con chi',pt:'Categoria e com quem'})+'</div>';
   h+='<span class="form-label">'+t('wizard_cat')+'</span>';
   h+='<select id="ee-cat" style="width:100%;margin-bottom:8px" onchange="toggleEeMultiVisibility()">'+catOpts+'</select>';
   h+='<span class="form-label">'+t('wizard_desc')+'</span>';
@@ -36185,6 +36205,13 @@ function openEditEntryModal(entryId,skipSummary){
   if(eeCheckList)h+='<input type="text" id="ee-multi-search" placeholder="'+tMap({nl:'Zoeken...',en:'Search...',es:'Buscar...',fr:'Rechercher...',de:'Suchen...',ro:'Caută...',hu:'Keresés...',ru:'Поиск...',it:'Cerca...',pt:'Pesquisar...'})+'" oninput="filterContactChecklist(\'ee-multi-search\',\'ee-multi-list\')" style="margin-bottom:6px">';
   h+='<div id="ee-multi-list" style="max-height:180px;overflow-y:auto">'+(eeCheckList||'<div style="font-size:12px;color:var(--text3)">'+t('wizard_no_contact')+'</div>')+'</div>';
   h+='</div></div>';
+  // Only shown for church-related categories (Gabriel: "What does church
+  // have to do in that pop up? I think you could remove it from there..")
+  // - mirrors the main wizard's draft.needsGemeente rule via
+  // categoryNeedsGemeente() instead of always showing, since the field is
+  // genuinely needed when editing e.g. a Preken/Vergaderen entry. Toggled
+  // live on category change by toggleEeMultiVisibility().
+  h+='<div id="ee-gemeente-section" style="display:'+(eeNeedsGemeente?'block':'none')+'">';
   h+='<span class="form-label">'+t('wizard_gemeente')+'</span>';
   h+='<select id="ee-gemeente" style="width:100%;margin-bottom:4px" onchange="toggleEeGemeenteNew()">';
   h+='<option value="">—</option>'+churchOpts+'<option value="__new__" '+(eeIsNewChurch?'selected':'')+'>'+t('wizard_new_gemeente')+'</option>';
@@ -36192,6 +36219,8 @@ function openEditEntryModal(entryId,skipSummary){
   h+='<div id="ee-gemeente-new-wrap" style="display:'+(eeIsNewChurch?'block':'none')+';margin-bottom:8px">';
   h+='<input type="text" id="ee-gemeente-new" placeholder="'+t('wizard_gemeente_ph')+'" value="'+(eeIsNewChurch?e.gemeente.replace(/"/g,'&quot;'):'')+'" style="width:100%">';
   h+='</div>';
+  h+='</div>';
+  h+='<div class="settings-section-title" style="margin-top:22px;padding-top:14px;border-top:1px solid var(--border)">'+tMap({nl:'Thema & opmerkingen',en:'Topic & notes',es:'Tema y notas',fr:'Sujet et notes',de:'Thema & Notizen',ro:'Temă și note',hu:'Téma és megjegyzések',ru:'Тема и заметки',it:'Argomento e note',pt:'Tema e notas'})+'</div>';
   h+='<span class="form-label">'+t('wizard_theme')+'</span>';
   h+='<select id="ee-thema" style="width:100%;margin-bottom:8px" onchange="toggleEeVrij()">'+themaOpts+'</select>';
   h+='<div id="ee-vrij-wrap" style="display:'+(e.themacode==='Vrij onderwerp'?'block':'none')+';margin-bottom:8px">';
@@ -36604,6 +36633,10 @@ function toggleEeMultiVisibility(){
     var wrap=document.getElementById('ee-multi-wrap');
     if(wrap){wrap.style.display='none';wrap.querySelectorAll('.ee-multi-cb').forEach(function(el){el.checked=false;});}
   }
+  // Same category change also drives whether Gemeente makes sense to show
+  // at all - see categoryNeedsGemeente() (#1077b).
+  var gemSec=document.getElementById('ee-gemeente-section');
+  if(gemSec)gemSec.style.display=categoryNeedsGemeente(cat.value)?'block':'none';
 }
 function toggleEeMultiStudent(){
   var cb=document.getElementById('ee-multi-toggle'),wrap=document.getElementById('ee-multi-wrap');
