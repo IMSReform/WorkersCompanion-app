@@ -33006,7 +33006,7 @@ function renderStudieRow(les, stats) {
   return h;
 }
 
-function renderStudieContact(c, status, lesCode) {
+function renderStudieContact(c, status, lesCode, onclickPrefix) {
   var dot = status==='voltooid'
     ? '<span style="width:7px;height:7px;border-radius:50%;background:#22863a;display:inline-block;margin-right:5px;flex-shrink:0"></span>'
     : '<span style="width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block;margin-right:5px;flex-shrink:0"></span>';
@@ -33020,9 +33020,15 @@ function renderStudieContact(c, status, lesCode) {
   // approxDate entries (added via "add contacts who already received this
   // study, exact date unknown") only show the year here rather than a
   // fake-precise full date.
+  // onclickPrefix: optional extra JS statement(s) run before opening the
+  // history modal - showStudieContactsPopover() passes closeStudieContacts
+  // Popover() here so tapping a contact in that small popover closes it
+  // first, instead of leaving the bigger detail modal opening underneath it
+  // (Gabriel: "move them so that both of them are visible" - simplest fix is
+  // there's nothing left to overlap with once the popover closes itself).
   var dateLabel = c.approxDate ? (c.datumYear||c.datum) : c.datum;
   var sessionBadge = (c.sessionCount>1) ? '<span style="font-size:10px;font-weight:700;color:var(--text3);background:var(--border);padding:0 5px;border-radius:8px;margin-right:6px">'+c.sessionCount+'&times;</span>' : '';
-  var h = '<div style="display:flex;align-items:center;padding:5px 8px;background:var(--surface2);border-radius:6px;margin-bottom:4px;cursor:pointer" onclick="openStudieContactHistoryModal(\''+lesCode+'\','+ssIdArg(c.cursistKey)+')">';
+  var h = '<div style="display:flex;align-items:center;padding:5px 8px;background:var(--surface2);border-radius:6px;margin-bottom:4px;cursor:pointer" onclick="'+(onclickPrefix||'')+'openStudieContactHistoryModal(\''+lesCode+'\','+ssIdArg(c.cursistKey)+')">';
   h += dot;
   h += '<span style="font-size:13px;font-weight:500;flex:1">'+c.naam+'</span>';
   h += sessionBadge;
@@ -33069,12 +33075,12 @@ function showStudieContactsPopover(ev, code){
   if(stats.actueel.length){
     any = true;
     h += '<div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:6px;margin-top:'+((stats.gepland&&stats.gepland.length)?'10px':'0')+'">&#128336; '+t('studie_current')+' ('+stats.actueel.length+')</div>';
-    stats.actueel.forEach(function(c){ h += renderStudieContact(c,'actueel',code); });
+    stats.actueel.forEach(function(c){ h += renderStudieContact(c,'actueel',code,'closeStudieContactsPopover();'); });
   }
   if(stats.voltooid.length){
     any = true;
     h += '<div style="font-size:11px;font-weight:700;color:#22863a;margin-bottom:6px;margin-top:'+((stats.actueel.length||(stats.gepland&&stats.gepland.length))?'10px':'0')+'">&#10003; '+t('studie_completed')+' ('+stats.voltooid.length+')</div>';
-    stats.voltooid.forEach(function(c){ h += renderStudieContact(c,'voltooid',code); });
+    stats.voltooid.forEach(function(c){ h += renderStudieContact(c,'voltooid',code,'closeStudieContactsPopover();'); });
   }
   if(!any){
     h += '<div style="font-size:12px;color:var(--text3);text-align:center;padding:10px 0">'+t('studie_no_contacts')+'</div>';
