@@ -11522,15 +11522,37 @@ function initPullToRefresh(){
 // remote automatically winning. Records without a timestamp (older data
 // saved before this existed) fall back to the previous remote-wins
 // behavior, so nothing regresses for data that predates this fix.
-function mergeArraysById(localArr, remoteArr, tombIds){
+// tombTimes is {id: deletedAtTimestamp} (see tombIdsFor below - it used to
+// be a plain {id:true} presence map until the fix described next to it).
+function mergeArraysById(localArr, remoteArr, tombTimes){
   localArr = localArr||[];
   remoteArr = remoteArr||[];
-  tombIds = tombIds||{};
+  tombTimes = tombTimes||{};
   var localById = {};
   localArr.forEach(function(l){ if(l && l.id!=null) localById[l.id]=l; });
   var remoteIds = {};
   remoteArr.forEach(function(r){ if(r && r.id!=null) remoteIds[r.id]=true; });
-  var result = remoteArr.filter(function(r){ return !(r && r.id!=null && tombIds[r.id]); })
+  // #1105 Gabriel: restored entries on the computer kept getting wiped out
+  // again as soon as the iPhone (which never had them, and still carried
+  // its own old tombstone for those same ids from whatever originally lost
+  // them) synced back in. A tombstone used to be an absolute, permanent veto
+  // with no way for a later restore to ever out-rank it - restoring locally
+  // only cleared THIS device's own tombstone array (see
+  // applyRestoredBackupData), but the very next merge would re-import the
+  // other device's still-present tombstone via mergeTombstones() and filter
+  // the restored record straight back out, on every device it touched next.
+  // Fix: a tombstone only wins if the record itself isn't proven newer than
+  // the deletion - i.e. its _upd predates the tombstone's own timestamp.
+  // applyRestoredBackupData now touch()es every record it restores, so a
+  // deliberate restore always carries an _upd newer than any old delete
+  // tombstone and beats it here, on whichever device the merge runs on.
+  function beatsTomb(rec){
+    if(!rec || rec.id==null) return true;
+    var tt = tombTimes[rec.id];
+    if(!tt) return true; // no tombstone recorded for this id
+    return !!(rec._upd && rec._upd > tt);
+  }
+  var result = remoteArr.filter(function(r){ return beatsTomb(r); })
     .map(function(r){
       if(!r || r.id==null) return r;
       var l = localById[r.id];
@@ -11552,7 +11574,7 @@ function mergeArraysById(localArr, remoteArr, tombIds){
       return r; // neither side has ever been touched — keep old behavior
     });
   localArr.forEach(function(l){
-    if(l && l.id!=null && !remoteIds[l.id] && !tombIds[l.id]) result.push(l);
+    if(l && l.id!=null && !remoteIds[l.id] && beatsTomb(l)) result.push(l);
   });
   return result;
 }
@@ -11587,11 +11609,13 @@ function mergeTombstones(localT, remoteT){
   });
   return result;
 }
-// {id:true,...} lookup for a given collection, built from the merged
-// tombstone log — the shape mergeArraysById expects for its tombIds param.
+// {id:deletedAtTimestamp,...} lookup for a given collection, built from the
+// merged tombstone log - the shape mergeArraysById's beatsTomb() expects.
+// Used to just be {id:true} until #1105's fix needed the actual deletion
+// time to compare against a restored record's _upd.
 function tombIdsFor(coll, tombstones){
   var out={};
-  (tombstones||[]).forEach(function(x){ if(x.coll===coll) out[x.id]=true; });
+  (tombstones||[]).forEach(function(x){ if(x.coll===coll) out[x.id]=Math.max(out[x.id]||0, x.t||1); });
   return out;
 }
 // Same idea for arrays of plain values (churches, vacationDays) which have
@@ -12251,6 +12275,21 @@ async function applyRestoredBackupData(data){
   db.todos=data.todos||[];
   db.prayers=data.prayers||[];
   db.gemeentePlanning=data.gemeentePlanning||[];
+  // #1105 Gabriel: "I chose to retake the backup from today.. and everything
+  // is back on the computer.. but I'm sure the iphone will make the computer
+  // go back" - restoring here only clears THIS device's own tombstones
+  // (below), but another device that never received the restore can still
+  // carry its own old tombstone for the same ids (e.g. the iPhone, which
+  // lost the last few days some other way and tombstoned them locally). On
+  // the next sync that stale tombstone merges back in and, since
+  // mergeArraysById used to treat any tombstone as an absolute veto, wipes
+  // the just-restored records straight back out - on every device, since
+  // that merged tombstone log then gets pushed onward too. Fixing that
+  // required mergeArraysById to let a record's own _upd timestamp out-rank a
+  // tombstone that predates it - so every restored record needs a fresh
+  // touch() here, proving it's newer than any old delete, wherever that
+  // delete is still sitting.
+  ID_COLLS.forEach(function(coll){ (db[coll]||[]).forEach(touch); });
   ID_COLLS.forEach(function(coll){
     var newIds={};
     (db[coll]||[]).forEach(function(rec){ if(rec&&rec.id!=null) newIds[rec.id]=true; });
