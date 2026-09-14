@@ -9723,6 +9723,22 @@ function ssOpenCellSuggest(inp,field,onPick){
     });
     position();
     drop.style.display='block';
+    // Gabriel: the zoom-scaling correction above didn't fix it - the dropdown
+    // still landed exactly on top of the input on the MacBook Air. That
+    // "exact overlap" (not just a proportional offset) points to a different
+    // cause: this first position() call can run in the very same tick the
+    // wizard step's DOM was just inserted and auto-focused (see
+    // wizAttachSuggest's 'focus' listener), and Safari has a known quirk
+    // where getBoundingClientRect() called that immediately after insertion/
+    // focus - especially inside an animating/transitioning step container -
+    // can return a stale pre-layout rect (e.g. still 0-height at the top
+    // edge), which is exactly what would make `bottom` compute as equal to
+    // `top` and place the dropdown ON the input instead of below it. Chrome
+    // isn't affected because it flushes layout more eagerly here. Re-running
+    // position() one frame later costs nothing (it's cheap and idempotent)
+    // and is invisible when the first call was already correct, but corrects
+    // it the one frame later once Safari's layout has actually settled.
+    requestAnimationFrame(function(){position();});
   }
   function close(){
     if(drop.parentNode)drop.parentNode.removeChild(drop);
