@@ -18517,10 +18517,13 @@ function openQuickRepeatModal(last, prefillDate){
     themaBlock='<span class="form-label">'+t('wizard_theme')+'</span>'
       +'<select id="qr-thema" style="margin-bottom:8px" onchange="toggleQrVrij()">'
       +'<option value="">— '+t('no_topic')+' —</option>'
+      // Same fix as w-thema/cs-thema - Vrij onderwerp moved right after
+      // "no topic" instead of buried after the whole BS-lesson list, so
+      // it's actually visible when repeating a custom-topic entry.
+      +'<option value="Vrij onderwerp"'+(last.themacode==='Vrij onderwerp'?' selected':'')+'>'+t('wizard_free_topic')+'</option>'
       +THEMAS.filter(function(th){return th[0]!=='Vrij onderwerp';}).map(function(th){
         return '<option value="'+th[0]+'"'+(th[0]===last.themacode?' selected':'')+'>'+getThemaOptLabel(th[0],th[1])+'</option>';
       }).join('')
-      +'<option value="Vrij onderwerp"'+(last.themacode==='Vrij onderwerp'?' selected':'')+'>'+t('wizard_free_topic')+'</option>'
       +'</select>'
       +'<div id="qr-vrij-wrap" style="display:'+(last.themacode==='Vrij onderwerp'?'block':'none')+';margin-bottom:8px">'
       +'<input type="text" id="qr-vrij" list="free-thema-dl" placeholder="'+t('wizard_free_placeholder')+'" value="'+(last.themacode==='Vrij onderwerp'?escapeHtml(last.thema||''):'')+'" style="width:100%">'+freeThemaDatalistHtml()
@@ -20716,10 +20719,19 @@ function openCursistDetail(id){
     +'<div><span class="form-label">'+t('wizard_theme')+'</span>'
     +'<select id="cs-thema" style="width:100%;margin-bottom:8px" onchange="toggleCsVrij()">'
     +'<option value="">— '+t('no_topic')+'—</option>'
+    // Vrij onderwerp used to sit as the very last option, after the entire
+    // fixed BS-lesson list (~50 entries) - easy to never scroll down to, so
+    // logging a session about a topic outside that fixed list silently left
+    // the topic on "no topic" instead. Same fix as #176 (main wizard's
+    // w-thema) - put it second, right after "no topic", so it's actually
+    // visible (Gabriel: "the issue save other study on a contact.. it
+    // doesn't save it.. and of course it doesn't appear in the list of
+    // studies" - the study itself saved, but with no thema attached, so it
+    // never showed as a distinct study in the Bijbelstudies tab).
+    +'<option value="Vrij onderwerp">'+t('wizard_free_topic')+'</option>'
     +THEMAS.filter(function(th){return th[0]!=='Vrij onderwerp';}).map(function(th){
       return '<option value="'+th[0]+'">'+getThemaOptLabel(th[0],th[1])+'</option>';
     }).join('')
-    +'<option value="Vrij onderwerp">'+t('wizard_free_topic')+'</option>'
     +'</select></div>'
     +'<div id="cs-vrij-wrap" style="display:none;margin-bottom:8px">'
     +'<span class="form-label">'+t('wizard_free_topic')+'</span>'
@@ -21017,10 +21029,14 @@ function openLidDetail(id){
     +'<div><span class="form-label">'+t('wizard_theme')+'</span>'
     +'<select id="cs-thema" style="width:100%;margin-bottom:8px" onchange="toggleCsVrij()">'
     +'<option value="">— '+t('no_topic')+' —</option>'
+    // Same fix as the other "+ Studie toevoegen" form (Lid detail view) -
+    // Vrij onderwerp used to sit last, after the whole fixed BS-lesson list,
+    // so it was easy to miss and studies saved with a blank thema, which
+    // then silently didn't appear in the Bijbelstudies tab.
+    +'<option value="Vrij onderwerp">'+t('wizard_free_topic')+'</option>'
     +THEMAS.filter(function(th){return th[0]!=='Vrij onderwerp';}).map(function(th){
       return '<option value="'+th[0]+'">'+getThemaOptLabel(th[0],th[1])+'</option>';
     }).join('')
-    +'<option value="Vrij onderwerp">'+t('wizard_free_topic')+'</option>'
     +'</select></div>'
     +'<div id="cs-vrij-wrap" style="display:none;margin-bottom:8px">'
     +'<span class="form-label">'+t('wizard_free_topic')+'</span>'
