@@ -34019,7 +34019,13 @@ function pcPlanRowsHtml(){
       +'<span onclick="pcPreviewSlide(this,'+i+')" style="flex:1;min-width:0;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;text-decoration:underline;text-decoration-color:var(--border2)'+(hidden?';text-decoration-line:line-through':'')+'">'+escapeHtml(pcLabel(node))+'</span>'
       +'<button onclick="pcMove('+i+',-1)" '+(i===0?'disabled':'')+' style="border:none;background:none;color:var(--text2);cursor:pointer;padding:4px;font-size:14px">&#9650;</button>'
       +'<button onclick="pcMove('+i+',1)" '+(i===_pcPlan.length-1?'disabled':'')+' style="border:none;background:none;color:var(--text2);cursor:pointer;padding:4px;font-size:14px">&#9660;</button>'
-      +'<button onclick="pcToggleHidden('+i+')" title="'+(hidden?t('presenter_show_slide')||'Show':t('presenter_hide_slide')||'Hide')+'" style="border:none;background:none;color:'+(hidden?'var(--text3)':'var(--brand)')+';cursor:pointer;padding:4px;font-size:15px;line-height:1">'+(hidden?'&#9711;':'&#9679;')+'</button>'
+      // Gabriel: "add the option to shut off certain verses/sheets from
+      // presenter mode... with a checkbox, in the part where one could
+      // change the order" - this used to be a filled/hollow dot button
+      // (pcToggleHidden already existed and did the actual hide/show, the
+      // dot just wasn't obviously a checkbox). Swapped for a real checkbox:
+      // checked = slide is included in the presentation, unchecked = hidden.
+      +'<input type="checkbox" '+(hidden?'':'checked')+' onchange="pcToggleHidden('+i+')" title="'+(hidden?t('presenter_show_slide')||'Show':t('presenter_hide_slide')||'Hide')+'" style="margin:0 4px 0 2px;flex-shrink:0">'
       +(node.kind==='note'?'<button onclick="pcRemoveNote('+i+')" style="border:none;background:none;color:var(--red);cursor:pointer;padding:4px;font-size:14px">&#10005;</button>':'')
       +'</div>';
     if(_pcExpandAll){
