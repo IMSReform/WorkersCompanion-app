@@ -9668,12 +9668,38 @@ function ssOpenCellSuggest(inp,field,onPick){
 
   function position(){
     var rect=inp.getBoundingClientRect();
+    // `drop` is appended straight to document.body (below) so it can escape
+    // any overflow:hidden ancestor (accordions, the scrollable spreadsheet) -
+    // that puts it OUTSIDE #screen-main's zoomed subtree (see
+    // screenMainZoomFactor/ssApplyTheadOffset above) while `inp` sits
+    // INSIDE it whenever a text-size other than default is active. On
+    // Chrome, inp.getBoundingClientRect() already returns the true on-screen
+    // (post-zoom) position, so copying it straight onto `drop` lines up
+    // correctly. Gabriel reported this dropdown landing right on top of the
+    // input instead of below it on a MacBook Air - Safari's non-standard
+    // `zoom` implementation is documented to sometimes report
+    // getBoundingClientRect() for a zoomed descendant using its pre-zoom
+    // size/position instead, which would place `drop` using a rect that's
+    // too small/high by exactly the zoom factor. Detected at runtime
+    // (rather than sniffing Safari) by comparing the zoom-independent
+    // offsetHeight against rect.height: if the browser scaled the rect
+    // correctly, that ratio should already equal the zoom factor and no
+    // correction is applied; if the rect looks unscaled, multiply by zoom
+    // to compensate. A no-op whenever zoom is 1 (default text size), so
+    // this can't regress anyone not using a non-default text size.
+    var zoom=screenMainZoomFactor();
+    var corr=1;
+    if(zoom!==1&&inp.offsetHeight){
+      var reportedRatio=rect.height/inp.offsetHeight;
+      if(Math.abs(reportedRatio-zoom)>Math.abs(reportedRatio-1))corr=zoom;
+    }
+    var top=rect.top*corr,bottom=rect.bottom*corr,left=rect.left*corr,width=rect.width*corr;
     var dropH=Math.min(240,window.innerHeight*0.5);
-    var spaceBelow=window.innerHeight-rect.bottom;
-    if(spaceBelow>=dropH+10||spaceBelow>=rect.top){drop.style.top=(rect.bottom+4)+'px';drop.style.bottom='auto';}
-    else{drop.style.bottom=(window.innerHeight-rect.top+4)+'px';drop.style.top='auto';}
-    drop.style.left=Math.max(4,Math.min(rect.left,window.innerWidth-260))+'px';
-    drop.style.minWidth=Math.max(180,rect.width)+'px';
+    var spaceBelow=window.innerHeight-bottom;
+    if(spaceBelow>=dropH+10||spaceBelow>=top){drop.style.top=(bottom+4)+'px';drop.style.bottom='auto';}
+    else{drop.style.bottom=(window.innerHeight-top+4)+'px';drop.style.top='auto';}
+    drop.style.left=Math.max(4,Math.min(left,window.innerWidth-260))+'px';
+    drop.style.minWidth=Math.max(180,width)+'px';
   }
   function options(){return Array.from(drop.querySelectorAll('[data-opt-label]'));}
   function setHi(o){
@@ -17149,10 +17175,17 @@ function wSetCursist(){
   // For Bible studies specifically: suggest which lesson to continue with,
   // based on which Handbook lessons this exact contact has already had.
   draft._suggestedLesson=(draft.categorie==='Bijbelstudie geven'&&draft.cursistId)?getSuggestedNextLesson(draft.cursistId):null;
-  // Auto-calculate km if addresses available
-  if(draft.travelLabel&&cu&&cu.adres&&db.settings&&db.settings.myAdres){
-    setTimeout(function(){autoFillKmInWizard();},100);
-  }
+  // Used to silently auto-calculate km from the address distance the moment
+  // a contact was picked - but that assumes every session with this contact
+  // is an in-person visit, which isn't true for contacts a worker only ever
+  // calls/video-chats with. Gabriel: picking a contact he always meets
+  // online still silently filled in ~40km on a MacBook Air, which is simply
+  // wrong for that contact - there's no travel happening at all. Removed
+  // the silent auto-trigger; the "📍 Km automatisch berekenen" button next
+  // to the km field (rendered just above, in the wizard's travel step)
+  // still does the same address-distance calculation, but only when the
+  // worker explicitly taps it for a session that really is an in-person
+  // visit.
 }
 
 // Looks at everything this contact has already studied (their "given"
