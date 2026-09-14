@@ -23464,7 +23464,18 @@ function getAutofillSuggestion(categorie, cursistId){
 function applyAutofill(suggestion){
   if(!suggestion)return;
   if(suggestion.uren&&!draft.uren)draft.uren=suggestion.uren;
-  if(suggestion.km&&!draft.km)draft.km=suggestion.km;
+  // Gabriel: this is a SEPARATE autofill path from autoFillKmInWizard() (the
+  // address-distance calculator already fixed earlier) - this one silently
+  // re-applies whatever km value was most common in THIS contact's own past
+  // entries for this category. That's correctly scoped per-contact (see
+  // #1065), but it has no idea a contact who used to be visited in person
+  // is now only ever met online, so an old km value from before that change
+  // kept quietly reappearing here too - the exact same complaint, different
+  // code path. Per Gabriel's own preferred fix for the other autofill
+  // ("liever helemaal weghalen"), stop silently writing it into draft.km;
+  // it still shows up in the banner text below as an FYI, so nothing about
+  // someone's travel pattern is hidden, but it's never applied without the
+  // person explicitly typing it in themselves.
   if(suggestion.omschrijving&&!draft.omschrijving)draft.omschrijving=suggestion.omschrijving;
   if(suggestion.travel){
     draft.travelLabel=suggestion.travel.label;
