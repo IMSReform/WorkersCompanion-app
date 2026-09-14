@@ -15125,7 +15125,27 @@ function projT(key){
     delete_project:{nl:'Project verwijderen',en:'Delete project',es:'Eliminar proyecto',fr:'Supprimer le projet',de:'Projekt löschen',ro:'Șterge proiectul',it:'Elimina progetto',pt:'Eliminar projeto'},
     confirm_delete:{nl:'Dit project verwijderen? Dit kan niet ongedaan worden gemaakt.',en:'Delete this project? This cannot be undone.',es:'¿Eliminar este proyecto? Esto no se puede deshacer.',fr:'Supprimer ce projet ? Action irréversible.',de:'Dieses Projekt löschen? Das kann nicht rückgängig gemacht werden.',ro:'Ștergi acest proiect? Nu poate fi anulat.',it:'Eliminare questo progetto? Non reversibile.',pt:'Eliminar este projeto? Isto não pode ser desfeito.'},
     mark_done:{nl:'Markeer project als voltooid',en:'Mark project as done',es:'Marcar proyecto como terminado',fr:'Marquer le projet comme terminé',de:'Projekt als erledigt markieren',ro:'Marchează proiectul ca finalizat',it:'Segna progetto come completato',pt:'Marcar projeto como concluído'},
-    mark_undone:{nl:'Markeer als niet voltooid',en:'Mark as not done',es:'Marcar como no terminado',fr:'Marquer comme non terminé',de:'Als nicht erledigt markieren',ro:'Marchează ca nefinalizat',it:'Segna come non completato',pt:'Marcar como não concluído'}
+    mark_undone:{nl:'Markeer als niet voltooid',en:'Mark as not done',es:'Marcar como no terminado',fr:'Marquer comme non terminé',de:'Als nicht erledigt markieren',ro:'Marchează ca nefinalizat',it:'Segna come non completato',pt:'Marcar como não concluído'},
+    // --- Added per Gabriel's request after comparing the app's Projects
+    // feature to his mom's official IMS project-control form (Colombia,
+    // code AE-UOGP-F-006) - closes the gaps she pointed at: owner/start
+    // date, description/objectives/notes, physical+financial resources,
+    // per-activity % + start/checkpoint/final dates, and a sign-off footer.
+    field_owner:{nl:'Verantwoordelijke project',en:'Project owner',es:'Responsable del proyecto',fr:'Responsable du projet',de:'Projektverantwortlicher',ro:'Responsabil proiect',it:'Responsabile del progetto',pt:'Responsável pelo projeto'},
+    field_start_date:{nl:'Startdatum',en:'Start date',es:'Fecha de inicio',fr:'Date de début',de:'Startdatum',ro:'Data de început',it:'Data di inizio',pt:'Data de início'},
+    field_description:{nl:'Beschrijving',en:'Description',es:'Descripción',fr:'Description',de:'Beschreibung',ro:'Descriere',it:'Descrizione',pt:'Descrição'},
+    field_objectives:{nl:'Doelstellingen',en:'Objectives',es:'Objetivos',fr:'Objectifs',de:'Ziele',ro:'Obiective',it:'Obiettivi',pt:'Objetivos'},
+    field_important_notes:{nl:'Belangrijke aandachtspunten',en:'Important considerations',es:'Aspectos importantes',fr:'Points importants',de:'Wichtige Hinweise',ro:'Aspecte importante',it:'Aspetti importanti',pt:'Aspetos importantes'},
+    section_resources:{nl:'Middelen',en:'Resources',es:'Recursos',fr:'Ressources',de:'Ressourcen',ro:'Resurse',it:'Risorse',pt:'Recursos'},
+    field_resources_physical:{nl:'Fysieke middelen (materiaal, ruimte, apparatuur)',en:'Physical resources (materials, venue, equipment)',es:'Recursos físicos (materiales, lugar, equipo)',fr:'Ressources physiques (matériel, lieu, équipement)',de:'Physische Ressourcen (Material, Ort, Ausrüstung)',ro:'Resurse fizice (materiale, spațiu, echipament)',it:'Risorse fisiche (materiali, luogo, attrezzatura)',pt:'Recursos físicos (materiais, local, equipamento)'},
+    field_resources_financial:{nl:'Financiële middelen (budget)',en:'Financial resources (budget)',es:'Recursos financieros (presupuesto)',fr:'Ressources financières (budget)',de:'Finanzielle Ressourcen (Budget)',ro:'Resurse financiare (buget)',it:'Risorse finanziarie (budget)',pt:'Recursos financeiros (orçamento)'},
+    item_percent_lbl:{nl:'%',en:'%',es:'%',fr:'%',de:'%',ro:'%',it:'%',pt:'%'},
+    item_start_lbl:{nl:'Start',en:'Start',es:'Inicio',fr:'Début',de:'Start',ro:'Start',it:'Inizio',pt:'Início'},
+    item_check_lbl:{nl:'Controle',en:'Check-in',es:'Control',fr:'Contrôle',de:'Kontrolle',ro:'Control',it:'Controllo',pt:'Controlo'},
+    item_final_lbl:{nl:'Eind',en:'Final',es:'Final',fr:'Fin',de:'Ende',ro:'Final',it:'Fine',pt:'Final'},
+    section_signoff:{nl:'Indiening',en:'Sign-off',es:'Presentación',fr:'Soumission',de:'Einreichung',ro:'Predare',it:'Presentazione',pt:'Apresentação'},
+    field_presented_by:{nl:'Ingediend door',en:'Submitted by',es:'Responsable de presentación',fr:'Soumis par',de:'Eingereicht von',ro:'Predat de',it:'Presentato da',pt:'Apresentado por'},
+    field_presented_date:{nl:'Datum van indiening',en:'Submission date',es:'Fecha de presentación',fr:'Date de soumission',de:'Einreichungsdatum',ro:'Data predării',it:'Data di presentazione',pt:'Data de apresentação'}
   };
   return tMap(map[key]);
 }
@@ -15156,7 +15176,9 @@ function ensureProjectsV2(){
         id:o.id,text:o.text,audience:'',scale:'',targetDate:o.targetDate||null,
         done:!!o.done,createdAt:o.createdAt||new Date().toISOString(),doneAt:o.doneAt||null,
         team:makeDefaultProjectTeam(),
-        items:(o.subitems||[]).map(function(s){return{id:s.id,text:s.text,category:'other',responsible:'',dueDate:null,done:!!s.done};})
+        owner:'',startDate:null,description:'',objectives:'',importantNotes:'',
+        resourcesPhysical:'',resourcesFinancial:'',presentedBy:'',presentedDate:null,
+        items:(o.subitems||[]).map(function(s){return{id:s.id,text:s.text,category:'other',responsible:'',percent:s.done?100:0,startDate:null,checkDate:null,dueDate:null,done:!!s.done};})
       });
     });
     db.todos=(db.todos||[]).filter(function(x){return x.type!=='project';});
@@ -15284,7 +15306,14 @@ function projWizFinish(){
   var proj={
     id:genUniqueId(db.projects),text:projDraft.text,audience:projDraft.audience||'',scale:projDraft.scale||'',
     targetDate:projDraft.targetDate||null,done:false,createdAt:new Date().toISOString(),doneAt:null,
-    team:makeDefaultProjectTeam(),items:[]
+    team:makeDefaultProjectTeam(),items:[],
+    // Added after comparing to the official IMS project-control form:
+    // owner/start date, free-text description/objectives/notes, physical+
+    // financial resources, and a sign-off footer. All default blank so
+    // existing projects (and this quick-start wizard) aren't forced to
+    // fill them in - they're editable tap-to-edit fields in the workspace.
+    owner:'',startDate:null,description:'',objectives:'',importantNotes:'',
+    resourcesPhysical:'',resourcesFinancial:'',presentedBy:'',presentedDate:null
   };
   db.projects.unshift(proj);
   save();
@@ -15350,11 +15379,32 @@ function renderProjectWorkspaceBody(item){
     +'<span style="font-size:11px;color:var(--text3);width:90px;flex-shrink:0">'+projT('field_scale')+'</span>'
     +'<div style="flex:1;font-size:13px;color:var(--text2)" onclick="startEditProjWsField(this,'+idArg+',\'scale\')" title="'+t('todo_tap_to_edit')+'">'+(item.scale?escapeHtml(item.scale):'<span style="color:var(--text3);font-style:italic">'+t('todo_tap_to_edit')+'</span>')+'</div>'
     +'</div>';
-  h+='<div style="display:flex;align-items:center;gap:6px">'
-    +'<span style="font-size:11px;color:var(--text3);width:90px;flex-shrink:0">'+t('project_target_date')+'</span>'
+  h+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
+    +'<span style="font-size:11px;color:var(--text3);width:90px;flex-shrink:0">'+projT('field_owner')+'</span>'
+    +'<div style="flex:1;font-size:13px;color:var(--text2)" onclick="startEditProjWsField(this,'+idArg+',\'owner\')" title="'+t('todo_tap_to_edit')+'">'+(item.owner?escapeHtml(item.owner):'<span style="color:var(--text3);font-style:italic">'+t('todo_tap_to_edit')+'</span>')+'</div>'
+    +'</div>';
+  h+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+    +'<span style="font-size:11px;color:var(--text3);width:90px;flex-shrink:0">'+projT('field_start_date')+'</span>'
+    +'<input type="date" value="'+(item.startDate||'')+'" onchange="updateProjWsStartDate('+idArg+',this.value)" style="font:inherit;font-size:12px;padding:3px 6px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">'
+    +'<span style="font-size:11px;color:var(--text3);margin-left:8px">'+t('project_target_date')+'</span>'
     +'<input type="date" value="'+(item.targetDate||'')+'" onchange="updateProjWsDate('+idArg+',this.value)" style="font:inherit;font-size:12px;padding:3px 6px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">'
     +'</div>';
   h+='</div></div>';
+
+  h+='<div style="margin-bottom:16px" class="card" style="padding:12px 14px">';
+  h+='<div style="margin-bottom:10px">'
+    +'<div style="font-size:11px;color:var(--text3);font-weight:600;margin-bottom:4px">'+projT('field_description')+'</div>'
+    +'<div onclick="startEditProjWsTextarea(this,'+idArg+',\'description\')" title="'+t('todo_tap_to_edit')+'" style="font-size:13px;color:var(--text2);white-space:pre-wrap">'+(item.description?escapeHtml(item.description):'<span style="color:var(--text3);font-style:italic">'+t('todo_tap_to_edit')+'</span>')+'</div>'
+    +'</div>';
+  h+='<div style="margin-bottom:10px">'
+    +'<div style="font-size:11px;color:var(--text3);font-weight:600;margin-bottom:4px">'+projT('field_objectives')+'</div>'
+    +'<div onclick="startEditProjWsTextarea(this,'+idArg+',\'objectives\')" title="'+t('todo_tap_to_edit')+'" style="font-size:13px;color:var(--text2);white-space:pre-wrap">'+(item.objectives?escapeHtml(item.objectives):'<span style="color:var(--text3);font-style:italic">'+t('todo_tap_to_edit')+'</span>')+'</div>'
+    +'</div>';
+  h+='<div>'
+    +'<div style="font-size:11px;color:var(--text3);font-weight:600;margin-bottom:4px">'+projT('field_important_notes')+'</div>'
+    +'<div onclick="startEditProjWsTextarea(this,'+idArg+',\'importantNotes\')" title="'+t('todo_tap_to_edit')+'" style="font-size:13px;color:var(--text2);white-space:pre-wrap">'+(item.importantNotes?escapeHtml(item.importantNotes):'<span style="color:var(--text3);font-style:italic">'+t('todo_tap_to_edit')+'</span>')+'</div>'
+    +'</div>';
+  h+='</div>';
 
   var reqOpen=!!getAccState('proj-req-'+item.id);
   h+=projSectionHeader('proj-req-'+item.id,projT('section_req'));
@@ -15364,9 +15414,17 @@ function renderProjectWorkspaceBody(item){
   h+=projSectionHeader('proj-team-'+item.id,projT('section_team'));
   h+='<div class="card card-acc-plain'+(teamOpen?' acc-open':'')+'" data-acc-key="proj-team-'+item.id+'" style="margin-bottom:16px"><div class="acc-body">'+renderProjTeamSection(item)+'</div></div>';
 
+  var resOpen=!!getAccState('proj-res-'+item.id);
+  h+=projSectionHeader('proj-res-'+item.id,projT('section_resources'));
+  h+='<div class="card card-acc-plain'+(resOpen?' acc-open':'')+'" data-acc-key="proj-res-'+item.id+'" style="margin-bottom:16px"><div class="acc-body">'+renderProjResourcesSection(item)+'</div></div>';
+
   var tlOpen=!!getAccState('proj-tl-'+item.id);
   h+=projSectionHeader('proj-tl-'+item.id,projT('section_timeline'));
   h+='<div class="card card-acc-plain'+(tlOpen?' acc-open':'')+'" data-acc-key="proj-tl-'+item.id+'" style="margin-bottom:16px"><div class="acc-body">'+renderProjTimelineSection(item)+'</div></div>';
+
+  var soOpen=!!getAccState('proj-so-'+item.id);
+  h+=projSectionHeader('proj-so-'+item.id,projT('section_signoff'));
+  h+='<div class="card card-acc-plain'+(soOpen?' acc-open':'')+'" data-acc-key="proj-so-'+item.id+'" style="margin-bottom:16px"><div class="acc-body">'+renderProjSignoffSection(item)+'</div></div>';
 
   h+='<div style="display:flex;gap:8px;margin-top:8px">';
   h+='<button class="btn" style="flex:1;background:var(--surface2);color:var(--text)" onclick="toggleProjectDone('+idArg+')">'+(item.done?projT('mark_undone'):projT('mark_done'))+'</button>';
@@ -15392,14 +15450,26 @@ function renderProjReqSection(item){
 }
 function renderProjReqItemRow(pid,it){
   var checked=!!it.done;
+  var pct=it.percent||0;
   var idArg=ssIdArg(pid), itArg=ssIdArg(it.id);
+  // Small label-above-input helper so the 4 compact fields (%/start/check/
+  // final) stay legible without needing a shared header row - each item
+  // row can wrap independently on narrow phones.
+  function miniField(lbl,inputHtml){
+    return '<div style="min-width:0"><div style="font-size:8.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px">'+lbl+'</div>'+inputHtml+'</div>';
+  }
   return '<div class="todo-row'+(checked?' todo-row-checked':'')+'" style="flex-wrap:wrap;align-items:center">'
     +'<div class="todo-check'+(checked?' checked':'')+'" onclick="toggleProjReqItem('+idArg+','+itArg+')"></div>'
     +'<div class="todo-text" onclick="startEditProjReqText(this,'+idArg+','+itArg+')" title="'+t('todo_tap_to_edit')+'" style="flex:1 1 140px">'+escapeHtml(it.text)+'</div>'
     +'<div class="todo-del" onclick="deleteProjReqItem('+idArg+','+itArg+')" title="'+t('delete_btn')+'">&times;</div>'
-    +'<div style="flex-basis:100%;display:flex;gap:6px;margin:2px 0 4px 22px">'
-    +'<input type="text" value="'+escapeHtml(it.responsible||'')+'" placeholder="'+projT('responsible_ph')+'" onchange="updateProjReqResponsible('+idArg+','+itArg+',this.value)" style="flex:1;min-width:0;font:inherit;font-size:11px;padding:4px 7px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">'
-    +'<input type="date" value="'+(it.dueDate||'')+'" onchange="updateProjReqDueDate('+idArg+','+itArg+',this.value)" style="font:inherit;font-size:11px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">'
+    +'<div style="flex-basis:100%;margin:2px 0 4px 22px">'
+    +'<input type="text" value="'+escapeHtml(it.responsible||'')+'" placeholder="'+projT('responsible_ph')+'" onchange="updateProjReqResponsible('+idArg+','+itArg+',this.value)" style="width:100%;box-sizing:border-box;font:inherit;font-size:11px;padding:4px 7px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);margin-bottom:4px">'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+    +miniField(projT('item_percent_lbl'),'<input type="number" min="0" max="100" step="5" value="'+pct+'" onchange="updateProjReqPercent('+idArg+','+itArg+',this.value)" style="width:52px;font:inherit;font-size:11px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">')
+    +miniField(projT('item_start_lbl'),'<input type="date" value="'+(it.startDate||'')+'" onchange="updateProjReqStartDate('+idArg+','+itArg+',this.value)" style="font:inherit;font-size:11px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">')
+    +miniField(projT('item_check_lbl'),'<input type="date" value="'+(it.checkDate||'')+'" onchange="updateProjReqCheckDate('+idArg+','+itArg+',this.value)" style="font:inherit;font-size:11px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">')
+    +miniField(projT('item_final_lbl'),'<input type="date" value="'+(it.dueDate||'')+'" onchange="updateProjReqDueDate('+idArg+','+itArg+',this.value)" style="font:inherit;font-size:11px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">')
+    +'</div>'
     +'</div>'
     +'</div>';
 }
@@ -15420,6 +15490,44 @@ function renderProjTeamSection(item){
   h+='<button class="btn sm" onclick="addProjTeamRole('+idArg+')">'+projT('add_role')+'</button>';
   h+='</div>';
   return h;
+}
+// Companion to the Team section (human resources) - covers the other two
+// columns of the official form's Recursos row (physical + financial), each
+// a free-text tap-to-edit box since neither maps to a structured field
+// elsewhere in the app.
+function renderProjResourcesSection(item){
+  var idArg=ssIdArg(item.id);
+  var h='<div style="margin-bottom:10px">'
+    +'<div style="font-size:11px;color:var(--text3);font-weight:600;margin-bottom:4px">'+projT('field_resources_physical')+'</div>'
+    +'<div onclick="startEditProjWsTextarea(this,'+idArg+',\'resourcesPhysical\')" title="'+t('todo_tap_to_edit')+'" style="font-size:13px;color:var(--text2);white-space:pre-wrap">'+(item.resourcesPhysical?escapeHtml(item.resourcesPhysical):'<span style="color:var(--text3);font-style:italic">'+t('todo_tap_to_edit')+'</span>')+'</div>'
+    +'</div>';
+  h+='<div>'
+    +'<div style="font-size:11px;color:var(--text3);font-weight:600;margin-bottom:4px">'+projT('field_resources_financial')+'</div>'
+    +'<div onclick="startEditProjWsTextarea(this,'+idArg+',\'resourcesFinancial\')" title="'+t('todo_tap_to_edit')+'" style="font-size:13px;color:var(--text2);white-space:pre-wrap">'+(item.resourcesFinancial?escapeHtml(item.resourcesFinancial):'<span style="color:var(--text3);font-style:italic">'+t('todo_tap_to_edit')+'</span>')+'</div>'
+    +'</div>';
+  return h;
+}
+// Matches the official form's footer row ("Responsable / Fecha de
+// presentación" - who compiled the plan and when it went up for approval).
+// Doesn't hook into an actual approval workflow (unlike the monthly-hours
+// export/president-approval flow) - it's just a record kept on the project,
+// printed on the PDF handout.
+function renderProjSignoffSection(item){
+  var idArg=ssIdArg(item.id);
+  return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap">'
+    +'<span style="font-size:11px;color:var(--text3);width:110px;flex-shrink:0">'+projT('field_presented_by')+'</span>'
+    +'<div style="flex:1;min-width:100px;font-size:13px;color:var(--text2)" onclick="startEditProjWsField(this,'+idArg+',\'presentedBy\')" title="'+t('todo_tap_to_edit')+'">'+(item.presentedBy?escapeHtml(item.presentedBy):'<span style="color:var(--text3);font-style:italic">'+t('todo_tap_to_edit')+'</span>')+'</div>'
+    +'</div>'
+    +'<div style="display:flex;align-items:center;gap:6px">'
+    +'<span style="font-size:11px;color:var(--text3);width:110px;flex-shrink:0">'+projT('field_presented_date')+'</span>'
+    +'<input type="date" value="'+(item.presentedDate||'')+'" onchange="updateProjPresentedDate('+idArg+',this.value)" style="font:inherit;font-size:12px;padding:3px 6px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text)">'
+    +'</div>';
+}
+function updateProjPresentedDate(id,val){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
+  if(!item)return;
+  item.presentedDate=val||null;
+  touch(item); save();
 }
 function renderProjTimelineSection(item){
   var dated=(item.items||[]).filter(function(it){return it.dueDate;}).sort(function(a,b){return a.dueDate<b.dueDate?-1:1;});
@@ -15475,6 +15583,41 @@ function updateProjWsDate(id,val){
   touch(item); save();
   refreshProjectsList();
 }
+function updateProjWsStartDate(id,val){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
+  if(!item)return;
+  item.startDate=val||null;
+  touch(item); save();
+}
+// Same tap-to-edit pattern as startEditProjWsField, but with a <textarea>
+// for the longer free-text fields (description/objectives/importantNotes/
+// resourcesPhysical/resourcesFinancial) added after comparing to Gabriel's
+// mom's official IMS project form - those boxes are multi-line on paper.
+function startEditProjWsTextarea(el,id,field){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
+  if(!item||el.querySelector('textarea'))return;
+  var cur=item[field]||'';
+  el.innerHTML='';
+  var inp=document.createElement('textarea');
+  inp.value=cur;
+  inp.rows=3;
+  inp.style.cssText='width:100%;box-sizing:border-box;font:inherit;font-size:13px;color:inherit;background:var(--surface2);border:none;border-radius:var(--r-sm);padding:6px 8px;margin:-6px -8px;outline:none;box-shadow:0 0 0 1.5px var(--border);resize:vertical';
+  el.appendChild(inp);
+  inp.focus();
+  inp.setSelectionRange(cur.length,cur.length);
+  var done=false;
+  function commit(){
+    if(done)return; done=true;
+    var val=inp.value.trim();
+    if(val!==cur){ item[field]=val; touch(item); save(); }
+    refreshProjectWorkspace(id);
+  }
+  inp.addEventListener('blur',commit);
+  inp.addEventListener('keydown',function(ev){
+    if(ev.key==='Escape'){ done=true; refreshProjectWorkspace(id); }
+  });
+  inp.addEventListener('click',function(ev){ ev.stopPropagation(); });
+}
 function addProjReqItem(id,cat){
   var item=(db.projects||[]).find(function(x){return x.id===id;});
   if(!item)return;
@@ -15483,7 +15626,7 @@ function addProjReqItem(id,cat){
   var text=(inp.value||'').trim();
   if(!text)return;
   if(!item.items)item.items=[];
-  item.items.push({id:genUniqueId(item.items),text:text,category:cat,responsible:'',dueDate:null,done:false});
+  item.items.push({id:genUniqueId(item.items),text:text,category:cat,responsible:'',percent:0,startDate:null,checkDate:null,dueDate:null,done:false});
   touch(item); save();
   refreshProjectWorkspace(id);
   setTimeout(function(){
@@ -15496,8 +15639,35 @@ function toggleProjReqItem(id,itemId){
   var it=item&&(item.items||[]).find(function(s){return s.id===itemId;});
   if(!it)return;
   it.done=!it.done;
+  it.percent=it.done?100:0; // keep % in sync with the checkbox (see updateProjReqPercent for the reverse direction)
   touch(item); save();
   refreshProjectWorkspace(id);
+}
+function updateProjReqPercent(id,itemId,val){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
+  var it=item&&(item.items||[]).find(function(s){return s.id===itemId;});
+  if(!it)return;
+  var n=parseInt(val,10);
+  if(isNaN(n))n=0;
+  n=Math.max(0,Math.min(100,n));
+  it.percent=n;
+  it.done=(n===100); // 100% and the checkbox always agree
+  touch(item); save();
+  refreshProjectWorkspace(id);
+}
+function updateProjReqStartDate(id,itemId,val){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
+  var it=item&&(item.items||[]).find(function(s){return s.id===itemId;});
+  if(!it)return;
+  it.startDate=val||null;
+  touch(item); save();
+}
+function updateProjReqCheckDate(id,itemId,val){
+  var item=(db.projects||[]).find(function(x){return x.id===id;});
+  var it=item&&(item.items||[]).find(function(s){return s.id===itemId;});
+  if(!it)return;
+  it.checkDate=val||null;
+  touch(item); save();
 }
 function startEditProjReqText(el,id,itemId){
   var item=(db.projects||[]).find(function(x){return x.id===id;});
@@ -15609,7 +15779,13 @@ function exportProjectPdf(id){
     if(!catItems.length)return;
     reqHtml+='<div class="cat-h">'+projCatLabel(cat)+'</div>';
     reqHtml+=catItems.map(function(s){
-      var meta=[s.responsible,s.dueDate?formatDate(s.dueDate):''].filter(Boolean).join(' · ');
+      var metaBits2=[];
+      if(s.responsible)metaBits2.push(s.responsible);
+      metaBits2.push((s.percent||0)+'%');
+      if(s.startDate)metaBits2.push(projT('item_start_lbl')+' '+formatDate(s.startDate));
+      if(s.checkDate)metaBits2.push(projT('item_check_lbl')+' '+formatDate(s.checkDate));
+      if(s.dueDate)metaBits2.push(projT('item_final_lbl')+' '+formatDate(s.dueDate));
+      var meta=metaBits2.join(' · ');
       return '<div class="chk-row"><span class="chk-box">'+(s.done?'&#10003;':'')+'</span><span class="chk-text'+(s.done?' chk-done':'')+'">'+escapeHtml(s.text)+(meta?' <span class="chk-meta">('+escapeHtml(meta)+')</span>':'')+'</span></div>';
     }).join('');
   });
@@ -15650,13 +15826,29 @@ function exportProjectPdf(id){
   w.document.write(orgHeaderHtml(11));
   w.document.write('<div class="title">'+escapeHtml(item.text)+'</div>');
   var metaBits=[];
+  if(item.owner)metaBits.push(projT('field_owner')+': '+escapeHtml(item.owner));
   if(item.audience)metaBits.push(projT('field_audience')+': '+escapeHtml(item.audience));
   if(item.scale)metaBits.push(projT('field_scale')+': '+escapeHtml(item.scale));
+  if(item.startDate)metaBits.push(projT('field_start_date')+': '+formatDate(item.startDate));
   if(item.targetDate)metaBits.push(t('project_target_date')+': '+formatDate(item.targetDate));
   if(metaBits.length)w.document.write('<div class="meta">'+metaBits.join(' &middot; ')+'</div>');
+  if(item.description)w.document.write('<div class="sec-h">'+projT('field_description')+'</div><div class="chk-text">'+escapeHtml(item.description).replace(/\n/g,'<br>')+'</div>');
+  if(item.objectives)w.document.write('<div class="sec-h">'+projT('field_objectives')+'</div><div class="chk-text">'+escapeHtml(item.objectives).replace(/\n/g,'<br>')+'</div>');
+  if(item.importantNotes)w.document.write('<div class="sec-h">'+projT('field_important_notes')+'</div><div class="chk-text">'+escapeHtml(item.importantNotes).replace(/\n/g,'<br>')+'</div>');
   w.document.write('<div class="sec-h">'+projT('section_req')+'</div>'+reqHtml);
   if(teamHtml)w.document.write('<div class="sec-h">'+projT('section_team')+'</div>'+teamHtml);
+  if(item.resourcesPhysical||item.resourcesFinancial){
+    w.document.write('<div class="sec-h">'+projT('section_resources')+'</div>');
+    if(item.resourcesPhysical)w.document.write('<div class="chk-row"><span class="chk-text"><b>'+projT('field_resources_physical')+':</b> '+escapeHtml(item.resourcesPhysical).replace(/\n/g,'<br>')+'</span></div>');
+    if(item.resourcesFinancial)w.document.write('<div class="chk-row"><span class="chk-text"><b>'+projT('field_resources_financial')+':</b> '+escapeHtml(item.resourcesFinancial).replace(/\n/g,'<br>')+'</span></div>');
+  }
   if(tlHtml)w.document.write('<div class="sec-h">'+projT('section_timeline')+'</div>'+tlHtml);
+  if(item.presentedBy||item.presentedDate){
+    var soBits=[];
+    if(item.presentedBy)soBits.push(projT('field_presented_by')+': '+escapeHtml(item.presentedBy));
+    if(item.presentedDate)soBits.push(projT('field_presented_date')+': '+formatDate(item.presentedDate));
+    w.document.write('<div class="sec-h">'+projT('section_signoff')+'</div><div class="meta">'+soBits.join(' &middot; ')+'</div>');
+  }
   w.document.write('<br><button class="print-btn" onclick="window.print()">'+t('print_btn')+'</button>');
   w.document.write('<script>(function(){setTimeout(function(){try{window.print();}catch(e){}},150);})();<\/script>');
   w.document.write('</div></body></html>');
