@@ -13916,99 +13916,12 @@ function _renderHomeInner(){
   h+='</div>';
   h+='<div class="card" style="margin-bottom:24px"><div id="home-upcoming-list"></div></div>';
 
-  // TO-DO — shown to everyone, regardless of work role. Placed right after the
-  // big action button so it's the first thing seen after registering an activity.
-  // Collapsed by default (accordion) so it doesn't push everything else down
-  // when there's nothing urgent in it — tap the header to expand.
-  // Wrapped with Prayer (below) in a 2-column pair on wide screens — see
-  // .dash-2col-wrap (does nothing below that breakpoint, so mobile is
-  // unaffected).
-  // #1031: each card's open/closed state used to be read independently
-  // here (getAccState('home-todo') / getAccState('home-prayer')), so the
-  // "opening one opens the other too" behavior from #984 only actually
-  // held while the user stayed on the same page - it was wired into the
-  // click handler (toggleTodoOrPrayerAccordion), not into the render
-  // itself. Any history where the two keys ended up with different saved
-  // values (e.g. from before #984 existed, or a click whose "open the
-  // other card too" step silently no-opped because that card wasn't in
-  // the DOM yet) stayed mismatched forever after, since a fresh page load
-  // just redrew each card from its own stored value again. On the
-  // wide-screen 2-column layout this put a fully expanded To-do card right
-  // next to a collapsed, empty-looking Prayer card - confusing for anyone
-  // who didn't already know to tap it. Computing one shared "open" value up
-  // front and using it for both cards makes the invariant hold on every
-  // render, not just after a click - closing either one still only closes
-  // that one (unchanged from #984), but they can no longer load already
-  // out of sync with each other.
-  var todoOrPrayerOpen=!!(getAccState('home-todo')||getAccState('home-prayer'));
-  h+='<div class="dash-2col-wrap" style="margin-top:-8px"><div>';
-  h+='<div class="settings-section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer" onclick="toggleTodoOrPrayerAccordion(\'home-todo\',this.querySelector(\'.acc-toggle-btn\'));syncTodoPrayerHeightDeferred()">';
-  // Chevron sits right next to the "To do" label itself (not next to
-  // "Geschiedenis" on the far right) - it's the accordion toggle for this
-  // whole section, and grouping it with the History link made it read as
-  // if it belonged to History instead (reported by Gabriel: "the arrow
-  // looks it belongs to geschiedenis, but it's from to do").
-  h+='<div style="display:flex;align-items:center;gap:6px">';
-  h+='<span>'+t('todo_title')+'</span>';
-  h+='<button type="button" class="acc-toggle-btn" onclick="event.stopPropagation();toggleTodoOrPrayerAccordion(\'home-todo\',this);syncTodoPrayerHeightDeferred()" title="'+t('todo_title')+'" style="background:none;border:none;padding:4px;margin:-4px;cursor:pointer;display:flex;color:var(--text3)"><svg width="14" height="14" style="transition:transform .2s'+(todoOrPrayerOpen?';transform:rotate(180deg)':'')+'"><use href="#ico-chevron-down"/></svg></button>';
-  h+='</div>';
-  h+='<a href="#" onclick="event.stopPropagation();openTodoHistory();return false" style="font-size:12px;color:var(--brand);text-decoration:none;font-weight:500">'+t('todo_history')+'</a>';
-  h+='</div>';
-  h+='<div class="card card-acc-plain'+(todoOrPrayerOpen?' acc-open':'')+'" data-acc-key="home-todo">';
-  h+='<div class="acc-body">';
-  h+='<div style="display:flex;gap:6px;margin-bottom:10px">';
-  h+='<input id="todo-new-input" type="text" placeholder="'+t('todo_placeholder')+'" style="flex:1;min-width:0" onkeydown="if(event.key===\'Enter\'){addTodo();}">';
-  h+='<button type="button" id="todo-cat-toggle" onclick="event.stopPropagation();toggleTodoCatPicker()" title="'+t('todo_cat_personal')+' / '+t('todo_cat_work')+'" style="flex-shrink:0;width:38px;border-radius:var(--r-sm);border:1.5px solid var(--border2);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center">';
-  h+='<span id="todo-cat-dot" style="width:10px;height:10px;border-radius:50%;background:var(--brand)"></span>';
-  h+='</button>';
-  h+='<button onclick="addTodo()" style="flex-shrink:0;width:38px;border-radius:var(--r-sm);background:var(--brand);color:#fff;border:none;font-size:18px;line-height:1;cursor:pointer">+</button>';
-  h+='</div>';
-  h+='<div id="todo-open-list"></div>';
-  h+='</div>';
-  h+='</div>';
-  h+='</div>'; // /col 1
-
-  // PRAYER LIST — like To-do, but items don't get deleted when "checked":
-  // checking one just marks it prayed-for-today (a filled/checked look), and
-  // it resets automatically the next day so it keeps coming back until the
-  // user explicitly deletes it. Also collapsed by default.
-  h+='<div>';
-  h+='<div class="settings-section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer" onclick="toggleTodoOrPrayerAccordion(\'home-prayer\',this.querySelector(\'.acc-toggle-btn\'));syncTodoPrayerHeightDeferred()">';
-  // Same reasoning as the To-do header above - chevron grouped with the
-  // label it actually toggles, not with the History link.
-  h+='<div style="display:flex;align-items:center;gap:6px">';
-  h+='<span>'+t('prayer_title')+'</span>';
-  h+='<button type="button" class="acc-toggle-btn" onclick="event.stopPropagation();toggleTodoOrPrayerAccordion(\'home-prayer\',this);syncTodoPrayerHeightDeferred()" title="'+t('prayer_title')+'" style="background:none;border:none;padding:4px;margin:-4px;cursor:pointer;display:flex;color:var(--text3)"><svg width="14" height="14" style="transition:transform .2s'+(todoOrPrayerOpen?';transform:rotate(180deg)':'')+'"><use href="#ico-chevron-down"/></svg></button>';
-  h+='</div>';
-  h+='<a href="#" onclick="event.stopPropagation();openPrayerHistory();return false" style="font-size:12px;color:var(--brand);text-decoration:none;font-weight:500">'+t('prayer_history')+'</a>';
-  h+='</div>';
-  h+='<div class="card card-acc-plain'+(todoOrPrayerOpen?' acc-open':'')+'" data-acc-key="home-prayer">';
-  h+='<div class="acc-body">';
-  h+='<div style="display:flex;gap:6px;margin-bottom:10px">';
-  h+='<input id="prayer-new-input" type="text" placeholder="'+t('prayer_placeholder')+'" style="flex:1;min-width:0" onkeydown="if(event.key===\'Enter\'){addPrayer();}">';
-  h+='<button type="button" id="prayer-cat-toggle" onclick="event.stopPropagation();togglePrayerCatPicker()" title="'+t('prayer_cat_personal')+' / '+t('prayer_cat_work')+'" style="flex-shrink:0;width:38px;border-radius:var(--r-sm);border:1.5px solid var(--border2);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center">';
-  h+='<span id="prayer-cat-dot" style="width:10px;height:10px;border-radius:50%;background:var(--brand)"></span>';
-  h+='</button>';
-  h+='<button onclick="addPrayer()" style="flex-shrink:0;width:38px;border-radius:var(--r-sm);background:var(--brand);color:#fff;border:none;font-size:18px;line-height:1;cursor:pointer">+</button>';
-  h+='</div>';
-  h+='<div id="prayer-list"></div>';
-  h+='</div>';
-  h+='</div>';
-  h+='</div>'; // /col 2
-  h+='</div>'; // /dash-2col-wrap (todo+prayer)
-
-  // Projects (#1045-1052) — right under To-do/Prayer per Gabriel: a redesign
-  // of the old checklist-in-a-to-do (#1033) into its own Home card, since
-  // planning something like an evangelism campaign needs more room than a
-  // to-do row (Vision & Scope, Requirements, Team, Timeline - see the big
-  // comment block above renderProjectsCard). Kept as its own card rather
-  // than merged into Tareas (a type dropdown was considered - see PROJECTS
-  // v2 comment) so each keeps its own simple, focused "+" entry point.
-  h+=renderProjectsCard();
-
-  // Calendar / agenda (moved up next to Binnenkort — both are "what's coming up" widgets)
-  // Paired with Follow-up (below) in a 2-column layout on wide screens —
-  // same .dash-2col-wrap used for To-do/Prayer above.
+  // Calendar / agenda, right after Binnenkort (both are "what's coming up"
+  // widgets) and now above To-do/Prayer/Projects too - Gabriel: "I notice
+  // I'm constantly scrolling down to calendar.. to do's is something I look
+  // at once every now and then... but calendar is something I'm checking
+  // constantly." Paired with Follow-up (below) in a 2-column layout on wide
+  // screens — same .dash-2col-wrap used for To-do/Prayer below.
   h+='<div class="dash-2col-wrap"><div>';
   h+='<div class="settings-section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">';
   h+='<span>'+t('calendar_view')+'</span>';
@@ -14126,6 +14039,99 @@ function _renderHomeInner(){
   }
   h+='</div>'; // /col 2
   h+='</div>'; // /dash-2col-wrap (calendar+follow-up)
+
+  // TO-DO — shown to everyone, regardless of work role. Used to sit right
+  // after the big action button, but moved below Calendar/Follow-up (see
+  // that section's comment for Gabriel's reasoning: he checks the calendar
+  // constantly, to-do's only "once every now and then").
+  // Collapsed by default (accordion) so it doesn't push everything else down
+  // when there's nothing urgent in it — tap the header to expand.
+  // Wrapped with Prayer (below) in a 2-column pair on wide screens — see
+  // .dash-2col-wrap (does nothing below that breakpoint, so mobile is
+  // unaffected).
+  // #1031: each card's open/closed state used to be read independently
+  // here (getAccState('home-todo') / getAccState('home-prayer')), so the
+  // "opening one opens the other too" behavior from #984 only actually
+  // held while the user stayed on the same page - it was wired into the
+  // click handler (toggleTodoOrPrayerAccordion), not into the render
+  // itself. Any history where the two keys ended up with different saved
+  // values (e.g. from before #984 existed, or a click whose "open the
+  // other card too" step silently no-opped because that card wasn't in
+  // the DOM yet) stayed mismatched forever after, since a fresh page load
+  // just redrew each card from its own stored value again. On the
+  // wide-screen 2-column layout this put a fully expanded To-do card right
+  // next to a collapsed, empty-looking Prayer card - confusing for anyone
+  // who didn't already know to tap it. Computing one shared "open" value up
+  // front and using it for both cards makes the invariant hold on every
+  // render, not just after a click - closing either one still only closes
+  // that one (unchanged from #984), but they can no longer load already
+  // out of sync with each other.
+  var todoOrPrayerOpen=!!(getAccState('home-todo')||getAccState('home-prayer'));
+  h+='<div class="dash-2col-wrap" style="margin-top:-8px"><div>';
+  h+='<div class="settings-section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer" onclick="toggleTodoOrPrayerAccordion(\'home-todo\',this.querySelector(\'.acc-toggle-btn\'));syncTodoPrayerHeightDeferred()">';
+  // Chevron sits right next to the "To do" label itself (not next to
+  // "Geschiedenis" on the far right) - it's the accordion toggle for this
+  // whole section, and grouping it with the History link made it read as
+  // if it belonged to History instead (reported by Gabriel: "the arrow
+  // looks it belongs to geschiedenis, but it's from to do").
+  h+='<div style="display:flex;align-items:center;gap:6px">';
+  h+='<span>'+t('todo_title')+'</span>';
+  h+='<button type="button" class="acc-toggle-btn" onclick="event.stopPropagation();toggleTodoOrPrayerAccordion(\'home-todo\',this);syncTodoPrayerHeightDeferred()" title="'+t('todo_title')+'" style="background:none;border:none;padding:4px;margin:-4px;cursor:pointer;display:flex;color:var(--text3)"><svg width="14" height="14" style="transition:transform .2s'+(todoOrPrayerOpen?';transform:rotate(180deg)':'')+'"><use href="#ico-chevron-down"/></svg></button>';
+  h+='</div>';
+  h+='<a href="#" onclick="event.stopPropagation();openTodoHistory();return false" style="font-size:12px;color:var(--brand);text-decoration:none;font-weight:500">'+t('todo_history')+'</a>';
+  h+='</div>';
+  h+='<div class="card card-acc-plain'+(todoOrPrayerOpen?' acc-open':'')+'" data-acc-key="home-todo">';
+  h+='<div class="acc-body">';
+  h+='<div style="display:flex;gap:6px;margin-bottom:10px">';
+  h+='<input id="todo-new-input" type="text" placeholder="'+t('todo_placeholder')+'" style="flex:1;min-width:0" onkeydown="if(event.key===\'Enter\'){addTodo();}">';
+  h+='<button type="button" id="todo-cat-toggle" onclick="event.stopPropagation();toggleTodoCatPicker()" title="'+t('todo_cat_personal')+' / '+t('todo_cat_work')+'" style="flex-shrink:0;width:38px;border-radius:var(--r-sm);border:1.5px solid var(--border2);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center">';
+  h+='<span id="todo-cat-dot" style="width:10px;height:10px;border-radius:50%;background:var(--brand)"></span>';
+  h+='</button>';
+  h+='<button onclick="addTodo()" style="flex-shrink:0;width:38px;border-radius:var(--r-sm);background:var(--brand);color:#fff;border:none;font-size:18px;line-height:1;cursor:pointer">+</button>';
+  h+='</div>';
+  h+='<div id="todo-open-list"></div>';
+  h+='</div>';
+  h+='</div>';
+  h+='</div>'; // /col 1
+
+  // PRAYER LIST — like To-do, but items don't get deleted when "checked":
+  // checking one just marks it prayed-for-today (a filled/checked look), and
+  // it resets automatically the next day so it keeps coming back until the
+  // user explicitly deletes it. Also collapsed by default.
+  h+='<div>';
+  h+='<div class="settings-section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer" onclick="toggleTodoOrPrayerAccordion(\'home-prayer\',this.querySelector(\'.acc-toggle-btn\'));syncTodoPrayerHeightDeferred()">';
+  // Same reasoning as the To-do header above - chevron grouped with the
+  // label it actually toggles, not with the History link.
+  h+='<div style="display:flex;align-items:center;gap:6px">';
+  h+='<span>'+t('prayer_title')+'</span>';
+  h+='<button type="button" class="acc-toggle-btn" onclick="event.stopPropagation();toggleTodoOrPrayerAccordion(\'home-prayer\',this);syncTodoPrayerHeightDeferred()" title="'+t('prayer_title')+'" style="background:none;border:none;padding:4px;margin:-4px;cursor:pointer;display:flex;color:var(--text3)"><svg width="14" height="14" style="transition:transform .2s'+(todoOrPrayerOpen?';transform:rotate(180deg)':'')+'"><use href="#ico-chevron-down"/></svg></button>';
+  h+='</div>';
+  h+='<a href="#" onclick="event.stopPropagation();openPrayerHistory();return false" style="font-size:12px;color:var(--brand);text-decoration:none;font-weight:500">'+t('prayer_history')+'</a>';
+  h+='</div>';
+  h+='<div class="card card-acc-plain'+(todoOrPrayerOpen?' acc-open':'')+'" data-acc-key="home-prayer">';
+  h+='<div class="acc-body">';
+  h+='<div style="display:flex;gap:6px;margin-bottom:10px">';
+  h+='<input id="prayer-new-input" type="text" placeholder="'+t('prayer_placeholder')+'" style="flex:1;min-width:0" onkeydown="if(event.key===\'Enter\'){addPrayer();}">';
+  h+='<button type="button" id="prayer-cat-toggle" onclick="event.stopPropagation();togglePrayerCatPicker()" title="'+t('prayer_cat_personal')+' / '+t('prayer_cat_work')+'" style="flex-shrink:0;width:38px;border-radius:var(--r-sm);border:1.5px solid var(--border2);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center">';
+  h+='<span id="prayer-cat-dot" style="width:10px;height:10px;border-radius:50%;background:var(--brand)"></span>';
+  h+='</button>';
+  h+='<button onclick="addPrayer()" style="flex-shrink:0;width:38px;border-radius:var(--r-sm);background:var(--brand);color:#fff;border:none;font-size:18px;line-height:1;cursor:pointer">+</button>';
+  h+='</div>';
+  h+='<div id="prayer-list"></div>';
+  h+='</div>';
+  h+='</div>';
+  h+='</div>'; // /col 2
+  h+='</div>'; // /dash-2col-wrap (todo+prayer)
+
+  // Projects (#1045-1052) — right under To-do/Prayer per Gabriel: a redesign
+  // of the old checklist-in-a-to-do (#1033) into its own Home card, since
+  // planning something like an evangelism campaign needs more room than a
+  // to-do row (Vision & Scope, Requirements, Team, Timeline - see the big
+  // comment block above renderProjectsCard). Kept as its own card rather
+  // than merged into Tareas (a type dropdown was considered - see PROJECTS
+  // v2 comment) so each keeps its own simple, focused "+" entry point.
+  h+=renderProjectsCard();
+
 
   // Fresh render of the whole Home screen - collapse the mobile Follow-up
   // list back to its capped state rather than carrying over an earlier
