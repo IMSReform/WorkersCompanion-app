@@ -1273,9 +1273,18 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
      when there's actually more than one item (see renderHomeUpcoming). */
   #home-upcoming-list.upcoming-multi{display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;align-items:stretch}
   #home-upcoming-list.upcoming-multi .home-up-daylabel{grid-column:1/-1}
-  /* Contacts tab: every group card gets the same side-by-side treatment. */
-  .cursisten-2col-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
-  .cursisten-2col-wrap>div{min-width:0}
+  /* Contacts tab: every group card gets the same side-by-side treatment.
+     Gabriel: "make the cards be the same size even when they have less
+     contacts inside them" - a group with 1 contact (e.g. Contact) sitting
+     next to a group with 3 (e.g. Geïnteresseerden) used to render as a
+     visibly tiny card since align-items:start let each column hug its own
+     content height. Switched to the same stretch treatment as
+     .dash-2col-wrap above: the grid row stretches both cells to the
+     taller sibling's height, and the column becomes a flex column so its
+     card can grow to fill that height instead of leaving blank space. */
+  .cursisten-2col-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch}
+  .cursisten-2col-wrap>div{min-width:0;display:flex;flex-direction:column}
+  .cursisten-2col-wrap>div>.card{flex:1}
   /* Only the very first group overall gets .settings-section-title-first
      (which zeroes its 22px top margin) — every other group's title still
      carries that margin for vertical rhythm when stacked on mobile. In the
