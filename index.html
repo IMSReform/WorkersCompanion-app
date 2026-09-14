@@ -707,6 +707,18 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
 .gemeente-filter{display:flex;gap:6px;flex-wrap:wrap}
 .gf-pill{padding:5px 11px;font-size:12px;border:1.5px solid var(--border2);border-radius:20px;background:var(--surface);color:var(--text3);cursor:pointer;font-weight:500;transition:all .15s}
 .gf-pill.active{background:var(--brand);border-color:var(--brand);color:#fff}
+/* Edit-entry modal short-field grid (Datum/Uren/Tijdstip/Herhalen/Km/Reisuren) - 2 columns on phone, widens to 3 on tablet/desktop so short values like km/hours don't each eat half the modal width. */
+.ee-fgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+@media(min-width:640px){.ee-fgrid{grid-template-columns:repeat(3,1fr)}}
+/* Same responsiveness fix for the bottom-sheet-style modals (edit
+   entry, and anything else using showModal()) - on tablet/desktop,
+   center the dialog instead of pinning it to the bottom, and let it
+   use most of the viewport height instead of a fixed mobile cap. */
+@media(min-width:768px){
+  .modal-sheet-overlay{align-items:center!important;padding:24px}
+  .modal-sheet-box{max-width:640px!important;max-height:calc(100vh - 48px)!important;border-radius:16px!important}
+}
+
 
 
 /* ═══ CALENDAR ═══ */
@@ -29493,12 +29505,21 @@ function showModal(content){
   if(existing) existing.remove();
   var overlay = document.createElement('div');
   overlay.id = 'plan-modal-overlay';
+  overlay.className = 'modal-sheet-overlay';
   // If a full-screen overlay (e.g. #full-cal-overlay, z-index:9999) is open,
   // this modal needs to render above it - same stacking issue documented at
   // fcOpenYearDayPopup and presenter mode's customize popup.
   var aboveFullscreen = document.getElementById('full-cal-overlay') ? 10000 : 200;
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:'+aboveFullscreen+';display:flex;align-items:flex-end;justify-content:center';
-  overlay.innerHTML = '<div style="background:var(--surface);border-radius:16px 16px 0 0;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:20px">' + content + '</div>';
+  // Gabriel: "these edit pop ups... could be even more responsive and go up
+  // to where the app ends" on bigger screens - the mobile bottom-sheet look
+  // (align-items:flex-end, rounded top corners only, 560px cap) makes sense
+  // on a phone but wastes most of a desktop window. The .modal-sheet-overlay/
+  // .modal-sheet-box classes below carry no visual change by themselves
+  // (all sizing stays inline exactly as before for phones); a @media rule
+  // in the stylesheet overrides them on wider screens to center the dialog
+  // and let it grow close to the app's own height instead of a fixed 92vh.
+  overlay.innerHTML = '<div class="modal-sheet-box" style="background:var(--surface);border-radius:16px 16px 0 0;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:20px">' + content + '</div>';
   overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
   document.body.appendChild(overlay);
 }
@@ -35562,10 +35583,9 @@ function openEditEntryModal(entryId,skipSummary){
   // .settings-section-title header style as Settings, with a top border on
   // the 2nd/3rd headers as the visual divider line he asked for.
   h+='<div class="settings-section-title settings-section-title-first">'+tMap({nl:'Wat & hoeveel',en:'What & how much',es:'Qué y cuánto',fr:'Quoi et combien',de:'Was & wie viel',ro:'Ce și cât',it:'Cosa e quanto',pt:'O quê e quanto'})+'</div>';
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">';
+  h+='<div class="ee-fgrid">';
   h+='<div><span class="form-label">'+t('wizard_date')+'</span><input type="date" id="ee-datum" value="'+(e.datum||'')+'" style="width:100%"></div>';
   h+='<div><span class="form-label">'+t('wizard_hours')+'</span><input type="number" id="ee-uren" min="0" step="0.25" value="'+(e.uren||0)+'" style="width:100%"></div>';
-  h+='</div>';
   // Herhalen used to live in its own section way down past the Save/Cancel
   // buttons (Gabriel: "move herhalen... right next to the time and before
   // Km. There's a space there") - the Tijdstip row only ever filled its
@@ -35573,24 +35593,27 @@ function openEditEntryModal(entryId,skipSummary){
   // repeat select now shares that row instead of the picker sitting alone
   // above an unused gap. onEeRepeatChange()/the repeat-count field below
   // still work purely off element ids, unaffected by moving the select.
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;align-items:end">';
-  h+='<div><span class="form-label">'+t('wizard_time')+' <span style="font-size:11px;color:var(--text3);font-weight:400">('+(t('optional')||'opt.')+')</span></span>'+renderTimePicker('ee-tijd',e.tijd||'')+'</div>';
-  h+='<div><span class="form-label">'+t('repeat_lbl')+'</span>';
+  // (Gabriel: "the information fields could rearrange even in 3 columns in
+  // bigger screens" - Datum/Uren/Tijdstip/Herhalen/Km/Reisuren now share
+  // one .ee-fgrid grid instead of 3 separate 2-col rows, so the @media
+  // rule on .ee-fgrid can widen it to 3 columns; ee-repeat-count-wrap below
+  // spans the full row via grid-column so it still drops onto its own line
+  // in either 2- or 3-col mode when the repeat select reveals it.)
+  h+='<div style="align-self:end"><span class="form-label">'+t('wizard_time')+' <span style="font-size:11px;color:var(--text3);font-weight:400">('+(t('optional')||'opt.')+')</span></span>'+renderTimePicker('ee-tijd',e.tijd||'')+'</div>';
+  h+='<div style="align-self:end"><span class="form-label">'+t('repeat_lbl')+'</span>';
   h+='<select id="ee-repeat" onchange="onEeRepeatChange()" style="width:100%">';
   h+='<option value="">'+t('repeat_none')+'</option>';
   h+='<option value="weekly">'+t('repeat_weekly')+'</option>';
   h+='<option value="biweekly">'+t('repeat_biweekly')+'</option>';
   h+='<option value="monthly">'+t('repeat_monthly')+'</option>';
   h+='</select></div>';
-  h+='</div>';
-  h+='<div id="ee-repeat-count-wrap" style="display:none;margin-bottom:8px">';
+  h+='<div id="ee-repeat-count-wrap" style="display:none;grid-column:1/-1">';
   h+='<span class="form-label">'+t('repeat_count_lbl')+'</span>';
   h+='<input type="number" id="ee-repeat-count" value="8" min="2" max="52" style="width:100%">';
   h+='</div>';
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">';
   h+='<div><span class="form-label">Km</span><input type="number" id="ee-km" min="0" value="'+(e.kmHeen!=null?e.kmHeen:(e.km||0))+'" style="width:100%">'+kmRetourBlockHtml('ee',e.kmRetour)+'</div>';
   h+='<div><span class="form-label">'+t('wizard_travel_hours')+'</span><input type="number" id="ee-reisuren" min="0" step="0.25" value="'+(e.reisUren||0)+'" style="width:100%"></div>';
-  h+='</div>';
+  h+='</div>'; // close .ee-fgrid
   h+='<div style="margin-bottom:8px"><span class="form-label">'+t('col_kosten')+' ('+currencySymbol()+')</span><input type="number" id="ee-kosten" min="0" step="0.01" value="'+(e.kosten||0)+'" style="width:100%"></div>';
   h+=receiptPhotoFieldHtml('ee-receipt-photo-widget');
   h+='<div class="settings-section-title" style="margin-top:22px;padding-top:14px;border-top:1px solid var(--border)">'+tMap({nl:'Categorie & met wie',en:'Category & with whom',es:'Categoría y con quién',fr:'Catégorie et avec qui',de:'Kategorie & mit wem',ro:'Categorie și cu cine',it:'Categoria e con chi',pt:'Categoria e com quem'})+'</div>';
