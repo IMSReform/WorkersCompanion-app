@@ -16763,7 +16763,22 @@ function renderWiz(){
           <div><span class="form-label">${t('wizard_travel_hours')}</span><select id="w-reisuren" class="hour-picker">${buildHourOptions(draft.reisUren||draft._autoTravelUren||0)}</select></div>
           <div>
             <span class="form-label">${distLabel()}</span>
-            <input type="number" id="w-km" min="0" step="1" placeholder="0" value="${draft.kmHeen!=null?draft.kmHeen:(draft.km||draft._autoTravelKm||'')}">
+            <input type="number" id="w-km" min="0" step="1" placeholder="${draft._autoTravelKm&&!draft.km&&draft.kmHeen==null?draft._autoTravelKm:'0'}" value="${draft.kmHeen!=null?draft.kmHeen:(draft.km||'')}">
+            <!-- Gabriel: this was the actual root cause of "km komt steeds terug,
+                 altijd 40km" - a THIRD silent-km path, separate from
+                 autoFillKmInWizard() and applyAutofill() fixed earlier. Those
+                 two stopped writing into draft.km itself, but this input's
+                 'value' attribute here was still reading draft._autoTravelKm
+                 directly - so the field showed up already filled with the
+                 contact's historical average km (e.g. 40), looking exactly
+                 like a real entered number. wSetKm() (called on "Volgende")
+                 saves whatever's literally sitting in this input, so anyone
+                 who didn't notice and clear it got that stale km saved as if
+                 they'd typed it - every single time, hence "always 40km".
+                 Fix: show the suggestion as a placeholder (grayed hint text)
+                 instead of an actual value - visible, but the field starts
+                 empty and nothing gets saved unless the person actually
+                 types a number in. -->
             ${(db.settings&&db.settings.myAdres&&draft.cursistId&&db.cursisten.find(c=>c.id==draft.cursistId)?.adres)?`<button type="button" onclick="autoFillKmInWizard()" style="margin-top:6px;width:100%;padding:6px;font-size:12px;border:1px dashed var(--brand);border-radius:6px;background:var(--brand-light);color:var(--brand);cursor:pointer">📍 ${t('calc_km_auto')||'Km automatisch berekenen'}</button><div id="km-auto-info" style="font-size:11px;color:var(--text3);margin-top:4px"></div>`:''}
             ${kmRetourBlockHtml('w',draft.kmRetour)}
           </div>
