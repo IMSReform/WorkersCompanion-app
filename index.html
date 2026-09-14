@@ -12222,9 +12222,21 @@ function receiptPhotoFieldHtml(widgetId){
   // their native camera-or-library chooser - it only skips straight to the
   // camera, which isn't required here - while desktop now always gets the
   // normal file picker.
-  var pickerInput='<input type="file" accept="image/*" onchange="onReceiptPhotoPicked(this,\''+wid+'\')" style="display:none">';
-  var h='<div id="'+wid+'" style="margin-top:10px">';
+  //
+  // A colleague still hit "can't upload a photo" on a MacBook Air after that
+  // fix shipped - the remaining suspect is the <label> wrapping a
+  // display:none file input: Safari/WebKit on macOS is known to sometimes
+  // ignore a click on a label associated with a hidden input and never open
+  // the file dialog (mobile Safari doesn't have the same issue, which is
+  // why this wasn't caught on a phone). Switched to a real <button> that
+  // calls the input's .click() directly via JS - that's a real user
+  // gesture triggering the picker programmatically, which every browser
+  // (including desktop Safari) honors reliably.
+  var inputId=wid+'-input';
+  var pickerInput='<input type="file" id="'+inputId+'" accept="image/*" onchange="onReceiptPhotoPicked(this,\''+wid+'\')" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">';
+  var h='<div id="'+wid+'" style="margin-top:10px;position:relative">';
   h+='<span class="form-label">'+receiptPhotoLabel()+'</span>';
+  h+=pickerInput;
   if(_pendingReceiptPhotos.length){
     h+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">';
     h+=_pendingReceiptPhotos.map(function(p,i){
@@ -12234,9 +12246,9 @@ function receiptPhotoFieldHtml(widgetId){
         +'</div>';
     }).join('');
     h+='</div>';
-    h+='<label class="btn sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-top:8px"><svg width="14" height="14"><use href="#ico-import"/></svg>'+receiptPhotoAddAnotherLabel()+pickerInput+'</label>';
+    h+='<button type="button" class="btn sm" onclick="document.getElementById(\''+inputId+'\').click()" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-top:8px"><svg width="14" height="14"><use href="#ico-import"/></svg>'+receiptPhotoAddAnotherLabel()+'</button>';
   }else{
-    h+='<label class="btn sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-top:4px"><svg width="14" height="14"><use href="#ico-import"/></svg>'+receiptPhotoAddLabel()+pickerInput+'</label>';
+    h+='<button type="button" class="btn sm" onclick="document.getElementById(\''+inputId+'\').click()" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-top:4px"><svg width="14" height="14"><use href="#ico-import"/></svg>'+receiptPhotoAddLabel()+'</button>';
   }
   h+='</div>';
   return h;
