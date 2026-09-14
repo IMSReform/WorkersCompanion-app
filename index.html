@@ -36143,7 +36143,15 @@ function openEditEntryModal(entryId,skipSummary){
   // Herhalen/Km - the last row is always Herhalen+Km on both the 2-col
   // (mobile) and 3-col (wide-screen) variants of .ee-fgrid; see its CSS.
   h+='<div><span class="form-label">'+t('wizard_travel_hours')+'</span><input type="number" id="ee-reisuren" min="0" step="0.25" value="'+(e.reisUren||0)+'" style="width:100%"></div>';
-  h+='<div style="align-self:end"><span class="form-label">'+t('repeat_lbl')+'</span>';
+  h+='<div><span class="form-label">'+t('repeat_lbl')+'</span>';
+  // Gabriel: this cell had align-self:end left over from when it used to
+  // share a row with the Tijdstip picker (which needs bottom-alignment to
+  // match its taller custom widget) - now that Herhalen sits in the row
+  // below with Reisuren and Km instead, that same align-self:end pushed its
+  // label down below where Reisuren/Km's labels start, especially once
+  // Km's cell grew taller from the "+ Retour toevoegen" link. Dropping it
+  // lets Herhalen's label line up at the top with Reisuren and Km, like the
+  // screenshot showed it should.
   h+='<select id="ee-repeat" onchange="onEeRepeatChange()" style="width:100%">';
   h+='<option value="">'+t('repeat_none')+'</option>';
   h+='<option value="weekly">'+t('repeat_weekly')+'</option>';
