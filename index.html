@@ -154,7 +154,7 @@ body{font-family:'Roboto','Segoe UI',system-ui,sans-serif;background:var(--bg);c
    which corrects this to the exact pixel value and keeps it in sync via a
    ResizeObserver on #g-header, now that the header is position:fixed and
    no longer pushes .app down on its own via normal document flow. */
-.app{width:100%;min-height:100vh;padding-top:76px;padding-bottom:104px;box-sizing:border-box}
+.app{width:100%;min-height:100vh;padding-top:76px;padding-bottom:calc(130px + env(safe-area-inset-bottom));box-sizing:border-box}
 
 /* ═══ GLOBAL HEADER (edge-to-edge, sticky) ═══ */
 .g-header{
@@ -704,6 +704,10 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
 .month-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .month-pill{padding:5px 11px;font-size:12px;border:1.5px solid var(--border2);border-radius:20px;background:var(--surface);color:var(--text3);cursor:pointer;font-weight:500;transition:all .15s}
 .month-pill.active{background:var(--brand);border-color:var(--brand);color:#fff}
+.gemeente-filter{display:flex;gap:6px;flex-wrap:wrap}
+.gf-pill{padding:5px 11px;font-size:12px;border:1.5px solid var(--border2);border-radius:20px;background:var(--surface);color:var(--text3);cursor:pointer;font-weight:500;transition:all .15s}
+.gf-pill.active{background:var(--brand);border-color:var(--brand);color:#fff}
+
 
 /* ═══ CALENDAR ═══ */
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:0;margin-bottom:0}
