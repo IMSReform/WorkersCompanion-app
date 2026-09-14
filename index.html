@@ -14030,7 +14030,12 @@ function _renderHomeInner(){
     // history sub-section pre-opened so the most relevant context for a
     // follow-up is visible without an extra tap.
     var row='<div class="followup-item" style="cursor:pointer" onclick="toggleCursistAcc('+item.id+')">';
-    row+='<div class="fu-avatar" style="'+(item.isLid?'background:var(--brand-light);color:var(--brand)':'')+'">'+item.initial+'</div>';
+    // Members (Lid) get a thin orange ring around the avatar instead of a
+    // different fill color - Gabriel wasn't sure about the light-vs-dark
+    // fill split (some contacts read "clear", some "donker"), so the fill
+    // stays the same solid brand color for everyone and only the ring marks
+    // membership, matching the Contacts tab and detail popups below.
+    row+='<div class="fu-avatar" style="'+(item.isLid?'box-shadow:0 0 0 2px var(--surface),0 0 0 4px #E8823C':'')+'">'+item.initial+'</div>';
     row+='<div style="flex:1;min-width:0"><div class="fu-name">'+item.naam+'</div>';
     row+='<div class="fu-meta">'+item.meta+'</div></div>';
     row+='<div style="display:flex;align-items:center;gap:6px">';
@@ -19225,13 +19230,12 @@ function renderCursistCard(cu,badgeLabel){
   var h='<div class="cursist-acc-item">';
   h+='<div class="cursist-acc-head" style="cursor:pointer" onclick="'+detailCall+'">';
   var cuDispName=cursistDisplayName(cu);
-  // Same light-vs-dark split as .fu-avatar in the Follow-up card (Leden get
-  // the light brand tint, Cursisten keep the default solid dark fill) -
-  // this row used to give Leden a solid blue fill instead, so a member and
-  // a non-member both looked "dark" here while looking different
-  // everywhere else in the app (Gabriel: "some contacts have clear color
-  // and some others donker color.. could you fix that?").
-  h+='<div style="position:relative;flex-shrink:0"><div class="cc-avatar" style="width:36px;height:36px;font-size:13px'+(isLid?';background:var(--brand-light);color:var(--brand)':'')+'">'+(cuDispName.charAt(0)||'?').toUpperCase()+'</div>'+(urgTier?'<span class="urg-dot '+urgTier+'"></span>':'')+'</div>';
+  // Same orange-ring marker as .fu-avatar in the Follow-up card - Gabriel
+  // wasn't sold on giving Leden a different fill color (some contacts read
+  // "clear", some "donker"), so every avatar keeps the same solid fill and
+  // a member is marked with a ring instead (Gabriel: "some contacts have
+  // clear color and some others donker color.. could you fix that?").
+  h+='<div style="position:relative;flex-shrink:0"><div class="cc-avatar" style="width:36px;height:36px;font-size:13px'+(isLid?';box-shadow:0 0 0 2px var(--surface),0 0 0 4px #E8823C':'')+'">'+(cuDispName.charAt(0)||'?').toUpperCase()+'</div>'+(urgTier?'<span class="urg-dot '+urgTier+'"></span>':'')+'</div>';
   h+='<div style="flex:1;min-width:0"><div class="cc-name" style="font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+cuDispName+getPersonTypeBadge(cu)+badgeHtml+'</div>'+headRight+'</div>';
   // Call/WhatsApp stay visible even when collapsed - these are quick actions
   // on the PERSON, not detail that only matters once you open the row.
@@ -20875,12 +20879,12 @@ function openLidDetail(id){
   document.getElementById('modal-cursist-detail-content').innerHTML=
     '<div style="display:flex;justify-content:flex-end;margin-bottom:2px"><button onclick="closeModals()" style="border:none;background:none;font-size:22px;color:var(--text3);cursor:pointer;line-height:1;padding:0 4px">&times;</button></div>'
     +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">'
-    // Same light-brand fill as the Leden row in the Contacts list and the
-    // Follow-up card's .fu-avatar - this popup header used solid blue
-    // instead, which is what made a member's avatar look "dark" here even
-    // though it's meant to be the light one (see the Contacts-list fix
-    // just above for the full explanation).
-    +'<div class="cc-avatar" style="width:52px;height:52px;font-size:20px;background:var(--brand-light);color:var(--brand);flex-shrink:0">'+cu.naam.charAt(0).toUpperCase()+'</div>'
+    // Same orange ring as the Leden row in the Contacts list and the
+    // Follow-up card's .fu-avatar, on the default solid cc-avatar fill -
+    // this popup header used a solid blue fill instead, which made a
+    // member's avatar look different from every other avatar in the app
+    // (see the Contacts-list fix above for the full explanation).
+    +'<div class="cc-avatar" style="width:52px;height:52px;font-size:20px;box-shadow:0 0 0 3px var(--surface),0 0 0 5.5px #E8823C;flex-shrink:0">'+cu.naam.charAt(0).toUpperCase()+'</div>'
     +'<div style="flex:1;min-width:0"><div style="font-size:20px;font-weight:700;display:flex;align-items:center;flex-wrap:wrap;gap:6px">'+cu.naam+getPersonTypeBadge(cu)+(cu.extraZorg?'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--red-light);color:var(--red);white-space:nowrap">&#10084; '+t('extra_zorg_badge')+'</span>':'')+'</div>'
     +'<div style="font-size:12px;color:var(--text3);margin-top:2px">'+([cu.adres,[cu.postcode,cu.plaats].filter(Boolean).join(' '),cu.land,cu.tel].filter(Boolean).join(' \u00b7 ')||t('no_contact_info'))+'</div></div>'
     +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:auto">'
