@@ -384,6 +384,10 @@ html.dark .settings-box{border-color:rgba(255,255,255,.06)}
 .todo-text{flex:1;min-width:0;font-size:13px;color:var(--text);word-break:break-word;cursor:pointer}
 .todo-del{width:22px;height:22px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:18px;line-height:1;cursor:pointer;border-radius:50%}
 .todo-del:hover{background:var(--surface2);color:var(--text)}
+/* #1104: add-form deadline button lights up brand-colored once a date has
+   been picked for the item about to be added, so it's obvious the pick
+   "took" before hitting +. */
+#todo-deadline-toggle.todo-deadline-set{border-color:var(--brand);color:var(--brand)}
 /* Small inline row-remove "x" - neutral gray, not red/pink. A persistent red
    x on every row read as alarming for a routine "remove this row" action,
    and on touch devices any :hover-triggered red state tends to stick after
@@ -6490,6 +6494,7 @@ var TRANSLATIONS = {
     todo_cat_personal:'Persoonlijk',
     todo_cat_work:'Werk/Gemeente',
     todo_move_to:'Verplaats naar',
+    todo_deadline:'Deadline',todo_set_deadline:'Deadline instellen',todo_deadline_clear:'Deadline verwijderen',
     project_new_title:'Nieuw project', project_name_placeholder:'Projectnaam...', project_target_date:'Streefdatum', project_item_placeholder:'Nieuw item...', project_no_items:'Nog geen items', project_export_pdf:'Exporteer als PDF', project_mark_done:'Markeer project als klaar',
     prayer_title:'Gebedslijst',
     prayer_placeholder:'Nieuw gebedspunt...',
@@ -6850,6 +6855,7 @@ var TRANSLATIONS = {
     todo_cat_personal:'Personal',
     todo_cat_work:'Work/Church',
     todo_move_to:'Move to',
+    todo_deadline:'Deadline',todo_set_deadline:'Set a deadline',todo_deadline_clear:'Remove deadline',
     project_new_title:'New project', project_name_placeholder:'Project name...', project_target_date:'Target date', project_item_placeholder:'New item...', project_no_items:'No items yet', project_export_pdf:'Export as PDF', project_mark_done:'Mark project as done',
     prayer_title:'Prayer list',
     prayer_placeholder:'New prayer request...',
@@ -7228,6 +7234,7 @@ var TRANSLATIONS = {
     todo_cat_personal:'Personal',
     todo_cat_work:'Trabajo/Iglesia',
     todo_move_to:'Mover a',
+    todo_deadline:'Fecha límite',todo_set_deadline:'Establecer fecha límite',todo_deadline_clear:'Quitar fecha límite',
     project_new_title:'Nuevo proyecto', project_name_placeholder:'Nombre del proyecto...', project_target_date:'Fecha objetivo', project_item_placeholder:'Nuevo elemento...', project_no_items:'Aún no hay elementos', project_export_pdf:'Exportar como PDF', project_mark_done:'Marcar proyecto como terminado',
     prayer_title:'Lista de oraci\u00f3n',
     prayer_placeholder:'Nueva petici\u00f3n de oraci\u00f3n...',
@@ -7602,7 +7609,7 @@ var TRANSLATIONS = {
     'form_city':'Ville/commune',
     'form_notes':'Notes supplémentaires...',
     followup_title:"Suivi",followup_ok:"Tout est à jour!",all_cursisten:"Voir tous les contacts",
-    todo_title:'À faire',todo_placeholder:'Nouvelle tâche...',todo_history:'Historique',todo_empty:'Aucune tâche. Ajoutez-en une !',todo_tap_to_edit:'Touchez pour modifier',todo_history_empty:'Aucune tâche terminée pour le moment.',todo_show_more:'Afficher plus',todo_cat_personal:'Personnel',todo_cat_work:'Travail/Église',todo_move_to:'Déplacer vers',project_new_title:'Nouveau projet',project_name_placeholder:'Nom du projet...',project_target_date:'Date cible',project_item_placeholder:'Nouvel élément...',project_no_items:'Aucun élément pour l’instant',project_export_pdf:'Exporter en PDF',project_mark_done:'Marquer le projet comme terminé',
+    todo_title:'À faire',todo_placeholder:'Nouvelle tâche...',todo_history:'Historique',todo_empty:'Aucune tâche. Ajoutez-en une !',todo_tap_to_edit:'Touchez pour modifier',todo_history_empty:'Aucune tâche terminée pour le moment.',todo_show_more:'Afficher plus',todo_cat_personal:'Personnel',todo_cat_work:'Travail/Église',todo_move_to:'Déplacer vers',todo_deadline:'Échéance',todo_set_deadline:'Définir une échéance',todo_deadline_clear:'Supprimer l’échéance',project_new_title:'Nouveau projet',project_name_placeholder:'Nom du projet...',project_target_date:'Date cible',project_item_placeholder:'Nouvel élément...',project_no_items:'Aucun élément pour l’instant',project_export_pdf:'Exporter en PDF',project_mark_done:'Marquer le projet comme terminé',
     prayer_title:'Liste de prière',prayer_placeholder:'Nouvelle requête de prière...',prayer_cat_personal:'Personnel',prayer_cat_work:'Travail/Église',prayer_empty:'Aucune requête de prière. Ajoutez-en une !',prayer_move_to:'Déplacer vers',prayer_history:'Historique',prayer_days_lbl:'Jours',prayer_times_lbl:'Fois priée',prayer_days_abbr:'j',prayer_mark_answered:'🙏 Exaucée',prayer_mark_na:'Sans objet',prayer_answered_lbl:'Exaucée',prayer_delete_only:'Supprimer seulement (ne pas enregistrer)',prayer_history_empty:'Aucune prière exaucée pour le moment.',prayer_counter_tip:'Voir la progression',prayer_added_on_lbl:'Ajouté le',
     form_postcode_lbl:'Code postal',form_postcode:'Code postal',time_format_lbl:'Format de l\'heure',time_format_24h:'24 heures (14:30)',time_format_12h:'12 heures (2:30 pm)',date_format_lbl:'Format de date',date_format_dmy:'Jour-Mois-Année (26-05-2026)',date_format_mdy:'Mois-Jour-Année (05-26-2026)',
     crit_hours:"Heures critères",
@@ -7728,7 +7735,7 @@ var TRANSLATIONS = {
     'form_city':'Stadt/Dorf',
     'form_notes':'Zusätzliche Notizen...',
     followup_title:'Nachverfolgung',followup_ok:'Alles auf dem neuesten Stand!',all_cursisten:'Alle Kontakte anzeigen',
-    todo_title:'Aufgaben',todo_placeholder:'Neue Aufgabe...',todo_history:'Verlauf',todo_empty:'Keine Aufgaben. Füge eine hinzu!',todo_tap_to_edit:'Zum Bearbeiten tippen',todo_history_empty:'Noch keine erledigten Aufgaben.',todo_show_more:'Mehr anzeigen',todo_cat_personal:'Persönlich',todo_cat_work:'Arbeit/Gemeinde',todo_move_to:'Verschieben nach',project_new_title:'Neues Projekt',project_name_placeholder:'Projektname...',project_target_date:'Zieldatum',project_item_placeholder:'Neuer Punkt...',project_no_items:'Noch keine Punkte',project_export_pdf:'Als PDF exportieren',project_mark_done:'Projekt als erledigt markieren',
+    todo_title:'Aufgaben',todo_placeholder:'Neue Aufgabe...',todo_history:'Verlauf',todo_empty:'Keine Aufgaben. Füge eine hinzu!',todo_tap_to_edit:'Zum Bearbeiten tippen',todo_history_empty:'Noch keine erledigten Aufgaben.',todo_show_more:'Mehr anzeigen',todo_cat_personal:'Persönlich',todo_cat_work:'Arbeit/Gemeinde',todo_move_to:'Verschieben nach',todo_deadline:'Frist',todo_set_deadline:'Frist festlegen',todo_deadline_clear:'Frist entfernen',project_new_title:'Neues Projekt',project_name_placeholder:'Projektname...',project_target_date:'Zieldatum',project_item_placeholder:'Neuer Punkt...',project_no_items:'Noch keine Punkte',project_export_pdf:'Als PDF exportieren',project_mark_done:'Projekt als erledigt markieren',
     prayer_title:'Gebetsliste',prayer_placeholder:'Neues Gebetsanliegen...',prayer_cat_personal:'Persönlich',prayer_cat_work:'Arbeit/Gemeinde',prayer_empty:'Keine Gebetsanliegen. Füge eins hinzu!',prayer_move_to:'Verschieben nach',prayer_history:'Verlauf',prayer_days_lbl:'Tage',prayer_times_lbl:'Mal gebetet',prayer_days_abbr:'T',prayer_mark_answered:'🙏 Erhört',prayer_mark_na:'Nicht zutreffend',prayer_answered_lbl:'Erhört',prayer_delete_only:'Nur löschen (nicht speichern)',prayer_history_empty:'Noch keine erhörten Gebete.',prayer_counter_tip:'Fortschritt ansehen',prayer_added_on_lbl:'Hinzugefügt am',
     form_postcode_lbl:'Postleitzahl',form_postcode:'Postleitzahl',time_format_lbl:'Zeitformat',time_format_24h:'24-Stunden (14:30)',time_format_12h:'12-Stunden (2:30 pm)',date_format_lbl:'Datumsformat',date_format_dmy:'Tag-Monat-Jahr (26-05-2026)',date_format_mdy:'Monat-Tag-Jahr (05-26-2026)',
     crit_hours:'Pflichtstunden',
@@ -7866,7 +7873,7 @@ var TRANSLATIONS = {
     'form_city':'Oraș/sat',
     'form_notes':'Note suplimentare...',
     followup_title:'Urmărire',followup_ok:'Totul este la zi!',all_cursisten:'Vezi toate contactele',
-    todo_title:'Sarcini',todo_placeholder:'Sarcină nouă...',todo_history:'Istoric',todo_empty:'Nicio sarcină. Adaugă una!',todo_tap_to_edit:'Atinge pentru a edita',todo_history_empty:'Nicio sarcină finalizată încă.',todo_show_more:'Arată mai mult',todo_cat_personal:'Personal',todo_cat_work:'Lucru/Biserică',todo_move_to:'Mută la',project_new_title:'Proiect nou',project_name_placeholder:'Numele proiectului...',project_target_date:'Data țintă',project_item_placeholder:'Element nou...',project_no_items:'Niciun element încă',project_export_pdf:'Exportă ca PDF',project_mark_done:'Marchează proiectul ca finalizat',
+    todo_title:'Sarcini',todo_placeholder:'Sarcină nouă...',todo_history:'Istoric',todo_empty:'Nicio sarcină. Adaugă una!',todo_tap_to_edit:'Atinge pentru a edita',todo_history_empty:'Nicio sarcină finalizată încă.',todo_show_more:'Arată mai mult',todo_cat_personal:'Personal',todo_cat_work:'Lucru/Biserică',todo_move_to:'Mută la',todo_deadline:'Termen limită',todo_set_deadline:'Setează termenul limită',todo_deadline_clear:'Elimină termenul limită',project_new_title:'Proiect nou',project_name_placeholder:'Numele proiectului...',project_target_date:'Data țintă',project_item_placeholder:'Element nou...',project_no_items:'Niciun element încă',project_export_pdf:'Exportă ca PDF',project_mark_done:'Marchează proiectul ca finalizat',
     prayer_title:'Listă de rugăciune',prayer_placeholder:'Nouă cerere de rugăciune...',prayer_cat_personal:'Personal',prayer_cat_work:'Lucru/Biserică',prayer_empty:'Nicio cerere de rugăciune. Adaugă una!',prayer_move_to:'Mută la',prayer_history:'Istoric',prayer_days_lbl:'Zile',prayer_times_lbl:'De câte ori s-a rugat',prayer_days_abbr:'z',prayer_mark_answered:'🙏 Împlinită',prayer_mark_na:'Nu se aplică',prayer_answered_lbl:'Împlinită',prayer_delete_only:'Doar șterge (nu înregistra)',prayer_history_empty:'Nicio rugăciune împlinită încă.',prayer_counter_tip:'Vezi progresul',prayer_added_on_lbl:'Adăugat la',
     form_postcode_lbl:'Cod poștal',form_postcode:'Cod poștal',time_format_lbl:'Format oră',time_format_24h:'24 ore (14:30)',time_format_12h:'12 ore (2:30 pm)',date_format_lbl:'Format dată',date_format_dmy:'Zi-Lună-An (26-05-2026)',date_format_mdy:'Lună-Zi-An (05-26-2026)',
     crit_hours:'Ore criterii',
@@ -7985,7 +7992,7 @@ var TRANSLATIONS = {
     greeting_morning:'Buongiorno',greeting_afternoon:'Buon pomeriggio',greeting_evening:'Buonasera',
     year_progress:'Progresso',year_lbl:'Anno',this_month:'Questo mese',hours_lbl:'Ore',studies_lbl:'Studi',cursisten_lbl:'Contatti',
     followup_title:'Seguito',followup_ok:'Tutto aggiornato!',all_cursisten:'Vedi tutti i contatti',
-    todo_title:'Cose da fare',todo_placeholder:'Nuovo compito...',todo_history:'Cronologia',todo_empty:'Nessun compito. Aggiungine uno!',todo_tap_to_edit:'Tocca per modificare',todo_history_empty:'Nessun compito completato.',todo_show_more:'Mostra altro',todo_cat_personal:'Personale',todo_cat_work:'Lavoro/Chiesa',todo_move_to:'Sposta in',project_new_title:'Nuovo progetto',project_name_placeholder:'Nome del progetto...',project_target_date:'Data obiettivo',project_item_placeholder:'Nuovo elemento...',project_no_items:'Nessun elemento ancora',project_export_pdf:'Esporta come PDF',project_mark_done:'Segna il progetto come completato',
+    todo_title:'Cose da fare',todo_placeholder:'Nuovo compito...',todo_history:'Cronologia',todo_empty:'Nessun compito. Aggiungine uno!',todo_tap_to_edit:'Tocca per modificare',todo_history_empty:'Nessun compito completato.',todo_show_more:'Mostra altro',todo_cat_personal:'Personale',todo_cat_work:'Lavoro/Chiesa',todo_move_to:'Sposta in',todo_deadline:'Scadenza',todo_set_deadline:'Imposta scadenza',todo_deadline_clear:'Rimuovi scadenza',project_new_title:'Nuovo progetto',project_name_placeholder:'Nome del progetto...',project_target_date:'Data obiettivo',project_item_placeholder:'Nuovo elemento...',project_no_items:'Nessun elemento ancora',project_export_pdf:'Esporta come PDF',project_mark_done:'Segna il progetto come completato',
     prayer_title:'Lista di preghiera',prayer_placeholder:'Nuova richiesta di preghiera...',prayer_cat_personal:'Personale',prayer_cat_work:'Lavoro/Chiesa',prayer_empty:'Nessuna richiesta di preghiera. Aggiungine una!',prayer_move_to:'Sposta in',prayer_history:'Cronologia',prayer_days_lbl:'Giorni',prayer_times_lbl:'Volte pregato',prayer_days_abbr:'g',prayer_mark_answered:'🙏 Esaudita',prayer_mark_na:'Non applicabile',prayer_answered_lbl:'Esaudita',prayer_delete_only:'Elimina soltanto (non registrare)',prayer_history_empty:'Nessuna preghiera esaudita finora.',prayer_counter_tip:'Visualizza progresso',prayer_added_on_lbl:'Aggiunto il',
     form_postcode_lbl:'CAP',form_postcode:'CAP',time_format_lbl:'Formato ora',time_format_24h:'24 ore (14:30)',time_format_12h:'12 ore (2:30 pm)',date_format_lbl:'Formato data',date_format_dmy:'Giorno-Mese-Anno (26-05-2026)',date_format_mdy:'Mese-Giorno-Anno (05-26-2026)',
     crit_hours:'Ore criterio',
@@ -8116,7 +8123,7 @@ var TRANSLATIONS = {
     greeting_morning:'Bom dia',greeting_afternoon:'Boa tarde',greeting_evening:'Boa noite',
     year_progress:'Progresso',year_lbl:'Ano',this_month:'Este mês',hours_lbl:'Horas',studies_lbl:'Estudos',cursisten_lbl:'Contatos',
     followup_title:'Acompanhamento',followup_ok:'Tudo em dia!',all_cursisten:'Ver todos os contatos',
-    todo_title:'Tarefas',todo_placeholder:'Nova tarefa...',todo_history:'Histórico',todo_empty:'Sem tarefas. Adicione uma!',todo_tap_to_edit:'Toque para editar',todo_history_empty:'Ainda não há tarefas concluídas.',todo_show_more:'Mostrar mais',todo_cat_personal:'Pessoal',todo_cat_work:'Trabalho/Igreja',todo_move_to:'Mover para',project_new_title:'Novo projeto',project_name_placeholder:'Nome do projeto...',project_target_date:'Data alvo',project_item_placeholder:'Novo item...',project_no_items:'Ainda sem itens',project_export_pdf:'Exportar como PDF',project_mark_done:'Marcar projeto como concluído',
+    todo_title:'Tarefas',todo_placeholder:'Nova tarefa...',todo_history:'Histórico',todo_empty:'Sem tarefas. Adicione uma!',todo_tap_to_edit:'Toque para editar',todo_history_empty:'Ainda não há tarefas concluídas.',todo_show_more:'Mostrar mais',todo_cat_personal:'Pessoal',todo_cat_work:'Trabalho/Igreja',todo_move_to:'Mover para',todo_deadline:'Prazo',todo_set_deadline:'Definir prazo',todo_deadline_clear:'Remover prazo',project_new_title:'Novo projeto',project_name_placeholder:'Nome do projeto...',project_target_date:'Data alvo',project_item_placeholder:'Novo item...',project_no_items:'Ainda sem itens',project_export_pdf:'Exportar como PDF',project_mark_done:'Marcar projeto como concluído',
     prayer_title:'Lista de oração',prayer_placeholder:'Novo pedido de oração...',prayer_cat_personal:'Pessoal',prayer_cat_work:'Trabalho/Igreja',prayer_empty:'Nenhum pedido de oração. Adicione um!',prayer_move_to:'Mover para',prayer_history:'Histórico',prayer_days_lbl:'Dias',prayer_times_lbl:'Vezes orado',prayer_days_abbr:'d',prayer_mark_answered:'🙏 Respondida',prayer_mark_na:'Não aplicável',prayer_answered_lbl:'Respondida',prayer_delete_only:'Apenas excluir (não registrar)',prayer_history_empty:'Ainda não há orações respondidas.',prayer_counter_tip:'Ver progresso',prayer_added_on_lbl:'Adicionado em',
     form_postcode_lbl:'Código postal',form_postcode:'Código postal',time_format_lbl:'Formato de hora',time_format_24h:'24 horas (14:30)',time_format_12h:'12 horas (2:30 pm)',date_format_lbl:'Formato de data',date_format_dmy:'Dia-Mês-Ano (26-05-2026)',date_format_mdy:'Mês-Dia-Ano (05-26-2026)',
     crit_hours:'Horas de critério',
@@ -13864,6 +13871,11 @@ function _renderHomeInner(){
   h+='<div class="acc-body">';
   h+='<div style="display:flex;gap:6px;margin-bottom:10px">';
   h+='<input id="todo-new-input" type="text" placeholder="'+t('todo_placeholder')+'" style="flex:1;min-width:0" onkeydown="if(event.key===\'Enter\'){addTodo();}">';
+  // #1104: deadline button next to the category picker - opens the shared
+  // date popover (openDeadlinePopover) rather than a hidden/toggled input.
+  h+='<button type="button" id="todo-deadline-toggle" onclick="event.stopPropagation();toggleTodoDeadlinePicker()" title="'+t('todo_set_deadline')+'" style="flex-shrink:0;width:38px;border-radius:var(--r-sm);border:1.5px solid var(--border2);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3)">';
+  h+='<svg width="15" height="15"><use href="#ico-calendar"/></svg>';
+  h+='</button>';
   h+='<button type="button" id="todo-cat-toggle" onclick="event.stopPropagation();toggleTodoCatPicker()" title="'+t('todo_cat_personal')+' / '+t('todo_cat_work')+'" style="flex-shrink:0;width:38px;border-radius:var(--r-sm);border:1.5px solid var(--border2);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center">';
   h+='<span id="todo-cat-dot" style="width:10px;height:10px;border-radius:50%;background:var(--brand)"></span>';
   h+='</button>';
@@ -14645,14 +14657,110 @@ function buildFollowupItems(){
 }
 
 // TO-DO LIST — shown to everyone regardless of work role.
-// Model: db.todos[] = {id, text, done, category:'personal'|'work', createdAt, doneAt}
+// Model: db.todos[] = {id, text, done, category:'personal'|'work', deadline,
+//   createdAt, doneAt}
 // category mirrors the Prayer list's personal/work-church split (#392) —
 // same compact popup picker on the add-form, same colored-dot toggle per
 // row, same two collapsible accordion groups with remembered open/closed
 // state. Older todos predate the category field entirely; they're treated
 // as 'personal' wherever category is read (item.category==='work' ? ... :
-// personal-branch), so nothing needs a migration pass.
+// personal-branch), so nothing needs a migration pass. deadline (#1104,
+// Gabriel: "I miss a deadline in the to do's .. and the red flags like the
+// follow up contacts .. remind the user when the due time is approaching")
+// is an optional ISO date string, added the same way and just as absent on
+// every older item - getTodoDeadlineTier below treats a missing deadline as
+// simply "no flag", nothing to migrate.
+
+// #1104: one small popover reused for both the add-form's deadline button
+// and each row's own deadline pill/icon - a freshly created element with a
+// real, always-visible <input type="date"> inside it (appended to <body>
+// only while open), NOT a pre-existing hidden input whose display gets
+// toggled - see the quick-repeat date-field comment elsewhere in this file
+// for why that specific pattern silently breaks on some mobile browsers.
+var _deadlinePopEl=null;
+var _deadlinePopAnchor=null;
+function closeDeadlinePopover(){
+  if(_deadlinePopEl&&_deadlinePopEl.parentNode)_deadlinePopEl.parentNode.removeChild(_deadlinePopEl);
+  _deadlinePopEl=null;
+  _deadlinePopAnchor=null;
+  document.removeEventListener('mousedown',deadlinePopoverOutsideClick);
+  window.removeEventListener('resize',closeDeadlinePopover);
+  window.removeEventListener('scroll',closeDeadlinePopover,true);
+}
+function deadlinePopoverOutsideClick(ev){
+  if(_deadlinePopEl&&!_deadlinePopEl.contains(ev.target)&&(!_deadlinePopAnchor||!_deadlinePopAnchor.contains(ev.target))){
+    closeDeadlinePopover();
+  }
+}
+function openDeadlinePopover(anchorEl,currentVal,onSelect){
+  if(!anchorEl)return;
+  var reopeningSame=_deadlinePopEl&&_deadlinePopAnchor===anchorEl;
+  closeDeadlinePopover();
+  if(reopeningSame)return; // second tap on the same anchor just closes it
+  var rect=anchorEl.getBoundingClientRect();
+  var pop=document.createElement('div');
+  pop.style.cssText='position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-md);padding:8px;z-index:500;min-width:170px';
+  pop.innerHTML=
+    '<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">'+t('todo_deadline')+'</div>'
+    +'<input type="date" value="'+(currentVal||'')+'" style="width:100%;margin-bottom:'+(currentVal?'6px':'0')+'">'
+    +(currentVal?'<button type="button" data-clear="1" style="width:100%;background:none;border:none;color:var(--red);font-size:12px;cursor:pointer;padding:4px 0">'+t('todo_deadline_clear')+'</button>':'');
+  document.body.appendChild(pop);
+  var popH=pop.offsetHeight;
+  var top=rect.bottom+6;
+  if(top+popH>window.innerHeight-8)top=rect.top-popH-6;
+  var left=rect.right-pop.offsetWidth;
+  if(left<8)left=8;
+  pop.style.top=top+'px';
+  pop.style.left=left+'px';
+  pop.onclick=function(ev){ev.stopPropagation();};
+  var dateInp=pop.querySelector('input[type="date"]');
+  dateInp.onchange=function(){onSelect(dateInp.value||null);closeDeadlinePopover();};
+  var clearBtn=pop.querySelector('[data-clear]');
+  if(clearBtn)clearBtn.onclick=function(){onSelect(null);closeDeadlinePopover();};
+  _deadlinePopEl=pop;
+  _deadlinePopAnchor=anchorEl;
+  setTimeout(function(){
+    document.addEventListener('mousedown',deadlinePopoverOutsideClick);
+    window.addEventListener('resize',closeDeadlinePopover);
+    window.addEventListener('scroll',closeDeadlinePopover,true);
+  },10);
+}
+// Mirrors getContactTier's red/amber/none tiering for Follow-up: overdue or
+// due today/tomorrow is urgent (red), due within 3 days is soon (amber),
+// anything further out gets no color at all (just the plain date pill) so
+// the flag stays meaningful instead of every future deadline glowing.
+function getTodoDeadlineTier(item){
+  if(!item||!item.deadline)return null;
+  var now=new Date();now.setHours(0,0,0,0);
+  var dl=parseLocalDate(item.deadline);dl.setHours(0,0,0,0);
+  var days=Math.round((dl-now)/86400000);
+  if(days<=1)return'urgent';
+  if(days<=3)return'soon';
+  return null;
+}
 var todoNewCategory='personal';
+var todoNewDeadline=null;
+function toggleTodoDeadlinePicker(){
+  var btn=document.getElementById('todo-deadline-toggle');
+  openDeadlinePopover(btn,todoNewDeadline,function(val){
+    todoNewDeadline=val;
+    var b=document.getElementById('todo-deadline-toggle');
+    if(b)b.classList.toggle('todo-deadline-set',!!val);
+  });
+}
+function openTodoItemDeadlinePicker(id,el){
+  var item=(db.todos||[]).find(function(x){return x.id===id;});
+  if(!item)return;
+  openDeadlinePopover(el,item.deadline,function(val){updateTodoDeadline(id,val);});
+}
+function updateTodoDeadline(id,val){
+  var item=(db.todos||[]).find(function(x){return x.id===id;});
+  if(!item)return;
+  item.deadline=val;
+  touch(item);
+  save();
+  renderTodoOpenList();
+}
 var _todoCatPopEl=null;
 function closeTodoCatPicker(){
   if(_todoCatPopEl&&_todoCatPopEl.parentNode)_todoCatPopEl.parentNode.removeChild(_todoCatPopEl);
@@ -14709,8 +14817,11 @@ function addTodo(){
   var text=(inp.value||'').trim();
   if(!text)return;
   if(!db.todos)db.todos=[];
-  db.todos.unshift({id:genUniqueId(db.todos),text:text,done:false,category:todoNewCategory,createdAt:new Date().toISOString(),doneAt:null});
+  db.todos.unshift({id:genUniqueId(db.todos),text:text,done:false,category:todoNewCategory,deadline:todoNewDeadline||null,createdAt:new Date().toISOString(),doneAt:null});
   inp.value='';
+  todoNewDeadline=null;
+  var dbtn=document.getElementById('todo-deadline-toggle');
+  if(dbtn)dbtn.classList.remove('todo-deadline-set');
   save();
   renderTodoOpenList();
   inp.focus();
@@ -14816,19 +14927,45 @@ function renderTodoOpenList(){
     var isWork=item.category==='work';
     var otherCatLabel=isWork?t('todo_cat_personal'):t('todo_cat_work');
     var idArg=ssIdArg(item.id);
+    // #1104: deadline pill/icon, same tap target either way - set, shows a
+    // colored date pill (red=urgent/overdue, amber=due soon, plain gray
+    // once it's further out); unset, shows a faint outline calendar icon so
+    // the option to add one is always discoverable, not just on add.
+    var dlTier=getTodoDeadlineTier(item);
+    var dlHtml;
+    if(item.deadline){
+      var dlBg=dlTier==='urgent'?'var(--red)':dlTier==='soon'?'var(--amber)':'var(--surface2)';
+      var dlColor=dlTier?'#fff':'var(--text3)';
+      dlHtml='<div onclick="event.stopPropagation();openTodoItemDeadlinePicker('+idArg+',this)" title="'+t('todo_deadline')+'" style="flex-shrink:0;font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px;background:'+dlBg+';color:'+dlColor+';cursor:pointer;white-space:nowrap">'+formatDateShort(item.deadline)+'</div>';
+    } else {
+      dlHtml='<div onclick="event.stopPropagation();openTodoItemDeadlinePicker('+idArg+',this)" title="'+t('todo_set_deadline')+'" style="flex-shrink:0;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text3);cursor:pointer;opacity:.5"><svg width="12" height="12"><use href="#ico-calendar"/></svg></div>';
+    }
     return'<div class="todo-row'+(checked?' todo-row-checked':'')+'">'
       +'<div class="todo-check'+(checked?' checked':'')+'" onclick="toggleTodoDone('+idArg+')"></div>'
       +'<div onclick="event.stopPropagation();toggleTodoItemCategory('+idArg+')" title="'+t('todo_move_to')+' '+otherCatLabel+'" style="width:10px;height:10px;border-radius:50%;background:'+(isWork?'var(--text3)':'var(--brand)')+';flex-shrink:0;cursor:pointer;margin-right:2px"></div>'
       +'<div class="todo-text" onclick="startEditTodoText(this,'+idArg+')" title="'+t('todo_tap_to_edit')+'">'+escapeHtml(item.text)+'</div>'
+      +dlHtml
       +'<div class="todo-del" onclick="deleteTodo('+idArg+')" title="'+t('delete_btn')+'">&times;</div>'
       +'</div>';
+  }
+  // #1104: urgent-deadline items float to the top of their group, then
+  // due-soon, then everything else in its normal (newest-first) order -
+  // same tierRank-sort shape as buildFollowupItems for Follow-up contacts.
+  var _dlTierRank={urgent:0,soon:1};
+  function sortByDeadlineTier(arr){
+    return arr.map(function(item,i){return{item:item,i:i};}).sort(function(a,b){
+      var ta=_dlTierRank[getTodoDeadlineTier(a.item)];if(ta===undefined)ta=2;
+      var tb=_dlTierRank[getTodoDeadlineTier(b.item)];if(tb===undefined)tb=2;
+      if(ta!==tb)return ta-tb;
+      return a.i-b.i; // stable: keep original order within the same tier
+    }).map(function(x){return x.item;});
   }
   // Personal vs. work/church, as two collapsible groups — same pattern as
   // the Prayer list (renderPrayerList), including remembering which group
   // was last left open/closed via getAccState/setAccState.
   var groups=[
-    {key:'personal',label:t('todo_cat_personal'),color:'var(--brand)',bg:'var(--brand-light)',items:open.filter(function(i){return i.category!=='work';})},
-    {key:'work',label:t('todo_cat_work'),color:'var(--text3)',bg:'var(--surface2)',items:open.filter(function(i){return i.category==='work';})}
+    {key:'personal',label:t('todo_cat_personal'),color:'var(--brand)',bg:'var(--brand-light)',items:sortByDeadlineTier(open.filter(function(i){return i.category!=='work';}))},
+    {key:'work',label:t('todo_cat_work'),color:'var(--text3)',bg:'var(--surface2)',items:sortByDeadlineTier(open.filter(function(i){return i.category==='work';}))}
   ];
   var h='';
   groups.forEach(function(g){
