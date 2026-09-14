@@ -29630,7 +29630,13 @@ function openChangelog(){
     });
   }
   h+='<button class="btn primary full" style="margin-top:14px" onclick="closeModals()">'+t('close_btn')+'</button>';
-  showModalCentered(h);
+  // Gabriel: "update pop up is also reduced in width size.. this could also
+  // be responsive" - plain showModalCentered(h) stays pinned to the fixed
+  // 420px phone-width .pmc-box even on desktop (only opts.wide opts into
+  // the @media(min-width:768px){.pmc-box.wide{max-width:760px}} rule), so
+  // the changelog list looked squeezed on bigger screens same as the edit
+  // popups did before.
+  showModalCentered(h,{wide:true});
 }
 function toggleChangelogRow(btn){
   var body=btn.nextElementSibling;
