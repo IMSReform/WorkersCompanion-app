@@ -13016,23 +13016,34 @@ function toggleAccordionByKey(key,btnEl){
 // and got opened while the other (empty that day) stayed closed, the closed
 // card just looked blank/empty rather than "not opened yet" - easy to read
 // as "nothing happening there" and never think to tap it. Opening either
-// one now also opens the other (if it wasn't already), so both are always
-// visible together once you've looked at either; closing one still only
-// closes that one, since nothing asked for them to close together too.
-function toggleTodoOrPrayerAccordion(key,btnEl){
-  toggleAccordionByKey(key,btnEl);
-  if(!getAccState(key))return; // just closed - leave the other card alone
-  var otherKey=key==='home-todo'?'home-prayer':'home-todo';
-  if(getAccState(otherKey))return; // already open
+// one now also opens the other (if it wasn't already).
+// #1101 Gabriel: "I want them both to close and open at the same time in
+// bigger screens" - on phones the two cards stay stacked/independent (only
+// opening links them, as before - closing one alone is normal single-column
+// behavior there). On the >=900px 2-column desktop layout (.dash-2col-wrap,
+// same breakpoint used elsewhere for the side-by-side grid) they now also
+// close together, since side by side it reads as one unit.
+function setSiblingAccOpen(otherKey,open){
   var otherCard=document.querySelector('.card[data-acc-key="'+otherKey+'"]');
-  if(!otherCard||otherCard.classList.contains('acc-open'))return;
-  otherCard.classList.add('acc-open');
-  setAccState(otherKey,true);
+  if(!otherCard)return;
+  if(otherCard.classList.contains('acc-open')===open)return; // already matches
+  otherCard.classList.toggle('acc-open',open);
+  setAccState(otherKey,open);
   var otherHeader=otherCard.previousElementSibling;
   var otherBtn=otherHeader&&otherHeader.querySelector?otherHeader.querySelector('.acc-toggle-btn'):null;
   if(otherBtn){
     var svg=otherBtn.querySelector('svg');
-    if(svg)svg.style.transform='rotate(180deg)';
+    if(svg)svg.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+  }
+}
+function toggleTodoOrPrayerAccordion(key,btnEl){
+  toggleAccordionByKey(key,btnEl);
+  var nowOpen=getAccState(key);
+  var otherKey=key==='home-todo'?'home-prayer':'home-todo';
+  if(nowOpen){
+    setSiblingAccOpen(otherKey,true);
+  }else if(window.innerWidth>=900){
+    setSiblingAccOpen(otherKey,false);
   }
 }
 function toggleCalAcc(headerEl){
