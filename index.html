@@ -11260,6 +11260,20 @@ function migrateThemaOmschrijvingBug(){
   db.entries.forEach(function(e){
     if(!e.thema)return;
     if(validThemaRe.test(e.thema))return; // genuine theme code — leave alone
+    // Root cause of "I type a new Vrij onderwerp topic, save it, and it's
+    // gone the next time I open the entry" (Gabriel, repeatedly, despite
+    // several fixes to the save logic itself - #1005/#1069/#1092): a real
+    // custom "Vrij onderwerp" topic is free text by design, so it never
+    // matches the BS/ES/KUB pattern above and this migration treated every
+    // one of them as leaked bug data and wiped it - and since syncToDrive()/
+    // loadFromDrive() both run this migration after EVERY save(), a custom
+    // topic got destroyed again on the very next sync even right after being
+    // typed and saved correctly. themacode==='Vrij onderwerp' is the
+    // definitive, unambiguous marker that this is the current, intentional
+    // free-topic feature (set alongside thema by saveEditEntry/wSave/etc.),
+    // not the old scrambled-field bug this migration exists to clean up -
+    // genuinely corrupted old entries never had themacode set to that.
+    if(e.themacode==='Vrij onderwerp')return;
     if(!e.omschrijving)e.omschrijving=e.thema;
     e.thema='';
     e.themacode='';
@@ -36450,7 +36464,14 @@ function duplicateEditEntry(entryId){
   }
   var eeCompleted2=document.getElementById('ee-thema-completed');
   if(eeCompleted2)e.themaCompleted=eeCompleted2.checked;
+  // Read the actual Omschrijving field first (it wins if the user typed a
+  // real description), and only fall back to the e.omschrijving=e.thema
+  // default set above when that field is empty - otherwise this line
+  // silently clobbered that default right back to blank/stale every time,
+  // since e.omschrijving=e.thema only ever changed the in-memory object,
+  // never the DOM input this reads from.
   if(omsch)e.omschrijving=omsch.value;
+  if(!e.omschrijving&&e.thema)e.omschrijving=e.thema;
   if(opm)e.opmerking=opm.value;
   if(opmShare)e.notitiePrive=opmShare.checked;
   // Same future-check as saveEditEntry - "Save as new" with a future date/
@@ -36615,7 +36636,12 @@ function saveEditEntry(entryId){
   }
   var eeCompleted=document.getElementById('ee-thema-completed');
   if(eeCompleted)e.themaCompleted=eeCompleted.checked;
+  // Same fix as duplicateEditEntry above - read the real Omschrijving field
+  // first, only fall back to the e.omschrijving=e.thema default (set above)
+  // when that field is empty, so it doesn't get silently clobbered back to
+  // blank/stale on every save.
   if(omsch)e.omschrijving=omsch.value;
+  if(!e.omschrijving&&e.thema)e.omschrijving=e.thema;
   if(opm)e.opmerking=opm.value;
   if(opmShare)e.notitiePrive=opmShare.checked;
   // Commit whatever the receipt-photo widget landed on: _pendingReceiptPhotos
