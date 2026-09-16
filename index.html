@@ -11000,6 +11000,7 @@ function migrateSettings(){
   migrateDuplicateCursistIds();
   migrateLidPersonType();
   migrateCompanionPhotos();
+  migrateCompanionKm();
   migrateHungarianLanguage();
 }
 // Hungarian is removed from the language picker (for now - the translation
@@ -11259,6 +11260,35 @@ function migrateCompanionPhotos(){
   db.entries.forEach(function(e){
     if(!e||!e.groupStudyPrimaryId)return;
     if((e.fotos&&e.fotos.length)||e.foto){e.fotos=[];e.foto=null;touch(e);changed=true;}
+  });
+  if(changed){
+    if(typeof save==='function')save();
+    else if(typeof saveLocal==='function')saveLocal();
+  }
+}
+// One-time repair for task #1130 (Gabriel: "I visited 2 persons... it
+// registered time and travel time only to one, that's correct, but added
+// 2x km"). Same root cause/shape as migrateCompanionPhotos above: a group-
+// study/visit companion entry was created via {...primaryEntry, km:0, ...}
+// at all 3 creation sites (wSave, quick-repeat popup, edit-entry modal),
+// which zeroed the plain km field but NOT the kmHeen/kmRetour round-trip
+// breakdown underneath it (see readKmWithRetour) when the primary entry
+// used the "retour" (round-trip) km option. Several places that pre-fill a
+// km input (openEditEntryModal's ee-km, the confirm-completed-activity
+// modal) prefer kmHeen over km when it's set, so opening/re-saving a
+// companion entry silently pulled that leftover figure back in as real km
+// - the "at first it didn't show for both km, but then later on it
+// appeared" Gabriel described. Fixed going forward at all 3 sites; this
+// clears the leftover kmHeen/kmRetour on companions already affected, on
+// every device, without needing to re-enter anything. Only touches
+// companions (never the primary, which is where the real km belongs), and
+// is a no-op once already cleaned.
+function migrateCompanionKm(){
+  if(!db.entries)return;
+  var changed=false;
+  db.entries.forEach(function(e){
+    if(!e||!e.groupStudyPrimaryId)return;
+    if(e.kmHeen!=null||e.kmRetour!=null){e.kmHeen=null;e.kmRetour=null;touch(e);changed=true;}
   });
   if(changed){
     if(typeof save==='function')save();
@@ -17594,8 +17624,18 @@ function wSave(wantsCal){
         // attendee's entry) even though only one real receipt exists. The
         // photo belongs on the primary entry, which is the one that actually
         // carries the expense.
+        // kmHeen/kmRetour (the round-trip breakdown behind the plain km
+        // total, see readKmWithRetour) also need explicit zeroing here, not
+        // just km itself - {...entry} otherwise leaves the primary's real
+        // outbound/return figures sitting on the companion even though its
+        // km is 0. Several places (openEditEntryModal's km input, the
+        // confirm-completed-activity modal) pre-fill from kmHeen in
+        // preference to km when present, so that leftover, uncleared
+        // kmHeen silently reappeared as real km the next time the
+        // companion entry was opened and saved - exactly the "km showed
+        // up later" bug Gabriel reported (#1130).
         var companion={...entry,id:genEntryId(),cursistId:exCu.id,cursistNaam:exCu.naam,
-          uren:0,km:0,kosten:0,reisUren:0,isAutoTravel:false,foto:null,fotos:[],
+          uren:0,km:0,kmHeen:null,kmRetour:null,kosten:0,reisUren:0,isAutoTravel:false,foto:null,fotos:[],
           groupStudyId:groupId,groupStudyPrimaryId:entry.id};
         touch(companion);
         db.entries.unshift(companion);
@@ -19161,8 +19201,11 @@ function saveQuickRepeat(sourceEntryId){
       // receipt photo carried over from the primary entry via the spread
       // would otherwise show up once per group-study attendee in the PDF
       // Bijlagen appendix instead of just once.
+      // kmHeen/kmRetour zeroed too, same fix + reason as wSave() above
+      // (#1130) - otherwise the round-trip breakdown behind km silently
+      // survives on the companion and reappears as real km later.
       var companion=Object.assign({},newEntry,{id:genEntryId(),cursistId:exCu.id,cursistNaam:exCu.naam,
-        uren:0,km:0,kosten:0,reisUren:0,isAutoTravel:false,foto:null,fotos:[],
+        uren:0,km:0,kmHeen:null,kmRetour:null,kosten:0,reisUren:0,isAutoTravel:false,foto:null,fotos:[],
         groupStudyId:qrGroupId,groupStudyPrimaryId:newEntry.id});
       touch(companion);
       db.entries.push(companion);
@@ -36648,8 +36691,11 @@ function saveEditEntry(entryId){
       // receipt photo carried over from the edited entry via the spread
       // would otherwise show up once per group-study attendee in the PDF
       // Bijlagen appendix instead of just once.
+      // kmHeen/kmRetour zeroed too, same fix + reason as wSave() above
+      // (#1130) - otherwise the round-trip breakdown behind km silently
+      // survives on the companion and reappears as real km later.
       var companion={...e,id:genEntryId(),cursistId:exCu.id,cursistNaam:exCu.naam,
-        uren:0,km:0,kosten:0,reisUren:0,isAutoTravel:false,foto:null,fotos:[],
+        uren:0,km:0,kmHeen:null,kmRetour:null,kosten:0,reisUren:0,isAutoTravel:false,foto:null,fotos:[],
         groupStudyId:e.groupStudyId,groupStudyPrimaryId:e.id};
       touch(companion);
       db.entries.unshift(companion);
