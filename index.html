@@ -16249,12 +16249,24 @@ function renderPrayerList(){
     var isWork=item.category==='work';
     var otherCatLabel=isWork?t('prayer_cat_personal'):t('prayer_cat_work');
     var idArg=ssIdArg(item.id);
-    var daysBadge=prayerDaysSince(item)+t('prayer_days_abbr');
+    // Gabriel: "Everytime I check a name because I prayed for the person,
+    // this counter keeps showing 11.. something is wrong there." This badge
+    // used to show prayerDaysSince(item) - days elapsed since the point was
+    // ADDED, computed purely from createdAt. That number never responds to
+    // checking the box at all (it only ticks up once a day, automatically,
+    // regardless of whether anything was prayed for) - so from Gabriel's
+    // side, checking the item repeatedly looked totally broken: the one
+    // counter he could actually see just sat there. The real per-check
+    // counter (prayerTimesCount, distinct days actually prayed for) only
+    // lived inside the detail popup one tap away. Now the row itself shows
+    // times-prayed (reacts immediately to checking) with the day-count as
+    // a small suffix; the detail popup still shows both numbers spelled out.
+    var timesBadge=prayerTimesCount(item)+'&#215;&nbsp;&middot;&nbsp;'+prayerDaysSince(item)+t('prayer_days_abbr');
     return'<div class="todo-row'+(prayedToday?' todo-row-checked':'')+'">'
       +'<div class="todo-check'+(prayedToday?' checked':'')+'" onclick="togglePrayedToday('+idArg+')"></div>'
       +'<div onclick="event.stopPropagation();togglePrayerItemCategory('+idArg+')" title="'+t('prayer_move_to')+' '+otherCatLabel+'" style="width:10px;height:10px;border-radius:50%;background:'+(isWork?'var(--text3)':'var(--brand)')+';flex-shrink:0;cursor:pointer;margin-right:2px"></div>'
       +'<div class="todo-text" onclick="startEditPrayerText(this,'+idArg+')" title="'+t('todo_tap_to_edit')+'">'+escapeHtml(item.text)+'</div>'
-      +'<div onclick="event.stopPropagation();openPrayerDetail('+idArg+')" title="'+t('prayer_counter_tip')+'" style="flex-shrink:0;font-size:10px;font-weight:600;color:var(--text3);background:var(--surface2);padding:2px 7px;border-radius:20px;cursor:pointer">'+daysBadge+'</div>'
+      +'<div onclick="event.stopPropagation();openPrayerDetail('+idArg+')" title="'+t('prayer_counter_tip')+'" style="flex-shrink:0;font-size:10px;font-weight:600;color:var(--text3);background:var(--surface2);padding:2px 7px;border-radius:20px;cursor:pointer">'+timesBadge+'</div>'
       +'<div class="todo-del" onclick="openPrayerDetail('+idArg+')" title="'+t('delete_btn')+'">&times;</div>'
       +'</div>';
   }
