@@ -33037,17 +33037,17 @@ function renderStudieRow(les, stats) {
   var badge = totalContacts > 0
     ? '<span onclick="showStudieContactsPopover(event,\''+les.code+'\')" style="background:var(--brand-light);color:var(--brand);font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px;cursor:pointer">'+totalContacts+'</span>'
     : '';
-  // Separate amber badge for scheduled-but-not-given sessions (stats.gepland,
-  // from db.planned - see getStudieStats) - kept apart from the given/actueel
-  // count above so a contact who's only booked, not yet studied with, doesn't
-  // silently inflate the main "given" number.
-  var geplandBadgeLbl=tMap({nl:'Gepland',en:'Planned',es:'Planificado',fr:'Planifié',de:'Geplant',ro:'Planificat',it:'Pianificato',pt:'Planeado'});
-  var geplandBadge = (stats.gepland&&stats.gepland.length)
-    ? '<span onclick="showStudieContactsPopover(event,\''+les.code+'\')" style="background:rgba(217,164,6,.15);color:var(--amber,#b8860b);font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px;cursor:pointer">'+geplandBadgeLbl+' '+stats.gepland.length+'</span>'
-    : '';
+  // Gabriel: "remove the planned bible studies from the bible studies tab" -
+  // the amber "Gepland" badge/list (scheduled-but-not-given sessions, from
+  // db.planned via stats.gepland) used to sit next to the given/actueel
+  // count. Dropped from this row's display entirely per his request; the
+  // planned session itself is untouched (still visible in Calendar/Agenda),
+  // this only stops it from also surfacing here. stats.gepland is still
+  // computed by getStudieStats() (other screens - e.g. Contacts tab - use
+  // their own separate planned-session display, unaffected by this).
   var h = '<div id="sr-'+safeCode+'" class="studie-row" style="border-bottom:1px solid var(--border)">';
   h += '<div onclick="toggleStudie(\''+les.code+'\')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;cursor:pointer">';
-  h += '<div style="flex:1"><span style="font-size:13px;font-weight:500">'+les.code+' – '+les.titel+'</span>'+badge+geplandBadge+'</div>';
+  h += '<div style="flex:1"><span style="font-size:13px;font-weight:500">'+les.code+' – '+les.titel+'</span>'+badge+'</div>';
   h += '<button onclick="openPresenter(event,\''+les.code+'\')" title="'+t('presenter_btn')+'" style="flex-shrink:0;border:none;background:var(--brand-mid);color:#fff;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:600;cursor:pointer;margin-right:8px;display:flex;align-items:center;gap:4px">&#9654; '+t('presenter_btn')+'</button>';
   h += '<svg width="14" height="14" style="flex-shrink:0;color:var(--text3);transition:transform .2s" class="sr-arrow"><use href="#ico-chevron-down"/></svg>';
   h += '</div>';
@@ -33115,27 +33115,13 @@ function renderStudieRow(les, stats) {
   h += '</div>';
   // Contacts section
   var studieAddContactsLbl = tMap({nl:'+ Contacten toevoegen',en:'+ Add contacts',es:'+ Añadir contactos',fr:'+ Ajouter des contacts',de:'+ Kontakte hinzufügen',ro:'+ Adaugă contacte',it:'+ Aggiungi contatti',pt:'+ Adicionar contactos'});
-  var studiePlannedLbl = tMap({nl:'Gepland',en:'Planned',es:'Planificado',fr:'Planifié',de:'Geplant',ro:'Planificat',it:'Pianificato',pt:'Planeado'});
-  if(stats.actueel.length || stats.voltooid.length || (stats.gepland&&stats.gepland.length)) {
+  if(stats.actueel.length || stats.voltooid.length) {
     // Small tap target next to the existing lists, so a study that already
     // has contacts can still get more backfilled (e.g. a contact you know
     // received it in a group session that never got individually logged).
     h += '<div style="text-align:left;margin-bottom:4px"><span onclick="openStudieBackfillModal(\''+les.code+'\')" style="font-size:10px;font-weight:600;color:var(--brand);cursor:pointer">'+studieAddContactsLbl+'</span></div>';
-    if(stats.gepland && stats.gepland.length) {
-      // Scheduled but not given yet - taps through to the plan itself
-      // (openPlanModal) rather than a session-history modal, since there's
-      // no session to show history for until it's actually logged.
-      h += '<div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:6px">&#128197; '+studiePlannedLbl+' ('+stats.gepland.length+')</div>';
-      stats.gepland.forEach(function(c) {
-        var sessionBadge = (c.sessionCount>1) ? '<span style="font-size:10px;font-weight:700;color:var(--text3);background:var(--border);padding:0 5px;border-radius:8px;margin-right:6px">'+c.sessionCount+'&times;</span>' : '';
-        h += '<div style="display:flex;align-items:center;padding:5px 8px;background:var(--surface2);border-radius:6px;margin-bottom:4px;cursor:pointer" onclick="openPlanModal('+ssIdArg(c.planId)+')">';
-        h += '<span style="width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block;margin-right:5px;flex-shrink:0"></span>';
-        h += '<span style="font-size:13px;font-weight:500;flex:1">'+c.naam+'</span>';
-        h += sessionBadge;
-        h += '<span style="font-size:11px;color:var(--text3)">'+c.datum+'</span>';
-        h += '</div>';
-      });
-    }
+    // Gepland (scheduled-but-not-given) list removed from here - see comment
+    // on the geplandBadge removal above in renderStudieRow.
     if(stats.actueel.length) {
       h += '<div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:6px">&#128336; '+t('studie_current')+' ('+stats.actueel.length+')</div>';
       stats.actueel.forEach(function(c) {
@@ -33216,34 +33202,22 @@ function showStudieContactsPopover(ev, code){
   if(!les)return;
   les = getLesTranslation(les);
   var stats = getStudieStats(code);
-  var studiePlannedLbl = tMap({nl:'Gepland',en:'Planned',es:'Planificado',fr:'Planifié',de:'Geplant',ro:'Planificat',it:'Pianificato',pt:'Planeado'});
   var h = '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)">';
   h += '<span style="font-size:13px;font-weight:700">'+les.code+' – '+les.titel+'</span>';
   h += '<span onclick="closeStudieContactsPopover()" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1;padding:0 4px">&times;</span>';
   h += '</div>';
   h += '<div style="padding:10px 14px;max-height:min(50vh,360px);overflow-y:auto">';
   var any = false;
-  if(stats.gepland && stats.gepland.length){
-    any = true;
-    h += '<div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:6px">&#128197; '+studiePlannedLbl+' ('+stats.gepland.length+')</div>';
-    stats.gepland.forEach(function(c){
-      var sessionBadge = (c.sessionCount>1) ? '<span style="font-size:10px;font-weight:700;color:var(--text3);background:var(--border);padding:0 5px;border-radius:8px;margin-right:6px">'+c.sessionCount+'&times;</span>' : '';
-      h += '<div style="display:flex;align-items:center;padding:5px 8px;background:var(--surface2);border-radius:6px;margin-bottom:4px;cursor:pointer" onclick="closeStudieContactsPopover();openPlanModal('+ssIdArg(c.planId)+')">';
-      h += '<span style="width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block;margin-right:5px;flex-shrink:0"></span>';
-      h += '<span style="font-size:13px;font-weight:500;flex:1">'+c.naam+'</span>';
-      h += sessionBadge;
-      h += '<span style="font-size:11px;color:var(--text3)">'+c.datum+'</span>';
-      h += '</div>';
-    });
-  }
+  // Gepland (scheduled-but-not-given) list removed from this popover too -
+  // matches the row it's opened from (see renderStudieRow).
   if(stats.actueel.length){
     any = true;
-    h += '<div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:6px;margin-top:'+((stats.gepland&&stats.gepland.length)?'10px':'0')+'">&#128336; '+t('studie_current')+' ('+stats.actueel.length+')</div>';
+    h += '<div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:6px">&#128336; '+t('studie_current')+' ('+stats.actueel.length+')</div>';
     stats.actueel.forEach(function(c){ h += renderStudieContact(c,'actueel',code,'closeStudieContactsPopover();'); });
   }
   if(stats.voltooid.length){
     any = true;
-    h += '<div style="font-size:11px;font-weight:700;color:#22863a;margin-bottom:6px;margin-top:'+((stats.actueel.length||(stats.gepland&&stats.gepland.length))?'10px':'0')+'">&#10003; '+t('studie_completed')+' ('+stats.voltooid.length+')</div>';
+    h += '<div style="font-size:11px;font-weight:700;color:#22863a;margin-bottom:6px;margin-top:'+(stats.actueel.length?'10px':'0')+'">&#10003; '+t('studie_completed')+' ('+stats.voltooid.length+')</div>';
     stats.voltooid.forEach(function(c){ h += renderStudieContact(c,'voltooid',code,'closeStudieContactsPopover();'); });
   }
   if(!any){
