@@ -10419,6 +10419,17 @@ function multiContactHint(cat){
     ? tMap({nl:'Waren er nog anderen bij deze studie? Vink hen ook aan — elk krijgt zijn eigen aantekening in de studiegeschiedenis.',en:'Was anyone else present at this study? Check them too — each gets their own note in the study history.',es:'¿Había alguien más en este estudio? Márcalos también — cada uno recibe su propia nota en el historial de estudios.',fr:"Quelqu'un d'autre était présent à cette étude ? Cochez-les aussi — chacun reçoit sa propre note dans l'historique.",de:'War noch jemand bei diesem Studium dabei? Auch sie ankreuzen — jeder bekommt einen eigenen Eintrag im Studienverlauf.',ro:'Au mai fost și alții la acest studiu? Bifați-i și pe ei — fiecare primește propria notă în istoricul studiilor.',it:"C'era qualcun altro a questo studio? Seleziona anche loro — ognuno riceve la propria nota nella cronologia.",pt:'Havia mais alguém neste estudo? Marque-os também — cada um recebe sua própria nota no histórico.'})
     : tMap({nl:'Waren er nog anderen bij? Vink hen ook aan — elk krijgt zijn eigen aantekening in de contactgeschiedenis.',en:'Was anyone else present? Check them too — each gets their own note in the contact history.',es:'¿Había alguien más presente? Márcalos también — cada uno recibe su propia nota en el historial de contacto.',fr:"Quelqu'un d'autre était présent ? Cochez-les aussi — chacun reçoit sa propre note dans l'historique de contact.",de:'War noch jemand anwesend? Auch sie ankreuzen — jeder bekommt einen eigenen Eintrag im Kontaktverlauf.',ro:'Au mai fost și alții prezenți? Bifați-i și pe ei — fiecare primește propria notă în istoricul de contact.',it:"C'era qualcun altro? Seleziona anche loro — ognuno riceve la propria nota nella cronologia dei contatti.",pt:'Havia mais alguém? Marque-os também — cada um recebe sua própria nota no histórico de contato.'});
 }
+// Gabriel: "the label for the contact.. it's right now 'met wie'.. but
+// when one has more contacts, then it can confuse.. so let's change the
+// first label 'Contact'.. and the second [use] 'met wie'.. when checking
+// the entry, it should say who was the visit made with." - this is the
+// plain single-contact SELECTOR field (wizard step, the contact-picker
+// popup title, and the full edit-form's contact label). "Met wie" stays
+// reserved for the entry-detail summary's group-attendee display below
+// (see the eeSumRow calls in openEditEntryModal).
+function contactFieldLbl(){
+  return tMap({nl:'Contact',en:'Contact',es:'Contacto',fr:'Contact',de:'Kontakt',ro:'Contact',it:'Contatto',pt:'Contato'});
+}
 function getCategoriesForRole(cats){
   if(db.settings.workRole==='kantoor'){
     return cats.filter(function(c){return KANTOOR_BLOCKED_CATS.indexOf(c.label)<0;});
@@ -11283,12 +11294,24 @@ function migrateCompanionPhotos(){
 // every device, without needing to re-enter anything. Only touches
 // companions (never the primary, which is where the real km belongs), and
 // is a no-op once already cleaned.
+// Gabriel later reported the km "came back" even after this ran once (he
+// cleared it by hand in the edit modal and it reappeared): the first pass
+// above only ever nulled kmHeen/kmRetour, but never reset the plain km
+// field itself back to 0 - so a companion that already had the leftover
+// combined total baked into e.km (e.g. 328) kept showing/re-offering that
+// same 328 as its km every time the edit modal opened (openEditEntryModal
+// pre-fills the Km input from e.km whenever kmHeen is null), even though
+// the round-trip breakdown underneath it was already gone. Now also zeroes
+// e.km itself on any companion where it's nonzero, since a companion's km
+// should always be 0 by design - the real trip cost only ever belongs on
+// the primary entry.
 function migrateCompanionKm(){
   if(!db.entries)return;
   var changed=false;
   db.entries.forEach(function(e){
     if(!e||!e.groupStudyPrimaryId)return;
     if(e.kmHeen!=null||e.kmRetour!=null){e.kmHeen=null;e.kmRetour=null;touch(e);changed=true;}
+    if(parseFloat(e.km)>0){e.km=0;touch(e);changed=true;}
   });
   if(changed){
     if(typeof save==='function')save();
@@ -16927,7 +16950,7 @@ function renderWiz(){
         <div id="w-multi-list" style="max-height:180px;overflow-y:auto">${checkList||'<div style="font-size:12px;color:var(--text3)">'+t('wizard_no_contact')+'</div>'}</div>
       </div>`;
     }
-    c.innerHTML=`<div class="wiz-q">${t('wizard_with_who')}</div>
+    c.innerHTML=`<div class="wiz-q">${contactFieldLbl()}</div>
       <div id="w-cursist-field" onclick="openWCursistPicker(this)" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);cursor:pointer;background:var(--surface)">
         <span id="w-cursist-field-label" style="font-size:14px;color:${wSelCu?'var(--text)':'var(--text3)'}">${escapeHtml(wFieldLabel)}</span>
         <svg width="16" height="16" style="color:var(--text3);flex-shrink:0"><use href="#ico-chevron-right"/></svg>
@@ -17104,7 +17127,7 @@ function openWCursistPicker(anchorEl){
   if(wPickGroups.leden.length)wPickList+=`<div class="cc-hdr" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px;padding:0 6px">${ledenSectionLbl()}</div>`+wPickGroups.leden.map(cu=>wPickRow(cu.id,cu.naam)).join('');
   if(wPickGroups.paused.length)wPickList+=`<div class="cc-hdr" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.02em;margin:8px 0 2px;padding:0 6px">${pausedSectionLbl()}</div>`+wPickGroups.paused.map(cu=>wPickRow(cu.id,cu.naam)).join('');
   const h=`<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px 8px">
-      <div style="font-size:15px;font-weight:700">${t('wizard_with_who')}</div>
+      <div style="font-size:15px;font-weight:700">${contactFieldLbl()}</div>
       <button type="button" onclick="closeWCursistPicker()" style="background:none;border:none;font-size:20px;line-height:1;color:var(--text3);cursor:pointer;padding:0 4px">&times;</button>
     </div>
     <div style="padding:0 14px 12px">
@@ -36233,7 +36256,21 @@ function openEditEntryModal(entryId,skipSummary){
   if(eePhotos.length)eeSumRow(receiptPhotoLabel(), eePhotos.map(function(p){return '<img src="'+p.thumb+'" style="width:32px;height:32px;object-fit:cover;border-radius:6px;border:1px solid var(--border);vertical-align:middle;margin-left:4px">';}).join(''));
   eeSumRow(t('wizard_cat'), escapeHtml(getCatLabel(e.categorie)));
   if(e.omschrijving)eeSumRow(t('wizard_desc'), escapeHtml(e.omschrijving));
-  if(e.cursistNaam)eeSumRow(t('wizard_with_who').replace('?',''), escapeHtml(e.cursistNaam));
+  // Gabriel: with a group visit, "Met wie" used to only ever show this
+  // entry's own single contact (whichever of the group happened to be
+  // opened) which read as if only that one person was involved. Now this
+  // shows a "Contact" row (this entry's own link) plus, only when there
+  // are companions, a separate "Met wie" row listing every attendee in
+  // the group - primary + companions - so both appear together.
+  if(e.cursistNaam)eeSumRow(contactFieldLbl(), escapeHtml(e.cursistNaam));
+  if(eeGroupSiblings.length){
+    var eeAllAttendeeNames=[e.cursistNaam].concat(eeGroupSiblings.map(function(s){
+      if(s.cursistNaam)return s.cursistNaam;
+      var sc=db.cursisten.find(function(cc){return String(cc.id)===String(s.cursistId);});
+      return sc?sc.naam:'';
+    })).filter(Boolean);
+    if(eeAllAttendeeNames.length)eeSumRow(t('wizard_with_who').replace('?',''), eeAllAttendeeNames.map(escapeHtml).join(', '));
+  }
   if(e.gemeente)eeSumRow(t('wizard_gemeente'), escapeHtml(e.gemeente));
   if(e.thema)eeSumRow(t('wizard_theme'), escapeHtml(getThemaDisplay(e.thema)||e.thema));
   if(e.opmerking)eeSumRow(t('wizard_note'), escapeHtml(e.opmerking));
@@ -36310,7 +36347,7 @@ function openEditEntryModal(entryId,skipSummary){
   h+='<select id="ee-cat" style="width:100%;margin-bottom:8px" onchange="toggleEeMultiVisibility()">'+catOpts+'</select>';
   h+='<span class="form-label">'+t('wizard_desc')+'</span>';
   h+='<input type="text" id="ee-omschrijving" value="'+(e.omschrijving||'').replace(/"/g,'&quot;')+'" style="width:100%;margin-bottom:8px">';
-  h+='<span class="form-label">'+t('wizard_with_who').replace('?','')+'</span>';
+  h+='<span class="form-label">'+contactFieldLbl()+'</span>';
   h+='<select id="ee-cursist" style="width:100%;margin-bottom:4px" onchange="toggleEeCursistNew()">'+cursistOpts+'</select>';
   // Same "+ add new" pattern as the Gemeente field just below (__new__
   // option -> reveal a plain name input) — previously this select only
