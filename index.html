@@ -15462,7 +15462,12 @@ function renderProjectWorkspace(item){
     +'<div style="display:flex;align-items:center;gap:8px;padding:12px 10px 10px;border-bottom:1px solid var(--border);flex-shrink:0;box-sizing:border-box;width:100%">'
     +'<button onclick="closeProjectWorkspace()" style="background:none;border:none;font-size:26px;line-height:1;color:var(--text3);cursor:pointer;padding:0 4px;flex-shrink:0" aria-label="Close">&times;</button>'
     +'<div style="font-size:15px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escapeHtml(item.text)+'</div>'
-    +'<button onclick="exportProjectPdf('+ssIdArg(item.id)+')" title="'+t('project_export_pdf')+'" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;display:flex"><svg width="18" height="18" viewBox="0 0 24 24"><use href="#ico-printer"/></svg></button>'
+    // Gabriel: "could you add an export to pdf button inside the project?" -
+    // this button already existed here, but as a bare gray icon with only a
+    // hover title (which never shows on a touchscreen), easy to miss next to
+    // the equally-plain close button. Giving it a visible text label + brand
+    // color makes it read as an actual action instead of decoration.
+    +'<button onclick="exportProjectPdf('+ssIdArg(item.id)+')" title="'+t('project_export_pdf')+'" style="background:none;border:1px solid var(--border);border-radius:var(--r-sm);color:var(--brand);cursor:pointer;padding:6px 10px;display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24"><use href="#ico-printer"/></svg>'+t('project_export_pdf')+'</button>'
     +'</div>'
     +'<div id="proj-ws-body" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 40px;box-sizing:border-box"></div>';
   var body=document.getElementById('proj-ws-body');
