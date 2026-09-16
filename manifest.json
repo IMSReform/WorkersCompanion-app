@@ -3,7 +3,7 @@
   "short_name": "Workers Companion",
   "description": "Hour Registration & Bible Study",
   "display": "standalone",
-  "background_color": "#F0F1F2",
+  "background_color": "#123a5e",
   "theme_color": "#335781",
   "orientation": "portrait",
   "start_url": "./",
