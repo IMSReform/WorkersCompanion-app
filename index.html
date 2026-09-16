@@ -36265,16 +36265,19 @@ function openEditEntryModal(entryId,skipSummary){
   // entry's own single contact (whichever of the group happened to be
   // opened) which read as if only that one person was involved. Now this
   // shows a "Contact" row (this entry's own link) plus, only when there
-  // are companions, a separate "Met wie" row listing every attendee in
-  // the group - primary + companions - so both appear together.
+  // are companions, a separate "Met wie" row - but Gabriel later pointed
+  // out "Met wie" was repeating the same name already shown under Contact
+  // ("Contact: Martha" / "Met wie: Martha, Nellis"), so "Met wie" now
+  // lists only the OTHER attendees (the companions), not this entry's own
+  // name again.
   if(e.cursistNaam)eeSumRow(contactFieldLbl(), escapeHtml(e.cursistNaam));
   if(eeGroupSiblings.length){
-    var eeAllAttendeeNames=[e.cursistNaam].concat(eeGroupSiblings.map(function(s){
+    var eeOtherAttendeeNames=eeGroupSiblings.map(function(s){
       if(s.cursistNaam)return s.cursistNaam;
       var sc=db.cursisten.find(function(cc){return String(cc.id)===String(s.cursistId);});
       return sc?sc.naam:'';
-    })).filter(Boolean);
-    if(eeAllAttendeeNames.length)eeSumRow(t('wizard_with_who').replace('?',''), eeAllAttendeeNames.map(escapeHtml).join(', '));
+    }).filter(Boolean);
+    if(eeOtherAttendeeNames.length)eeSumRow(t('wizard_with_who').replace('?',''), eeOtherAttendeeNames.map(escapeHtml).join(', '));
   }
   if(e.gemeente)eeSumRow(t('wizard_gemeente'), escapeHtml(e.gemeente));
   if(e.thema)eeSumRow(t('wizard_theme'), escapeHtml(getThemaDisplay(e.thema)||e.thema));
