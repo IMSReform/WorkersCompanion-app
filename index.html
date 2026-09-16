@@ -33987,7 +33987,14 @@ function renderPresenterSetupModal(){
   if(_pcSetupShowOrder){
     h+='<div style="padding:4px 0 14px 28px">';
     h+=pcExpandToggleHtml();
-    h+='<div style="max-height:46vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch">'+pcPlanRowsHtml()+'</div>';
+    // Gabriel: "give a bit more room to the scroller... many times instead
+    // of checking on text off, I end up scrolling up or down" - the list
+    // was cramped enough that a tap meant to hit the checkbox often landed
+    // on the row's flex gap or bled into the neighbouring row and got read
+    // as a scroll instead. Taller viewport (46vh -> 62vh) so more rows are
+    // visible at once (less scrolling needed to begin with), combined with
+    // the taller per-row touch target below (pcPlanRowsHtml).
+    h+='<div style="max-height:62vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch">'+pcPlanRowsHtml()+'</div>';
     h+='<div style="display:flex;gap:8px;margin-top:10px">';
     h+='<button class="btn" onclick="pcAddNote()" style="flex:1">'+addNoteLbl+'</button>';
     h+='<button class="btn" onclick="pcSetupResetOrder()" style="flex:1;color:var(--red)">'+resetLbl+'</button>';
@@ -34506,19 +34513,28 @@ function pcPlanRowsHtml(){
     // it's easy to spot where it landed instead of losing track of it in
     // an otherwise identical-looking list.
     var justMoved=node===_pcLastMovedNode;
-    var row='<div style="padding:6px 0;border-bottom:1px solid var(--border);opacity:'+(hidden?'.45':'1')+(justMoved?';background:var(--brand-light);border-radius:6px;margin:0 -8px;padding-left:8px;padding-right:8px':'')+'">';
+    // Gabriel: "give a bit more room to the scroller... many times instead
+    // of checking on text off, I end up scrolling up or down" - rows were
+    // only 6px of vertical padding, so a thumb aimed at the checkbox easily
+    // grazed the row above/below and got interpreted as the start of a
+    // scroll gesture instead of a tap. Taller row padding (6px -> 11px) and
+    // a visibly bigger checkbox (with its own padded hit area) give the tap
+    // more room to land correctly.
+    var row='<div style="padding:11px 0;border-bottom:1px solid var(--border);opacity:'+(hidden?'.45':'1')+(justMoved?';background:var(--brand-light);border-radius:6px;margin:0 -8px;padding-left:8px;padding-right:8px':'')+'">';
     row+='<div style="display:flex;align-items:center;gap:6px">'
       +'<span style="flex-shrink:0;min-width:20px;font-size:11px;font-weight:700;color:var(--text3)">'+(i+1)+'</span>'
       +'<span onclick="pcPreviewSlide(this,'+i+')" style="flex:1;min-width:0;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;text-decoration:underline;text-decoration-color:var(--border2)'+(hidden?';text-decoration-line:line-through':'')+'">'+escapeHtml(pcLabel(node))+'</span>'
-      +'<button onclick="pcMove('+i+',-1)" '+(i===0?'disabled':'')+' style="border:none;background:none;color:var(--text2);cursor:pointer;padding:4px;font-size:14px">&#9650;</button>'
-      +'<button onclick="pcMove('+i+',1)" '+(i===_pcPlan.length-1?'disabled':'')+' style="border:none;background:none;color:var(--text2);cursor:pointer;padding:4px;font-size:14px">&#9660;</button>'
+      +'<button onclick="pcMove('+i+',-1)" '+(i===0?'disabled':'')+' style="border:none;background:none;color:var(--text2);cursor:pointer;padding:6px;font-size:14px">&#9650;</button>'
+      +'<button onclick="pcMove('+i+',1)" '+(i===_pcPlan.length-1?'disabled':'')+' style="border:none;background:none;color:var(--text2);cursor:pointer;padding:6px;font-size:14px">&#9660;</button>'
       // Gabriel: "add the option to shut off certain verses/sheets from
       // presenter mode... with a checkbox, in the part where one could
       // change the order" - this used to be a filled/hollow dot button
       // (pcToggleHidden already existed and did the actual hide/show, the
       // dot just wasn't obviously a checkbox). Swapped for a real checkbox:
       // checked = slide is included in the presentation, unchecked = hidden.
-      +'<input type="checkbox" '+(hidden?'':'checked')+' onchange="pcToggleHidden('+i+')" title="'+(hidden?t('presenter_show_slide')||'Show':t('presenter_hide_slide')||'Hide')+'" style="margin:0 4px 0 2px;flex-shrink:0">'
+      // Enlarged (scale 1.35) with its own 6px padded hit area, per the
+      // scroll-vs-tap fix above.
+      +'<input type="checkbox" '+(hidden?'':'checked')+' onchange="pcToggleHidden('+i+')" title="'+(hidden?t('presenter_show_slide')||'Show':t('presenter_hide_slide')||'Hide')+'" style="margin:0;padding:6px;flex-shrink:0;transform:scale(1.35)">'
       +(node.kind==='note'?'<button onclick="pcRemoveNote('+i+')" style="border:none;background:none;color:var(--red);cursor:pointer;padding:4px;font-size:14px">&#10005;</button>':'')
       +'</div>';
     if(_pcExpandAll){
