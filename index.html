@@ -18099,7 +18099,11 @@ function renderCalendar(){
 
   // Day detail panel
   if(calSelectedDay!==null){
-    const selEntries=byDay[calSelectedDay]||[];
+    // Same fix as renderHomeCalendar's selE below - this list was in
+    // whatever order byDay collected entries in (registration order), not
+    // sorted by clock time, so a later-registered but earlier-time entry
+    // could show above one registered first but scheduled later.
+    const selEntries=(byDay[calSelectedDay]||[]).slice().sort(sortByTimeAsc);
     const selDateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(calSelectedDay).padStart(2,'0')}`;
     const selD=new Date(selDateStr);
     const weekday=selD.toLocaleDateString(getLocale(),{weekday:'long'});
@@ -28576,7 +28580,13 @@ function renderHomeCalendar(){
     h='';
   }
   if(calSelectedDay!==null){
-    var selE=byDay[calSelectedDay]||[];
+    // Gabriel: "sometimes (maybe depending on what I register first) the
+    // later time appear first.. the order should be according to the time"
+    // - selP (Gepland) was already sorted by time below, but selE
+    // (Geregistreerd) was left in whatever order byDay happened to collect
+    // entries in (essentially registration/save order, not clock order),
+    // so a 22:00 entry saved before a 10:00 one would list first.
+    var selE=(byDay[calSelectedDay]||[]).slice().sort(sortByTimeAsc);
     var selP=(byDayPlan[calSelectedDay]||[]).slice().sort(sortByTimeAsc);
     var selDS=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(calSelectedDay).padStart(2,'0');
     var selD=new Date(selDS);
