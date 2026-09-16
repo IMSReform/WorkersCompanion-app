@@ -29618,6 +29618,10 @@ function openPlanModal(planId, prefillDate){
       return '<option value="'+th[0]+'" '+sel+'>'+label+'</option>';
     }).join('');
 
+  // Hoisted so both the "new plan" and "editing an existing plan" repeat
+  // sections below can reuse the exact same checkbox label/wording instead
+  // of each defining their own slightly-different copy.
+  var calLbl=tMap({nl:'Ook toevoegen aan agenda-app (Apple/Google/Windows) met herinnering 30 min. van tevoren',en:'Also add to Calendar app (Apple/Google/Windows) with a 30-min reminder',es:'También añadir a la app de calendario (Apple/Google/Windows) con recordatorio 30 min. antes',fr:'Ajouter aussi à l\'app calendrier (Apple/Google/Windows) avec rappel 30 min. avant',de:'Auch zur Kalender-App hinzufügen (Apple/Google/Windows) mit Erinnerung 30 Min. vorher',ro:'Adaugă și în aplicația de calendar (Apple/Google/Windows) cu memento cu 30 min. înainte',it:'Aggiungi anche all\'app calendario (Apple/Google/Windows) con promemoria 30 min. prima',pt:'Também adicionar à app de calendário (Apple/Google/Windows) com lembrete 30 min. antes'});
   var h = '<div style="padding:16px;max-height:80vh;overflow-y:auto">';
   h += '<div style="font-size:15px;font-weight:700;margin-bottom:14px">'+(p?t('plan_edit_title')||'Activiteit bewerken':t('plan_new_title')||'Activiteit plannen')+'</div>';
   h += '<span class="form-label">'+t('wizard_date')+'</span>';
@@ -29645,7 +29649,11 @@ function openPlanModal(planId, prefillDate){
   // touch. Collapsed by default so the common case is just date/time/cat/
   // contact/hours, but auto-expanded when editing an existing plan that
   // already has any of these set, so nothing gets silently hidden.
-  var planMoreLbl=tMap({nl:'Meer opties (beschrijving, km, notities'+(p?'':', herhaling, agenda')+')',en:'More options (description, km, notes'+(p?'':', repeat, calendar')+')',es:'Más opciones (descripción, km, notas'+(p?'':', repetición, calendario')+')',fr:'Plus d\'options (description, km, notes'+(p?'':', répétition, calendrier')+')',de:'Weitere Optionen (Beschreibung, Km, Notizen'+(p?'':', Wiederholung, Kalender')+')',ro:'Mai multe opțiuni (descriere, km, note'+(p?'':', repetare, calendar')+')',it:'Altre opzioni (descrizione, km, note'+(p?'':', ripetizione, calendario')+')',pt:'Mais opções (descrição, km, notas'+(p?'':', repetição, calendário')+')'});
+  // Repeat used to only be offered when creating a brand-new plan, so this
+  // label only mentioned "herhaling"/"repeat" for that case (p falsy). Now
+  // that editing an existing plan also offers a (differently-scoped) repeat
+  // option below, the label mentions it either way.
+  var planMoreLbl=tMap({nl:'Meer opties (beschrijving, km, notities, herhaling'+(p?'':', agenda')+')',en:'More options (description, km, notes, repeat'+(p?'':', calendar')+')',es:'Más opciones (descripción, km, notas, repetición'+(p?'':', calendario')+')',fr:'Plus d\'options (description, km, notes, répétition'+(p?'':', calendrier')+')',de:'Weitere Optionen (Beschreibung, Km, Notizen, Wiederholung'+(p?'':', Kalender')+')',ro:'Mai multe opțiuni (descriere, km, note, repetare'+(p?'':', calendar')+')',it:'Altre opzioni (descrizione, km, note, ripetizione'+(p?'':', calendario')+')',pt:'Mais opções (descrição, km, notas, repetição'+(p?'':', calendário')+')'});
   var planHasExtra=!!(p&&(p.omschrijving||parseFloat(p.km)>0||p.opmerking));
   h += '<button type="button" id="plan-more-toggle" onclick="document.getElementById(\'plan-more\').style.display=\'block\';this.style.display=\'none\'" style="display:'+(planHasExtra?'none':'block')+';width:100%;text-align:left;background:none;border:none;padding:6px 0;margin-bottom:6px;color:var(--brand);font-size:13px;font-weight:600;cursor:pointer">'+planMoreLbl+'</button>';
   h += '<div id="plan-more" style="display:'+(planHasExtra?'block':'none')+'">';
@@ -29687,8 +29695,35 @@ function openPlanModal(planId, prefillDate){
     // Checked by default (remembers the user's last choice) - saving then
     // opens the .ics handoff immediately instead of a separate "add it?"
     // popup, since ticking this box already IS that confirmation.
-    var calLbl=tMap({nl:'Ook toevoegen aan agenda-app (Apple/Google/Windows) met herinnering 30 min. van tevoren',en:'Also add to Calendar app (Apple/Google/Windows) with a 30-min reminder',es:'También añadir a la app de calendario (Apple/Google/Windows) con recordatorio 30 min. antes',fr:'Ajouter aussi à l\'app calendrier (Apple/Google/Windows) avec rappel 30 min. avant',de:'Auch zur Kalender-App hinzufügen (Apple/Google/Windows) mit Erinnerung 30 Min. vorher',ro:'Adaugă și în aplicația de calendar (Apple/Google/Windows) cu memento cu 30 min. înainte',it:'Aggiungi anche all\'app calendario (Apple/Google/Windows) con promemoria 30 min. prima',pt:'Também adicionar à app de calendário (Apple/Google/Windows) com lembrete 30 min. antes'});
     h += '<label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;margin-top:10px;line-height:1.4"><input type="checkbox" id="plan-add-to-cal" '+(getCalExportPref()?'checked':'')+' style="width:16px;height:16px;flex-shrink:0;margin-top:1px">'+calLbl+'</label>';
+  }
+  if(p){
+    // Gabriel asked for this a second time, unprompted, after an earlier
+    // offer to add it went unanswered: a way to turn an EXISTING single
+    // planned activity into a repeating one from the edit screen, not just
+    // when first creating it (see the "Repeat is only offered when
+    // creating..." comment on the !p block above - that limitation is what
+    // he kept running into). This does NOT turn the item being edited into
+    // part of a series after the fact - it generates brand new, independent
+    // occurrences going forward from this one's date (own repeatGroupId),
+    // exactly like ticking "Herhalen" while creating a new plan would - the
+    // activity being edited here is saved as normal either way.
+    var editRepeatHintLbl=tMap({nl:'Maakt extra, losse activiteiten aan vanaf deze datum — deze activiteit zelf verandert niet.',en:'Creates extra, separate occurrences starting from this date — this activity itself stays unchanged.',es:'Crea repeticiones adicionales y separadas a partir de esta fecha — esta actividad en sí no cambia.',fr:'Crée des occurrences supplémentaires et distinctes à partir de cette date — cette activité elle-même ne change pas.',de:'Erstellt zusätzliche, eigenständige Termine ab diesem Datum — dieser Termin selbst bleibt unverändert.',ro:'Creează activități suplimentare, separate, începând cu această dată — această activitate rămâne neschimbată.',it:'Crea occorrenze aggiuntive e separate a partire da questa data — questa attività stessa non cambia.',pt:'Cria ocorrências adicionais e separadas a partir desta data — esta atividade em si não muda.'});
+    h += '<span class="form-label" style="margin-top:8px">'+t('repeat_lbl')+'</span>';
+    h += '<select id="plan-edit-repeat" onchange="onPlanEditRepeatChange()" style="margin-bottom:4px">';
+    h += '<option value="">'+t('repeat_none')+'</option>';
+    h += '<option value="weekly">'+t('repeat_weekly')+'</option>';
+    h += '<option value="biweekly">'+t('repeat_biweekly')+'</option>';
+    h += '<option value="monthly">'+t('repeat_monthly')+'</option>';
+    h += '</select>';
+    h += '<div style="font-size:11px;color:var(--text3);margin-bottom:8px">'+editRepeatHintLbl+'</div>';
+    h += '<div id="plan-edit-repeat-count-wrap" style="display:none;margin-bottom:8px">';
+    h += '<span class="form-label">'+t('repeat_count_lbl')+'</span>';
+    h += '<input type="number" id="plan-edit-repeat-count" value="8" min="2" max="52" style="width:100%">';
+    h += '</div>';
+    h += '<div id="plan-edit-repeat-cal-wrap" style="display:none;margin-bottom:4px">';
+    h += '<label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;line-height:1.4"><input type="checkbox" id="plan-edit-repeat-cal" '+(getCalExportPref()?'checked':'')+' style="width:16px;height:16px;flex-shrink:0;margin-top:1px">'+calLbl+'</label>';
+    h += '</div>';
   }
   h += '</div>'; // close #plan-more
   if(p){
@@ -30367,6 +30402,19 @@ function onPlanRepeatChange(){
   var wrap=document.getElementById('plan-repeat-count-wrap');
   if(wrap)wrap.style.display=(sel&&sel.value)?'block':'none';
 }
+// Same show/hide behavior as onPlanRepeatChange above, but for the
+// edit-an-existing-plan repeat section (plan-edit-repeat*) - also reveals
+// the "add to calendar" checkbox for the new occurrences once a repeat
+// cadence is actually picked, instead of always showing it (unlike the
+// new-plan form, most edits won't touch repeat at all).
+function onPlanEditRepeatChange(){
+  var sel=document.getElementById('plan-edit-repeat');
+  var show=!!(sel&&sel.value);
+  var wrap=document.getElementById('plan-edit-repeat-count-wrap');
+  if(wrap)wrap.style.display=show?'block':'none';
+  var calWrap=document.getElementById('plan-edit-repeat-cal-wrap');
+  if(calWrap)calWrap.style.display=show?'block':'none';
+}
 function onPlanCatChange(){
   var cat = document.getElementById('plan-cat');
   var cur = document.getElementById('plan-cursist');
@@ -30556,6 +30604,10 @@ function savePlanModal(planId){
   // Read this now, before closeModals() below rips the checkbox out of the DOM.
   var calCb = document.getElementById('plan-add-to-cal');
   var wantsCal = calCb ? calCb.checked : false;
+  // Same idea for the edit-an-existing-plan repeat section (only present
+  // when planId is set - see the `if(p){...}` block in openPlanModal).
+  var editRepeatCalCb = document.getElementById('plan-edit-repeat-cal');
+  var editRepeatWantsCal = editRepeatCalCb ? editRepeatCalCb.checked : false;
   if(!datum||!datum.value||!cat||!cat.value){ alert(LANG==='en'?'Please fill in date and category.':LANG==='es'?'Por favor complete fecha y categoría.':'Vul datum en categorie in.'); return; }
   var cursistObj = cur&&cur.value ? db.cursisten.find(function(c){return String(c.id)===String(cur.value);}) : null;
   // Read the Thema fields (see plan-thema/plan-vrij above) the same way
@@ -30617,6 +30669,35 @@ function savePlanModal(planId){
       entry.calSeq=parseInt(oldPlan.calSeq)||0;
       db.planned[idx]=entry;
     } else db.planned.push(entry);
+    // Gabriel: add a way to make an existing planned activity repeat weekly
+    // when EDITING it, not just when first creating it (plan-edit-repeat,
+    // see the `if(p){...}` block in openPlanModal). This never touches the
+    // entry just saved above - it only generates brand new, independent
+    // occurrences going forward from its date, sharing a fresh
+    // repeatGroupId, same as ticking "Herhalen" during creation would.
+    var editRepeatSel = document.getElementById('plan-edit-repeat');
+    var editRepeatVal = editRepeatSel ? editRepeatSel.value : '';
+    if(editRepeatVal){
+      var erCountEl = document.getElementById('plan-edit-repeat-count');
+      var erCount = Math.max(2, Math.min(52, parseInt(erCountEl&&erCountEl.value)||8));
+      entry.repeatGroupId = entry.repeatGroupId || ('rpt-'+Date.now());
+      var erBaseDate = parseLocalDate(entry.datum);
+      var erBaseId = entry.id;
+      for(var ei=1; ei<erCount; ei++){
+        // Fresh copy of the just-saved entry for each new occurrence - NOT
+        // carrying over calExported/calSeq, since these are brand new
+        // calendar items of their own that have never been sent anywhere.
+        var erOcc = Object.assign({}, entry, {id:erBaseId+ei, calExported:false, calSeq:0});
+        var ed = new Date(erBaseDate);
+        if(editRepeatVal==='weekly') ed.setDate(ed.getDate()+7*ei);
+        else if(editRepeatVal==='biweekly') ed.setDate(ed.getDate()+14*ei);
+        else if(editRepeatVal==='monthly') ed.setMonth(ed.getMonth()+ei);
+        erOcc.datum = ymdLocal(ed);
+        touch(erOcc);
+        db.planned.push(erOcc);
+        createdEntries.push(erOcc);
+      }
+    }
   } else {
     var multiCb = document.getElementById('plan-multiday');
     var multiUntilEl = document.getElementById('plan-multiday-until');
@@ -30716,6 +30797,19 @@ function savePlanModal(planId){
       // Pass along exactly what changed - see openCalUpdatePrompt for why
       // this matters more than it looks like it should.
       openCalUpdatePrompt(entry.id, calDateChanged, calTimeChanged, calTitleChanged);
+    }
+  }
+  // Separate from the two branches above (which are both about the entry
+  // being edited itself): if repeating-from-now-on was used while editing,
+  // createdEntries now holds the brand new future occurrences generated
+  // above, none of which have ever been sent to a calendar app before -
+  // export them if the checkbox for that was ticked, same as a fresh plan.
+  if(planId && createdEntries.length){
+    setCalExportPref(editRepeatWantsCal);
+    if(editRepeatWantsCal){
+      createdEntries.forEach(function(e){e.calExported=true;});
+      savePlanned();
+      exportPlannedToIcs(createdEntries);
     }
   }
 }
