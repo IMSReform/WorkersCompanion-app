@@ -10849,7 +10849,7 @@ function ssEditCat(id,el){
       row.textContent=getCatLabel(c.label);
       row.setAttribute('data-opt-label',getCatLabel(c.label));
       row.style.cssText='padding:8px 14px;cursor:pointer;color:var(--text);';
-      if(c.label===entry.categorie)row.style.background='var(--brand-light)';
+      if(c.label===entry.categorie){row.style.background='var(--brand-light)';row.setAttribute('data-current','1');}
       row.onmouseenter=function(){this.style.background='var(--brand-light)';};
       row.onmouseleave=function(){this.style.background=c.label===entry.categorie?'var(--brand-light)':'';};
       var selectFn=function(){applyCatChange(c.label);};
@@ -10860,6 +10860,13 @@ function ssEditCat(id,el){
   });
 
   document.body.appendChild(drop);
+  // Open scrolled to the category that's already chosen (not from the top), so
+  // fixing a wrong sub-type (e.g. Multimedia - Gemeente -> Multimedia - Administratie)
+  // is just "click, pick the neighbour". Group header above it is kept in view too.
+  var curRow=drop.querySelector('[data-current="1"]');
+  if(curRow){
+    drop.scrollTop=Math.max(0,curRow.offsetTop-Math.round(drop.clientHeight/2)+Math.round(curRow.offsetHeight/2));
+  }
   setTimeout(function(){document.addEventListener('mousedown',outsideClick);},10);
   detachTypeahead=ssAttachTypeahead(drop,closeDrop,function(ev){closeDrop();ssTabAdvance(el,ev);});
 }
