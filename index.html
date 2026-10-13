@@ -37325,7 +37325,7 @@ function courseQuestionHtml(les,qi){
   // multiple-choice quiz lives in presenter mode (see presenterCourseAnswer).
   var f=courseFlat(les)[qi];
   var en=f.en;
-  var h='<div id="cq-'+qi+'" style="padding:12px 0;border-bottom:1px solid var(--border)">';
+  var h='<div id="cq-'+qi+'" style="padding:12px 0;border-bottom:1px solid var(--border);break-inside:avoid;-webkit-column-break-inside:avoid">';
   h+='<div style="font-size:14px;font-weight:600;line-height:1.4">'+(qi+1)+'. '+escapeHtml(en.q)+'</div>';
   en.refsFull.forEach(function(r,ri){h+=courseVerseHtml(r,ri,qi,les.code);});
   h+='</div>';
@@ -37348,13 +37348,15 @@ function openCourseLesson(code){
   var qi=0;
   les.secties.forEach(function(sec){
     h+='<div style="margin-top:16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--brand)">'+escapeHtml(sec.naam)+'</div>';
+    h+='<div style="column-width:480px;column-gap:36px">';
     sec.entries.forEach(function(){h+=courseQuestionHtml(les,qi);qi++;});
+    h+='</div>';
   });
   h+='<div style="margin-top:16px"><button class="btn primary sm" onclick="closeModals();openPresenter(event,\''+code+'\')">&#9654; '+t('presenter_btn')+'</button></div>';
   h+='</div>';
   showModal(h);
   var bx=document.querySelector('#plan-modal-overlay .modal-sheet-box');
-  if(bx)bx.style.maxWidth='960px';
+  if(bx){bx.style.setProperty('max-width','none','important');bx.style.setProperty('width','calc(100vw - 32px)','important');bx.style.setProperty('max-height','calc(100vh - 32px)','important');}
   courseFillAsyncVerses();
 }
 // Presenter mode: tapping an answer option shows right away whether it was
