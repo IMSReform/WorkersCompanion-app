@@ -38710,6 +38710,7 @@ function presenterBodyInnerHtml(c){
 // localStorage) once the drag ends, so it carries over to the next slide
 // and the next time presenter mode is opened.
 function presenterSplitDragStart(ev){
+  _presSplitEndAt=Date.now()+60000;
   ev.preventDefault();
   ev.stopPropagation();
   var wrap=document.getElementById('presenter-split-wrap');
@@ -38732,6 +38733,7 @@ function presenterSplitDragMove(ev){
   if(bot)bot.style.flex=Math.round((1-ratio)*1000)+' 1 0';
 }
 function presenterSplitDragEnd(){
+  _presSplitEndAt=Date.now();
   document.removeEventListener('pointermove',presenterSplitDragMove);
   document.removeEventListener('pointerup',presenterSplitDragEnd);
   _presSplitDrag=null;
@@ -38910,8 +38912,11 @@ function fitPresenterStage(){
   initPresenterCanvas();
 }
 
+var _presSplitEndAt=0;
 function presenterSlideClick(ev){
   if(presenterMode!=='none') return;
+  // the click that follows releasing the split handle must not flip the slide
+  if(Date.now()-_presSplitEndAt<600) return;
   var stage=document.getElementById('presenter-stage');
   if(!stage||!ev){presenterNext();return;}
   var rect=stage.getBoundingClientRect();
