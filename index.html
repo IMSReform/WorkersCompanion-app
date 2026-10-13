@@ -37454,7 +37454,7 @@ function renderBijbelstudies() {
   });
   hb += '</div>';
   h += renderBsGroup('hb', bsGroupLbl('hb'), hb);
-  if(courseAvailable()) h += renderBsGroup('course', courseName(), renderCourseSection());
+  h += renderBsGroup('course', courseName(), courseAvailable()?renderCourseSection():'<div style="font-size:12px;color:var(--text3);line-height:1.5;padding:10px 2px">'+escapeHtml(tMap({nl:'Deze cursus is beschikbaar in het Spaans en Nederlands. Andere talen volgen.',en:'This course is available in Spanish and Dutch. Other languages are coming.',es:'Este curso está disponible en español y neerlandés.',fr:'Ce cours est disponible en espagnol et en néerlandais. Les autres langues suivront.',de:'Dieser Kurs ist auf Spanisch und Niederländisch verfügbar. Weitere Sprachen folgen.'}))+'</div>');
   h += renderBsGroup('other', bsGroupLbl('other'), renderVrijOnderwerpSection()+renderCustomStudiesSection());
   h += renderBsPeopleList();
   h += '<div style="text-align:center;padding:18px 16px 8px;font-size:11px;color:var(--text3);line-height:1.6">'+t('study_edit_footer')+' <a href="mailto:mediazdareformatie@gmail.com" style="color:var(--brand);font-weight:600">mediazdareformatie@gmail.com</a></div>';
