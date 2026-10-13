@@ -37283,10 +37283,11 @@ function courseStats(code){
   });
   return {total:flat.length,answered:answered,correct:correct};
 }
+function courseAttrib(){return tMap({nl:'Voorbereid door de Colombiaanse Unie | Editie 2026',en:'Prepared by the Colombian Union | 2026 edition',es:'Preparado por la Unión Colombiana | Edición 2026',fr:'Préparé par l\'Union colombienne | Édition 2026',de:'Erstellt von der Kolumbianischen Union | Ausgabe 2026',ro:'Pregătit de Uniunea Columbiană | Ediția 2026',it:'Preparato dall\'Unione Colombiana | Edizione 2026',pt:'Preparado pela União Colombiana | Edição 2026'});}
 function courseAvailable(){return LANG==='es'||LANG==='nl';}
 function renderCourseSection(){
   if(!courseAvailable())return '';
-  var h='<div style="font-size:11px;color:var(--text3);line-height:1.5;padding:2px 2px 8px">'+escapeHtml(courseSubLbl())+'</div>';
+  var h='<div style="font-size:11px;color:var(--text3);line-height:1.5;padding:2px 2px 2px">'+escapeHtml(courseAttrib())+'</div><div style="font-size:11px;color:var(--text3);line-height:1.5;padding:0 2px 8px">'+escapeHtml(courseSubLbl())+'</div>';
   h+='<div class="card" style="padding:6px 14px;margin-bottom:10px">';
   getCourseLessons().forEach(function(baseLes){
     var les=getLesTranslation(baseLes);
@@ -37378,7 +37379,7 @@ function bsGroupLbl(k){
 }
 function renderBsGroup(id,title,inner){
   var open=!!_bsGroupOpen[id];
-  var h='<div class="card bs-group" style="padding:0;margin-bottom:10px;overflow:hidden">';
+  var h='<div class="card bsg-card" style="padding:0;margin-bottom:10px;overflow:hidden;display:block">';
   h+='<div onclick="toggleBsGroup(\''+id+'\')" style="display:flex;align-items:center;justify-content:space-between;padding:14px;cursor:pointer;font-size:14px;font-weight:700">'+escapeHtml(title)+'<svg width="14" height="14" id="bsg-arrow-'+id+'" style="flex-shrink:0;color:var(--text3);transition:transform .2s;transform:rotate('+(open?180:0)+'deg)"><use href="#ico-chevron-down"/></svg></div>';
   h+='<div id="bsg-'+id+'" style="display:'+(open?'block':'none')+';padding:0 12px 10px">'+inner+'</div>';
   h+='</div>';
@@ -37436,18 +37437,14 @@ function renderBijbelstudies() {
   var el = document.getElementById('s-bijbelstudies');
   if(!el) return;
   var h = '<div style="padding-bottom:80px">';
-  // Handbook title/attribution
   var attrib = HANDBOOK_ATTRIB[LANG] || HANDBOOK_ATTRIB.nl;
-  h += '<div style="text-align:center;padding:12px 10px 6px">';
-  h += '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)">'+attrib.title+'</div>';
-  h += '<div style="font-size:11px;color:var(--text3);line-height:1.5;margin-top:4px">'+attrib.sub+'</div>';
-  h += '</div>';
   // Search bar
   h += '<div style="position:sticky;top:0;background:var(--bg);z-index:10;padding:10px 0 6px">';
   h += '<input type="text" id="studie-search" placeholder="'+t('studie_search')+'" oninput="filterStudies(this.value)" style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:8px;border:1px solid var(--border);font-size:14px;background:var(--surface2)">';
   h += '</div>';
   // Three accordion groups: Handbook / course / other studies
-  var hb = '<div class="card" style="padding:12px 14px;margin-bottom:10px">';
+  var hb = '<div style="font-size:11px;color:var(--text3);line-height:1.5;padding:2px 2px 8px">'+attrib.sub+'</div>';
+  hb += '<div class="card" style="padding:12px 14px;margin-bottom:10px">';
   STUDIE_DATA.forEach(function(les) {
     var stats = getStudieStats(les.code);
     hb += renderStudieRow(les, stats);
