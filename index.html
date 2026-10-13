@@ -37277,10 +37277,20 @@ function renderCourseSection(){
   h+='</div>';
   return h;
 }
-function courseVerseHtml(r,idx,qi){
-  var label=getRefLabel(r.ref,LANG);
-  var txt=getPresenterVerseText(r.ref,LANG);
-  if(!txt&&LANG==='es')txt=r.text||'';
+// Until a lesson has a translation for the app language, its questions are
+// Spanish - so the verses follow the questions (Spanish RVR1960) instead of
+// mixing languages. Once STUDIE_TRANS[lang].fullLessen['RE n'] exists, that
+// language is used automatically.
+function courseContentLang(lang,code){
+  var tr=STUDIE_TRANS&&STUDIE_TRANS[lang];
+  if(lang==='es'||(tr&&tr.fullLessen&&tr.fullLessen[code]))return lang;
+  return 'es';
+}
+function courseVerseHtml(r,idx,qi,code){
+  var cl=courseContentLang(LANG,code||'RE 1');
+  var label=getRefLabel(r.ref,cl);
+  var txt=getPresenterVerseText(r.ref,cl);
+  if(!txt&&cl==='es')txt=r.text||'';
   var asyncId='';
   if(!txt&&BIBLE_BOOK_NUM){asyncId='cqv-'+qi+'-'+idx;}
   return '<div style="margin-top:6px;font-size:13px;line-height:1.5"><span style="font-weight:700;color:var(--brand)">'+escapeHtml(label)+'</span> <span'+(asyncId?' id="'+asyncId+'" data-ref="'+escapeHtml(r.ref)+'"':'')+' style="color:var(--text2)">'+(txt?'“'+txt+'”':'')+'</span></div>';
@@ -37292,7 +37302,7 @@ function courseQuestionHtml(les,qi){
   var en=f.en;
   var h='<div id="cq-'+qi+'" style="padding:12px 0;border-bottom:1px solid var(--border)">';
   h+='<div style="font-size:14px;font-weight:600;line-height:1.4">'+(qi+1)+'. '+escapeHtml(en.q)+'</div>';
-  en.refsFull.forEach(function(r,ri){h+=courseVerseHtml(r,ri,qi);});
+  en.refsFull.forEach(function(r,ri){h+=courseVerseHtml(r,ri,qi,les.code);});
   h+='</div>';
   return h;
 }
@@ -37300,7 +37310,7 @@ function courseFillAsyncVerses(root){
   (root||document).querySelectorAll('[id^="cqv-"][data-ref]').forEach(function(el){
     if(el.textContent)return;
     var ref=el.getAttribute('data-ref');
-    fetchPresenterVerseAsync(ref,LANG,function(text){if(text&&el)el.innerHTML='“'+text+'”';});
+    fetchPresenterVerseAsync(ref,'es',function(text){if(text&&el)el.innerHTML='“'+text+'”';});
   });
 }
 function openCourseLesson(code){
@@ -37317,6 +37327,8 @@ function openCourseLesson(code){
   h+='<div style="margin-top:16px"><button class="btn primary sm" onclick="closeModals();openPresenter(event,\''+code+'\')">&#9654; '+t('presenter_btn')+'</button></div>';
   h+='</div>';
   showModal(h);
+  var bx=document.querySelector('#plan-modal-overlay .modal-sheet-box');
+  if(bx)bx.style.maxWidth='960px';
   courseFillAsyncVerses();
 }
 // Presenter mode: tapping an answer option shows right away whether it was
@@ -38111,8 +38123,9 @@ function buildPresenterSlides(les,lang){
           if(en.course){
             // Bible Course question slide: question big on top, verse(s) in the
             // lower box (see the slide.course branch in buildPresenterSlideBodyHtml)
-            var cqRs=(en.refs||[]).map(function(r){return {raw:r,label:getRefLabel(r,lang),text:getPresenterVerseText(r,lang)};});
-            slides.push({type:'entry',course:true,section:sec.naam,ref:cqRs.map(function(r){return r.label;}).join(' · '),rawRef:(en.refs||[])[0]||'',lang:lang,verseText:cqRs.map(function(r){return r.text?r.label+': “'+r.text+'”':'';}).filter(Boolean).join(' '),cqRefs:cqRs,main:escapeHtml(en.q),qtext:en.q,opts:en.o||[],answer:en.a,quote:''});
+            var cqLang=courseContentLang(lang,les.code);
+            var cqRs=(en.refs||[]).map(function(r){return {raw:r,label:getRefLabel(r,cqLang),text:getPresenterVerseText(r,cqLang)};});
+            slides.push({type:'entry',course:true,section:sec.naam,ref:cqRs.map(function(r){return r.label;}).join(' · '),rawRef:(en.refs||[])[0]||'',lang:cqLang,verseText:cqRs.map(function(r){return r.text?r.label+': “'+r.text+'”':'';}).filter(Boolean).join(' '),cqRefs:cqRs,main:escapeHtml(en.q),qtext:en.q,opts:en.o||[],answer:en.a,quote:''});
             return;
           }
           if(en.quoteText){
