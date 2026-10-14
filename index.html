@@ -144,6 +144,10 @@ html.dark .dm-amber-accent{color:var(--amber)!important}
    down past a threshold), so it doesn't cover ordinary scroll-flick
    overscroll - this CSS property is what's needed for that general case. */
 html,body{overflow-x:hidden;overscroll-behavior-x:none;overscroll-behavior-y:none;width:100%}
+/* Desktop Chrome: hidden on BOTH html and body makes body its own scroll
+   container, which (with overscroll-behavior-y:none) swallows mouse-wheel
+   scrolling. clip clips the same way without creating a scroll container. */
+@supports (overflow-x:clip){body{overflow-x:clip}}
 html{font-size:14px}html.text-sm{font-size:11px!important}html.text-lg{font-size:18px!important}html.text-xl{font-size:22px!important}
 /* Text size scaling on the app wrapper, via CSS zoom. transform:scale() was
    tried instead (zoom is non-standard and some engines ignore it), but
@@ -1391,6 +1395,8 @@ function hideBootSplash(){
   el.style.opacity='0';
   setTimeout(function(){ if(el&&el.parentNode)el.parentNode.removeChild(el); },400);
 }
+// Failsafe: if startup throws before hideBootSplash() runs, the fixed overlay would swallow every scroll/tap.
+setTimeout(function(){ try{hideBootSplash();}catch(e){} },8000);
 </script>
 
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
