@@ -8317,6 +8317,55 @@ var TRANSLATIONS = {
     loading_verse:'Se încarcă versetul...',
   },
   it: {
+    register_sub:'Studio biblico, evangelismo, pastorale...',
+    plan_sub:'Pianifica qualcosa per dopo, ancora senza ore',
+    register_or_plan_title:'Cosa vuoi fare?',
+    full_report:'Rapporto completo →',
+    visit_btn:'Visita',
+    profile_btn:'Profilo',
+    type_cursist:'Studente',
+    type_lid:'Membro',
+    form_name_lbl:'Nome',
+    form_address_lbl:'Indirizzo',
+    form_gemeente_lbl:'Chiesa',
+    form_city_lbl:'Città',
+    form_phone_lbl:'Telefono',
+    form_notes_lbl:'Note',
+    form_fullname:'Nome completo',
+    form_firstname:'Nome',
+    form_firstname_lbl:'Nome',
+    form_lastname_lbl:'Cognome',
+    form_lastname:'Cognome',
+    form_address:'Via e numero',
+    form_country:'Paese',
+    form_city:'Città/paese',
+    form_notes:'Note aggiuntive...',
+    chart_hint:'Tocca il grafico per i dettagli →',
+    preken:'Panoramica delle predicazioni (ministero della chiesa)',
+    total_hours:'Ore totali',
+    settings_title:'Impostazioni',
+    reminder_on:'Attiva i promemoria',
+    export_president:'Esporta per il presidente',
+    name_req_alert:'Il nome è obbligatorio',
+    rapport_by_cat:'Categoria',
+    rapport_hours:'Ore',
+    rapport_pct:'%',
+    rapport_count:'Numero',
+    cal_week:'Settimana',
+    vakantiedagen_rem:'Giorni di ferie rimanenti',
+    jan:'gennaio',
+    feb:'febbraio',
+    mrt:'marzo',
+    apr:'aprile',
+    mei:'maggio',
+    jun:'giugno',
+    jul:'luglio',
+    aug:'agosto',
+    sep:'settembre',
+    okt:'ottobre',
+    nov:'novembre',
+    dec:'dicembre',
+    list_view:'Elenco',
     you_lbl:'Tu',expected_lbl:'Previsto',days_remaining:'giorni rimanenti',of_lbl:'di',study_lbl:'Studio',plan_on_day:'Pianifica questo giorno',
     logbook_link:'Diario →',
     goals_adjust:'Imposta obiettivi →',
@@ -21096,7 +21145,7 @@ function fcOpenYearDayPopup(ds,anchorEl){
   // church schedule. Tapping one opens the small read-only detail popup
   // instead of the entry/plan edit flow.
   if(gpItems.length){
-    h+='<div style="font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.03em;margin:10px 0 4px">'+tMap({nl:'Gemeente-planning',en:'Church schedule',es:'Cronograma de iglesia'})+'</div>';
+    h+='<div style="font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.03em;margin:10px 0 4px">'+tMap({nl:'Gemeente-planning',en:'Church schedule',it:'Programma della chiesa',es:'Cronograma de iglesia'})+'</div>';
     gpItems.forEach(function(item){
       h+='<div class="activity-card" onclick="closeFcYdPopup();openGemeentePlanningDetail('+item.id+')" style="opacity:'+(item.accented?'1':'.72')+'"><div class="activity-card-inner">';
       h+='<div class="ac-stripe" style="background:'+gpItemColor(item)+'"></div>';
@@ -26830,8 +26879,8 @@ function toggleDayCard(id){
 // just from looking at the box. This spells out what it actually accepts so
 // people don't have to guess-and-check.
 function openImportInfoModal(){
-  var title=tMap({nl:'Wat kun je importeren?',en:'What can you import?',es:'¿Qué puedes importar?'});
-  var intro=tMap({nl:'De app herkent het bestandstype automatisch - je hoeft alleen te slepen of te kiezen. Wat je bijvoorbeeld kunt importeren:',en:'The app automatically recognizes the file type - just drag or pick it. What you can import, for example:',es:'La app reconoce automáticamente el tipo de archivo - solo tienes que arrastrarlo o elegirlo. Por ejemplo, puedes importar:'});
+  var title=tMap({nl:'Wat kun je importeren?',en:'What can you import?',it:'Cosa puoi importare?',es:'¿Qué puedes importar?'});
+  var intro=tMap({nl:'De app herkent het bestandstype automatisch - je hoeft alleen te slepen of te kiezen. Wat je bijvoorbeeld kunt importeren:',en:'The app automatically recognizes the file type - just drag or pick it. What you can import, for example:',it:'L’app riconosce automaticamente il tipo di file: basta trascinarlo o sceglierlo. Cosa puoi importare, ad esempio:',es:'La app reconoce automáticamente el tipo de archivo - solo tienes que arrastrarlo o elegirlo. Por ejemplo, puedes importar:'});
   var rows=[
     {icoLbl:'CSV',nl:'Je eigen geëxporteerde activiteitenlijst, of een Excel-export van je eerdere gegevens (bijv. een oud maandrapport aan het districtscomité).',en:'Your own exported activity list, or an Excel export of your earlier data (e.g. an old monthly report to the district committee).',es:'Tu propia lista de actividades exportada, o una exportación de Excel de tus datos anteriores (p. ej. un antiguo informe mensual al comité de distrito).'},
     {icoLbl:'CSV',nl:'Een ledenlijst of "Dossier Bijbelstudies"-werkboek als contacten, met studiegeschiedenis.',en:'A member roster or "Bible Studies Dossier" workbook as contacts, with study history.',es:'Una lista de miembros o un libro de "Dosier de Estudios Bíblicos" como contactos, con historial de estudio.'},
@@ -26979,7 +27028,7 @@ function notifyPossibleDuplicatesAfterImport(addedEntries){
   });
   if(!groups.length)return;
   var total=groups.reduce(function(n,g){return n+g.length;},0);
-  var msg=tMap({nl:'Let op: '+total+' registratie(s) uit deze import lijken op registraties die al bestonden (zelfde dag/activiteit, maar andere uren/reistijd/km/notitie) - de app kon ze niet automatisch samenvoegen. Nu bekijken en opschonen?',en:'Heads up: '+total+' entries from this import look similar to ones that already existed (same day/activity, but different hours/travel/km/note) - the app couldn\'t merge them automatically. Review and clean up now?',es:'Atención: '+total+' registros de esta importación se parecen a registros que ya existían (mismo día/actividad, pero distintas horas/viaje/km/nota) - la app no pudo combinarlos automáticamente. ¿Revisar y limpiar ahora?'});
+  var msg=tMap({nl:'Let op: '+total+' registratie(s) uit deze import lijken op registraties die al bestonden (zelfde dag/activiteit, maar andere uren/reistijd/km/notitie) - de app kon ze niet automatisch samenvoegen. Nu bekijken en opschonen?',en:'Heads up: '+total+' entries from this import look similar to ones that already existed (same day/activity, but different hours/travel/km/note) - the app couldn\'t merge them automatically. Review and clean up now?',it:'Attenzione: '+total+' registrazioni di questa importazione sembrano simili a quelle già esistenti (stesso giorno/attività, ma ore/viaggio/km/nota diversi): l’app non ha potuto unirle automaticamente. Vuoi controllarle e sistemarle ora?',es:'Atención: '+total+' registros de esta importación se parecen a registros que ya existían (mismo día/actividad, pero distintas horas/viaje/km/nota) - la app no pudo combinarlos automáticamente. ¿Revisar y limpiar ahora?'});
   if(confirm(msg))openDuplicatesModal();
 }
 
@@ -27224,13 +27273,13 @@ function buildDossierImportPlan(files){
 function confirmDossierImportPlan(plan){
   var nAdd=plan.cursistenToAdd.length,nUpd=plan.cursistenUpdates.length,nSessions=plan.studySessions.length;
   if(!nAdd&&!nUpd&&!nSessions){
-    showImportResult(tMap({nl:'Geen bruikbare gegevens gevonden in de geselecteerde bestanden.',en:'No usable data found in the selected files.',es:'No se encontraron datos utilizables en los archivos seleccionados.'}),true);
+    showImportResult(tMap({nl:'Geen bruikbare gegevens gevonden in de geselecteerde bestanden.',en:'No usable data found in the selected files.',it:'Nessun dato utilizzabile trovato nei file selezionati.',es:'No se encontraron datos utilizables en los archivos seleccionados.'}),true);
     return;
   }
-  var lines=[tMap({nl:'Dossier Bijbelstudies herkend:',en:'Bible study dossier recognized:',es:'Dosier de estudios bíblicos reconocido:'})];
-  if(nAdd)lines.push('• '+nAdd+' '+tMap({nl:'nieuwe contact(en)',en:'new contact(s)',es:'contacto(s) nuevo(s)'}));
-  if(nUpd)lines.push('• '+nUpd+' '+tMap({nl:'contact(en) aangevuld (alleen lege velden)',en:'contact(s) enriched (blank fields only)',es:'contacto(s) completado(s) (solo campos vacíos)'}));
-  if(nSessions)lines.push('• '+nSessions+' '+tMap({nl:'bijbelstudie-sessie(s) toegevoegd aan het logboek',en:'bible study session(s) added to the logbook',es:'sesión(es) de estudio bíblico añadidas al registro'}));
+  var lines=[tMap({nl:'Dossier Bijbelstudies herkend:',en:'Bible study dossier recognized:',it:'Dossier studi biblici riconosciuto:',es:'Dosier de estudios bíblicos reconocido:'})];
+  if(nAdd)lines.push('• '+nAdd+' '+tMap({nl:'nieuwe contact(en)',en:'new contact(s)',it:'nuovo/i contatto/i',es:'contacto(s) nuevo(s)'}));
+  if(nUpd)lines.push('• '+nUpd+' '+tMap({nl:'contact(en) aangevuld (alleen lege velden)',en:'contact(s) enriched (blank fields only)',it:'contatto/i integrato/i (solo campi vuoti)',es:'contacto(s) completado(s) (solo campos vacíos)'}));
+  if(nSessions)lines.push('• '+nSessions+' '+tMap({nl:'bijbelstudie-sessie(s) toegevoegd aan het logboek',en:'bible study session(s) added to the logbook',it:'sessione/i di studio biblico aggiunta/e al registro',es:'sesión(es) de estudio bíblico añadidas al registro'}));
   // Bare first names (e.g. "Antony") that were matched to exactly one
   // existing full-name contact ("Antony Fecunda") instead of creating a
   // duplicate — surfaced here so the user sees and confirms every guess
@@ -27239,14 +27288,14 @@ function confirmDossierImportPlan(plan){
   var fuzzy=plan.fuzzyMatches||[];
   if(fuzzy.length){
     lines.push('');
-    lines.push(tMap({nl:'Deze namen zijn herkend als dezelfde persoon:',en:'These names were recognized as the same person:',es:'Estos nombres se reconocieron como la misma persona:'}));
+    lines.push(tMap({nl:'Deze namen zijn herkend als dezelfde persoon:',en:'These names were recognized as the same person:',it:'Questi nomi sono stati riconosciuti come la stessa persona:',es:'Estos nombres se reconocieron como la misma persona:'}));
     fuzzy.forEach(function(fm){lines.push('• "'+fm.shortName+'" → "'+fm.matchedName+'"');});
   }
   lines.push('');
-  lines.push(tMap({nl:'Dit voegt alleen toe - er wordt niets verwijderd of overschreven. Doorgaan?',en:"This only adds - nothing is deleted or overwritten. Continue?",es:'Esto solo añade - no se elimina ni sobrescribe nada. ¿Continuar?'}));
+  lines.push(tMap({nl:'Dit voegt alleen toe - er wordt niets verwijderd of overschreven. Doorgaan?',en:"This only adds - nothing is deleted or overwritten. Continue?",it:'Questa operazione aggiunge soltanto: nulla viene eliminato o sovrascritto. Continuare?',es:'Esto solo añade - no se elimina ni sobrescribe nada. ¿Continuar?'}));
   if(!confirm(lines.join('\n')))return;
   var result=applyDossierImportPlan(plan);
-  showImportResult('✓ '+result.cursistenAdded+' '+tMap({nl:'contact(en) en',en:'contact(s) and',es:'contacto(s) y'})+' '+result.entriesAdded+' '+tMap({nl:'bijbelstudie-registraties toegevoegd!',en:'bible study log entries added!',es:'registros de estudio bíblico añadidos!'}));
+  showImportResult('✓ '+result.cursistenAdded+' '+tMap({nl:'contact(en) en',en:'contact(s) and',it:'contatto/i e',es:'contacto(s) y'})+' '+result.entriesAdded+' '+tMap({nl:'bijbelstudie-registraties toegevoegd!',en:'bible study log entries added!',it:'registrazioni di studi biblici aggiunte!',es:'registros de estudio bíblico añadidos!'}));
 }
 // Only ever called after confirmDossierImportPlan()'s confirm() - the one
 // place that actually writes db.cursisten/db.entries for this import path.
@@ -27564,19 +27613,19 @@ function processXlsxImportFile(file){
       }
       var imported=parseColombiaGestionRows(sheet.rows);
       if(imported.needsPeriod && !parseColombiaGestionRows(sheet.rows,{year:2000,month:1}).entries.length){
-        showImportResult(tMap({nl:'Geen activiteiten gevonden in dit rapport (is het leeg?).',en:'No activities found in this report (is it empty?).',es:'No se encontraron actividades en este informe (¿está vacío?).'}),true);
+        showImportResult(tMap({nl:'Geen activiteiten gevonden in dit rapport (is het leeg?).',en:'No activities found in this report (is it empty?).',it:'Nessuna attività trovata in questo rapporto (è vuoto?).',es:'No se encontraron actividades en este informe (¿está vacío?).'}),true);
         return;
       }
       if(imported.needsPeriod){
         // Month/year cells were empty - ask instead of guessing.
         var now=new Date();
-        var yy=imported.meta.year||parseInt(prompt(tMap({nl:'Welk jaar is dit rapport?',en:'Which year is this report for?',es:'¿De qué año es este informe?'}),String(now.getFullYear())),10);
-        var mm=imported.meta.month||parseInt(prompt(tMap({nl:'Welke maand (1-12)?',en:'Which month (1-12)?',es:'¿Qué mes (1-12)?'}),String(now.getMonth()+1)),10);
+        var yy=imported.meta.year||parseInt(prompt(tMap({nl:'Welk jaar is dit rapport?',en:'Which year is this report for?',it:'A quale anno si riferisce questo rapporto?',es:'¿De qué año es este informe?'}),String(now.getFullYear())),10);
+        var mm=imported.meta.month||parseInt(prompt(tMap({nl:'Welke maand (1-12)?',en:'Which month (1-12)?',it:'Quale mese (1-12)?',es:'¿Qué mes (1-12)?'}),String(now.getMonth()+1)),10);
         if(!yy||!mm||mm<1||mm>12)return;
         imported=parseColombiaGestionRows(sheet.rows,{year:yy,month:mm});
       }
       if(!imported.entries.length){
-        showImportResult(tMap({nl:'Geen activiteiten gevonden in dit rapport (is het leeg?).',en:'No activities found in this report (is it empty?).',es:'No se encontraron actividades en este informe (¿está vacío?).'}),true);
+        showImportResult(tMap({nl:'Geen activiteiten gevonden in dit rapport (is het leeg?).',en:'No activities found in this report (is it empty?).',it:'Nessuna attività trovata in questo rapporto (è vuoto?).',es:'No se encontraron actividades en este informe (¿está vacío?).'}),true);
         return;
       }
       applyImportedEntries(imported,'Informe de Gestión Contractual'+(imported.meta.nombre?' ('+imported.meta.nombre+')':''));
@@ -27633,11 +27682,11 @@ function processImportText(text,fileName){
         var _shareConfirmMsg=null;
         if(data._type==='zda_contact_share'){
           var _names=(data.cursisten||[]).map(function(c){return c.naam;}).filter(Boolean);
-          var _who=data._sharedBy?tMap({nl:'van '+data._sharedBy+' ',en:'from '+data._sharedBy+' ',es:'de '+data._sharedBy+' '}):'';
-          var _namesTxt=_names.length?_names.join(', '):tMap({nl:(data.entries||[]).length+' activiteiten',en:(data.entries||[]).length+' activities',es:(data.entries||[]).length+' actividades'});
+          var _who=data._sharedBy?tMap({nl:'van '+data._sharedBy+' ',en:'from '+data._sharedBy+' ',it:'da '+data._sharedBy+' ',es:'de '+data._sharedBy+' '}):'';
+          var _namesTxt=_names.length?_names.join(', '):tMap({nl:(data.entries||[]).length+' activiteiten',en:(data.entries||[]).length+' activities',it:(data.entries||[]).length+' attività',es:(data.entries||[]).length+' actividades'});
           _shareConfirmMsg=tMap({
             nl:'Gedeeld contact '+_who+'ontvangen: '+_namesTxt+(data._includesNotes?'':' (zonder privénotities')+(data._includesNotes?'.':')')+'\n\nToevoegen aan jouw contacten?',
-            en:'Shared contact '+_who+'received: '+_namesTxt+(data._includesNotes?'.':' (without private notes)')+'\n\nAdd to your contacts?',
+            en:'Shared contact '+_who+'received: '+_namesTxt+(data._includesNotes?'.':' (without private notes)')+'\n\nAdd to your contacts?',it:'Contatti condivisi '+_who+'– ricevuti: '+_namesTxt+(data._includesNotes?'.':' (senza note private)')+'\n\nAggiungerli ai tuoi contatti?',
             es:'Contacto compartido '+_who+'recibido: '+_namesTxt+(data._includesNotes?'.':' (sin notas privadas)')+'\n\n¿Añadir a tus contactos?'
           });
         }
@@ -27683,7 +27732,7 @@ function processImportText(text,fileName){
       // zero rows and report "no activities found".
       if(!isMaandrapport&&!isLegacyReport&&!isExcel&&detectCursistenRosterCsv(text)>=0){
         var _roster=parseCursistenRosterCSV(text);
-        if(!_roster.cursisten.length){showImportResult(tMap({nl:'Geen contacten gevonden in dit bestand.',en:'No contacts found in this file.',es:'No se encontraron contactos en este archivo.'}),true);return;}
+        if(!_roster.cursisten.length){showImportResult(tMap({nl:'Geen contacten gevonden in dit bestand.',en:'No contacts found in this file.',it:'Nessun contatto trovato in questo file.',es:'No se encontraron contactos en este archivo.'}),true);return;}
         openCursistenRosterImportReview(_roster.cursisten);
         return;
       }
@@ -28021,18 +28070,18 @@ function isGemeentePlanningPdfLines(lines){
   return (lines||[]).some(function(l){return GEMEENTE_PLANNING_HEADER_RE.test(l);});
 }
 function processGemeentePlanningPdfFile(file){
-  showImportResult(tMap({nl:'Planning wordt gelezen...',en:'Reading schedule...',es:'Leyendo cronograma...'}));
+  showImportResult(tMap({nl:'Planning wordt gelezen...',en:'Reading schedule...',it:'Lettura del programma...',es:'Leyendo cronograma...'}));
   extractPdfPositionedLines(file).then(function(pagesOfLines){
     var defaultYear=new Date().getFullYear();
     var rows=parseGemeentePlanningRows(pagesOfLines,defaultYear);
     var items=buildGemeentePlanningItems(rows);
     if(!items.length){
-      showImportResult(tMap({nl:'Geen planningsregels gevonden in deze PDF.',en:'No schedule rows found in this PDF.',es:'No se encontraron filas del cronograma en este PDF.'}),true);
+      showImportResult(tMap({nl:'Geen planningsregels gevonden in deze PDF.',en:'No schedule rows found in this PDF.',it:'Nessuna riga di programma trovata in questo PDF.',es:'No se encontraron filas del cronograma en este PDF.'}),true);
       return;
     }
     openGemeentePlanningImportReview(items);
   }).catch(function(err){
-    showImportResult((tMap({nl:'Fout bij lezen PDF: ',en:'Error reading PDF: ',es:'Error al leer el PDF: '}))+(err&&err.message||err),true);
+    showImportResult((tMap({nl:'Fout bij lezen PDF: ',en:'Error reading PDF: ',it:'Errore nella lettura del PDF: ',es:'Error al leer el PDF: '}))+(err&&err.message||err),true);
   });
 }
 // Ledenlijst (member-list) PDF importer — recognizes the church roster
@@ -28114,17 +28163,17 @@ function buildMemberListItems(rows){
   }).filter(function(m){return m.naam;});
 }
 function processMemberListPdfFile(file){
-  showImportResult(tMap({nl:'Ledenlijst wordt gelezen...',en:'Reading member list...',es:'Leyendo lista de miembros...'}));
+  showImportResult(tMap({nl:'Ledenlijst wordt gelezen...',en:'Reading member list...',it:'Lettura dell’elenco dei membri...',es:'Leyendo lista de miembros...'}));
   extractPdfPositionedLines(file).then(function(pagesOfLines){
     var rows=parseMemberListPdfRows(pagesOfLines);
     var items=buildMemberListItems(rows);
     if(!items.length){
-      showImportResult(tMap({nl:'Geen ledenlijst-regels gevonden in deze PDF.',en:'No member-list rows found in this PDF.',es:'No se encontraron filas de la lista de miembros en este PDF.'}),true);
+      showImportResult(tMap({nl:'Geen ledenlijst-regels gevonden in deze PDF.',en:'No member-list rows found in this PDF.',it:'Nessuna riga dell’elenco dei membri trovata in questo PDF.',es:'No se encontraron filas de la lista de miembros en este PDF.'}),true);
       return;
     }
     openMemberListImportReview(items);
   }).catch(function(err){
-    showImportResult((tMap({nl:'Fout bij lezen PDF: ',en:'Error reading PDF: ',es:'Error al leer el PDF: '}))+(err&&err.message||err),true);
+    showImportResult((tMap({nl:'Fout bij lezen PDF: ',en:'Error reading PDF: ',it:'Errore nella lettura del PDF: ',es:'Error al leer el PDF: '}))+(err&&err.message||err),true);
   });
 }
 var _pendingMemberListImport=null;
@@ -28145,17 +28194,17 @@ function openMemberListImportReview(items){
     var e=existing[(m.naam||'').toLowerCase().trim()];
     m.__matchId=e?e.id:null;
   });
-  var titleLbl=tMap({nl:'Ledenlijst gevonden',en:'Member list found',es:'Lista de miembros encontrada'});
-  var subLbl=tMap({nl:items.length+' lid(leden) gevonden in dit bestand. Vink aan wat je wilt toevoegen of samenvoegen.',en:items.length+' member(s) found in this file. Check what you want to add or merge.',es:'Se encontraron '+items.length+' miembro(s) en este archivo. Marca lo que quieras añadir o fusionar.'});
+  var titleLbl=tMap({nl:'Ledenlijst gevonden',en:'Member list found',it:'Elenco dei membri trovato',es:'Lista de miembros encontrada'});
+  var subLbl=tMap({nl:items.length+' lid(leden) gevonden in dit bestand. Vink aan wat je wilt toevoegen of samenvoegen.',en:items.length+' member(s) found in this file. Check what you want to add or merge.',it:items.length+' membro/i trovato/i in questo file. Controlla cosa vuoi aggiungere o unire.',es:'Se encontraron '+items.length+' miembro(s) en este archivo. Marca lo que quieras añadir o fusionar.'});
   var h='<div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>';
   h+='<div style="font-size:15px;font-weight:700;margin-bottom:4px">'+titleLbl+'</div>';
   h+='<div style="font-size:12px;color:var(--text2);margin-bottom:12px">'+subLbl+'</div>';
-  var selectAllLbl=tMap({nl:'Alles selecteren',en:'Select all',es:'Seleccionar todo'});
+  var selectAllLbl=tMap({nl:'Alles selecteren',en:'Select all',it:'Seleziona tutto',es:'Seleccionar todo'});
   h+='<label style="display:flex;align-items:center;gap:8px;padding:4px 0 10px;cursor:pointer;font-size:13px;font-weight:600">'
     +'<input type="checkbox" id="mlist-import-select-all" checked onchange="toggleMemberListImportSelectAll(this)" style="width:16px;height:16px;flex-shrink:0">'
     +selectAllLbl+'</label>';
   h+='<div style="max-height:50vh;overflow-y:auto;border:1px solid var(--border);border-radius:10px;padding:4px 10px">';
-  var alreadyLbl=tMap({nl:'al een contact &middot; wordt samengevoegd',en:'already a contact &middot; will be merged',es:'ya es un contacto &middot; se fusionará'});
+  var alreadyLbl=tMap({nl:'al een contact &middot; wordt samengevoegd',en:'already a contact &middot; will be merged',it:'già un contatto &middot; verrà unito',es:'ya es un contacto &middot; se fusionará'});
   items.forEach(function(m,i){
     var already=!!m.__matchId;
     var bits=[m.adres,m.geboortedatum?('geb. '+m.geboortedatum):'',m.tel,m.email].filter(Boolean).join(' &middot; ');
@@ -28166,7 +28215,7 @@ function openMemberListImportReview(items){
   h+='</div>';
   h+='<div style="display:flex;gap:8px;margin-top:16px">';
   h+='<button class="btn" onclick="closeModals()" style="flex:1">'+t('cancel_btn')+'</button>';
-  h+='<button class="btn primary" onclick="confirmMemberListImportReview()" style="flex:1">'+tMap({nl:'Toevoegen',en:'Add',es:'Añadir'})+'</button>';
+  h+='<button class="btn primary" onclick="confirmMemberListImportReview()" style="flex:1">'+tMap({nl:'Toevoegen',en:'Add',it:'Aggiungi',es:'Añadir'})+'</button>';
   h+='</div>';
   showModal(h);
 }
@@ -28210,8 +28259,8 @@ function confirmMemberListImportReview(){
   if(typeof screen!=='undefined'&&screen==='cursisten')renderCursisten();
   var resultMsg='✓ ';
   var parts=[];
-  if(addedCount)parts.push(addedCount+' '+tMap({nl:'toegevoegd',en:'added',es:'añadidos'}));
-  if(mergedCount)parts.push(mergedCount+' '+tMap({nl:'samengevoegd',en:'merged',es:'fusionados'}));
+  if(addedCount)parts.push(addedCount+' '+tMap({nl:'toegevoegd',en:'added',it:'aggiunto',es:'añadidos'}));
+  if(mergedCount)parts.push(mergedCount+' '+tMap({nl:'samengevoegd',en:'merged',it:'unito',es:'fusionados'}));
   resultMsg+=parts.join(', ');
   showImportResult(resultMsg);
 }
@@ -28279,7 +28328,7 @@ function confirmGemeentePlanningExport(){
   });
   closeModals();
   if(!items.length){
-    showImportResult(tMap({nl:'Geen geplande activiteiten gevonden in deze periode.',en:'No planned activities found in this period.',es:'No se encontraron actividades planificadas en este período.'}),true);
+    showImportResult(tMap({nl:'Geen geplande activiteiten gevonden in deze periode.',en:'No planned activities found in this period.',it:'Nessuna attività pianificata trovata in questo periodo.',es:'No se encontraron actividades planificadas en este período.'}),true);
     return;
   }
   var shareData={
@@ -28297,7 +28346,7 @@ function triggerGemeentePlanningExport(shareData,from,to){
   var json=JSON.stringify(shareData,null,2);
   var blob=new Blob([json],{type:'application/json'});
   var shareTitle=tMap({nl:'Gemeente-planning',en:'Church schedule',es:'Cronograma de iglesia',fr:'Planning de l\'église',de:'Gemeindeplan',ro:'Programul bisericii',it:'Programma della chiesa',pt:'Agenda da igreja'});
-  var shareText=shareData.items.length+' '+tMap({nl:'planningsregel(s)',en:'schedule row(s)',es:'fila(s) de cronograma'});
+  var shareText=shareData.items.length+' '+tMap({nl:'planningsregel(s)',en:'schedule row(s)',it:'riga/righe di programma',es:'fila(s) de cronograma'});
   function fallbackDownload(){
     var url=URL.createObjectURL(blob);
     var a=document.createElement('a');
@@ -28345,7 +28394,7 @@ function confirmGemeentePlanningPdfExport(){
   }).sort(function(a,b){return (a.datumStart||'')<(b.datumStart||'')?-1:((a.datumStart||'')>(b.datumStart||'')?1:0);});
   closeModals();
   if(!items.length){
-    showImportResult(tMap({nl:'Geen geplande activiteiten gevonden in deze periode.',en:'No planned activities found in this period.',es:'No se encontraron actividades planificadas en este período.'}),true);
+    showImportResult(tMap({nl:'Geen geplande activiteiten gevonden in deze periode.',en:'No planned activities found in this period.',it:'Nessuna attività pianificata trovata in questo periodo.',es:'No se encontraron actividades planificadas en este período.'}),true);
     return;
   }
   triggerGemeentePlanningPdfExport(items,from,to);
@@ -28499,18 +28548,18 @@ function gpBuildReviewGroups(items){
 function gpReviewRowHtml(item,i,already){
   var dateTxt=gpFormatRange(item);
   var showInDays=_gpReviewShowInDays[i];
-  var dayLbl=tMap({nl:'Dag',en:'Day',es:'Día'});
-  var footLbl=tMap({nl:'Voetnoot',en:'Footnote',es:'Nota'});
-  var editLbl=tMap({nl:'Bewerken',en:'Edit',es:'Editar'});
-  var splitLbl=tMap({nl:'Splitsen - 2 gebeurtenissen samengevoegd?',en:'Split - two events merged?',es:'Dividir - ¿dos eventos combinados?'});
+  var dayLbl=tMap({nl:'Dag',en:'Day',it:'Giorno',es:'Día'});
+  var footLbl=tMap({nl:'Voetnoot',en:'Footnote',it:'Nota',es:'Nota'});
+  var editLbl=tMap({nl:'Bewerken',en:'Edit',it:'Modifica',es:'Editar'});
+  var splitLbl=tMap({nl:'Splitsen - 2 gebeurtenissen samengevoegd?',en:'Split - two events merged?',it:'Dividi: due eventi uniti?',es:'Dividir - ¿dos eventos combinados?'});
   var h='<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0">';
   h+='<label style="display:flex;align-items:flex-start;gap:8px;flex:1;min-width:0;cursor:'+(already?'default':'pointer')+';opacity:'+(already?'.5':'1')+'">'
     +'<input type="checkbox" class="gp-import-chk" data-idx="'+i+'" '+(already?'disabled':'checked')+' style="width:16px;height:16px;flex-shrink:0;margin-top:2px">'
     +'<span style="font-size:13px;flex:1;min-width:0">'
     +'<span style="font-weight:600">'+escapeHtml(item.titel)+'</span>'
-    +(item.onduidelijkeDatum?' <span style="font-size:10px;background:var(--amber);color:#fff;border-radius:8px;padding:1px 6px;margin-left:4px">'+tMap({nl:'onduidelijk',en:'unclear',es:'no claro'})+'</span>':'')
+    +(item.onduidelijkeDatum?' <span style="font-size:10px;background:var(--amber);color:#fff;border-radius:8px;padding:1px 6px;margin-left:4px">'+tMap({nl:'onduidelijk',en:'unclear',it:'poco chiaro',es:'no claro'})+'</span>':'')
     +'<br><span style="color:var(--text3);font-size:12px">'+escapeHtml(dateTxt)+(item.tijd?' · '+item.tijd:'')+(item.verantwoordelijke?' · '+escapeHtml(item.verantwoordelijke):'')+'</span>'
-    +(already?' <span style="color:var(--text3)">&middot; '+tMap({nl:'al toegevoegd',en:'already added',es:'ya añadido'})+'</span>':'')
+    +(already?' <span style="color:var(--text3)">&middot; '+tMap({nl:'al toegevoegd',en:'already added',it:'già aggiunto',es:'ya añadido'})+'</span>':'')
     +'</span></label>';
   if(!already){
     h+='<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;margin-top:2px">';
@@ -28542,13 +28591,13 @@ function gpRenderReviewModal(){
   var existing={};
   (db.gemeentePlanning||[]).forEach(function(g){existing[gpDedupKey(g)]=true;});
   var groups=gpBuildReviewGroups(items);
-  var titleLbl=tMap({nl:'Gemeente-planning gevonden',en:'Church schedule found',es:'Cronograma de iglesia encontrado'});
-  var subLbl=tMap({nl:items.length+' regel(s) gevonden. Vink aan wat je wilt toevoegen, en kies per regel Dag (op de kalenderdag) of Voetnoot (alleen als info onder de maand). Terugkerende activiteiten staan gegroepeerd - tik om te openen. Zijn 2 gebeurtenissen per ongeluk samengevoegd in 1 regel? Bewerk (potlood) of splits (kopieer) de regel. Dit telt niet mee als gewerkte uren.',en:items.length+' row(s) found. Check what you want to add, and pick Day (shown on the calendar day) or Footnote (info only, listed under the month) for each row. Recurring activities are grouped - tap to open. Did two events accidentally merge into one row? Edit (pencil) or split (copy) the row. This does not count as worked hours.',es:items.length+' fila(s) encontradas. Marca lo que quieras añadir, y elige Día (se muestra en el día del calendario) o Nota (solo información, debajo del mes) para cada fila. Las actividades recurrentes están agrupadas - toca para abrir. ¿Se combinaron 2 eventos por error en una fila? Edita (lápiz) o divide (copiar) la fila. Esto no cuenta como horas trabajadas.'});
-  var selAllLbl=tMap({nl:'Alles',en:'All',es:'Todo'});
-  var selFutureLbl=tMap({nl:'Alleen toekomstige',en:'Only upcoming',es:'Solo futuros'});
-  var dayLbl=tMap({nl:'Dag',en:'Day',es:'Día'});
-  var footLbl=tMap({nl:'Voetnoot',en:'Footnote',es:'Nota'});
-  var groupLbl=tMap({nl:'Groep:',en:'Group:',es:'Grupo:'});
+  var titleLbl=tMap({nl:'Gemeente-planning gevonden',en:'Church schedule found',it:'Programma della chiesa trovato',es:'Cronograma de iglesia encontrado'});
+  var subLbl=tMap({nl:items.length+' regel(s) gevonden. Vink aan wat je wilt toevoegen, en kies per regel Dag (op de kalenderdag) of Voetnoot (alleen als info onder de maand). Terugkerende activiteiten staan gegroepeerd - tik om te openen. Zijn 2 gebeurtenissen per ongeluk samengevoegd in 1 regel? Bewerk (potlood) of splits (kopieer) de regel. Dit telt niet mee als gewerkte uren.',en:items.length+' row(s) found. Check what you want to add, and pick Day (shown on the calendar day) or Footnote (info only, listed under the month) for each row. Recurring activities are grouped - tap to open. Did two events accidentally merge into one row? Edit (pencil) or split (copy) the row. This does not count as worked hours.',it:items.length+' riga/righe trovata/e. Controlla cosa vuoi aggiungere e scegli per ogni riga Giorno (mostrato nel giorno del calendario) o Nota (solo informazione, elencata sotto il mese). Le attività ricorrenti sono raggruppate: tocca per aprire. Due eventi si sono uniti per errore in una sola riga? Modifica (matita) o dividi (copia) la riga. Non conta come ore lavorate.',es:items.length+' fila(s) encontradas. Marca lo que quieras añadir, y elige Día (se muestra en el día del calendario) o Nota (solo información, debajo del mes) para cada fila. Las actividades recurrentes están agrupadas - toca para abrir. ¿Se combinaron 2 eventos por error en una fila? Edita (lápiz) o divide (copiar) la fila. Esto no cuenta como horas trabajadas.'});
+  var selAllLbl=tMap({nl:'Alles',en:'All',it:'Tutto',es:'Todo'});
+  var selFutureLbl=tMap({nl:'Alleen toekomstige',en:'Only upcoming',it:'Solo i prossimi',es:'Solo futuros'});
+  var dayLbl=tMap({nl:'Dag',en:'Day',it:'Giorno',es:'Día'});
+  var footLbl=tMap({nl:'Voetnoot',en:'Footnote',it:'Nota',es:'Nota'});
+  var groupLbl=tMap({nl:'Groep:',en:'Group:',it:'Gruppo:',es:'Grupo:'});
   var h='<div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>';
   h+='<div style="font-size:15px;font-weight:700;margin-bottom:4px">'+titleLbl+'</div>';
   h+='<div style="font-size:12px;color:var(--text2);margin-bottom:10px">'+subLbl+'</div>';
@@ -28588,7 +28637,7 @@ function gpRenderReviewModal(){
   h+='</div>';
   h+='<div style="display:flex;gap:8px;margin-top:16px">';
   h+='<button class="btn" onclick="closeModals()" style="flex:1">'+t('cancel_btn')+'</button>';
-  h+='<button class="btn primary" onclick="confirmGemeentePlanningImportReview()" style="flex:1">'+tMap({nl:'Toevoegen',en:'Add',es:'Añadir'})+'</button>';
+  h+='<button class="btn primary" onclick="confirmGemeentePlanningImportReview()" style="flex:1">'+tMap({nl:'Toevoegen',en:'Add',it:'Aggiungi',es:'Añadir'})+'</button>';
   h+='</div>';
   showModal(h);
   if(_gpReviewScroll){
@@ -28645,13 +28694,13 @@ function gpEditReviewRow(idx){
   var item=_gpReviewItems&&_gpReviewItems[idx];
   if(!item)return;
   gpCaptureReviewScroll();
-  var titleLbl=tMap({nl:'Regel bewerken',en:'Edit row',es:'Editar fila'});
-  var titelLbl=tMap({nl:'Titel',en:'Title',es:'Título'});
-  var fromLbl=tMap({nl:'Van',en:'From',es:'Desde'});
-  var toLbl=tMap({nl:'Tot (optioneel)',en:'Through (optional)',es:'Hasta (opcional)'});
-  var tijdLbl=tMap({nl:'Tijd (optioneel)',en:'Time (optional)',es:'Hora (opcional)'});
-  var verLbl=tMap({nl:'Verantwoordelijke (optioneel)',en:'Responsible (optional)',es:'Responsable (opcional)'});
-  var hintLbl=tMap({nl:'Kwam dit als één regel binnen terwijl het eigenlijk 2 losse gebeurtenissen zijn? Sluit dit venster en tik in de lijst op het kopieer-icoon om de regel te splitsen.',en:'Did this come in as one row while it\'s actually 2 separate events? Close this and tap the copy icon on the row to split it.',es:'¿Llegó como una sola fila cuando en realidad son 2 eventos distintos? Cierra esto y toca el icono de copiar en la fila para dividirla.'});
+  var titleLbl=tMap({nl:'Regel bewerken',en:'Edit row',it:'Modifica riga',es:'Editar fila'});
+  var titelLbl=tMap({nl:'Titel',en:'Title',it:'Titolo',es:'Título'});
+  var fromLbl=tMap({nl:'Van',en:'From',it:'Da',es:'Desde'});
+  var toLbl=tMap({nl:'Tot (optioneel)',en:'Through (optional)',it:'Fino a (facoltativo)',es:'Hasta (opcional)'});
+  var tijdLbl=tMap({nl:'Tijd (optioneel)',en:'Time (optional)',it:'Ora (facoltativo)',es:'Hora (opcional)'});
+  var verLbl=tMap({nl:'Verantwoordelijke (optioneel)',en:'Responsible (optional)',it:'Responsabile (facoltativo)',es:'Responsable (opcional)'});
+  var hintLbl=tMap({nl:'Kwam dit als één regel binnen terwijl het eigenlijk 2 losse gebeurtenissen zijn? Sluit dit venster en tik in de lijst op het kopieer-icoon om de regel te splitsen.',en:'Did this come in as one row while it\'s actually 2 separate events? Close this and tap the copy icon on the row to split it.',it:'È arrivata come una sola riga ma in realtà sono 2 eventi separati? Chiudi questa finestra e tocca l’icona di copia sulla riga per dividerla.',es:'¿Llegó como una sola fila cuando en realidad son 2 eventos distintos? Cierra esto y toca el icono de copiar en la fila para dividirla.'});
   var inputStyle='width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;box-sizing:border-box';
   var h='<div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>';
   h+='<div style="font-size:15px;font-weight:700;margin-bottom:10px">'+titleLbl+'</div>';
@@ -28695,13 +28744,13 @@ function gpSplitReviewRow(idx){
   var item=_gpReviewItems&&_gpReviewItems[idx];
   if(!item)return;
   gpCaptureReviewScroll();
-  var titleLbl=tMap({nl:'Regel splitsen in 2',en:'Split row into 2',es:'Dividir fila en 2'});
-  var hintLbl=tMap({nl:'Pas beide delen aan: titel, datum en tijd. Bij Opslaan worden het 2 aparte regels.',en:'Adjust both parts: title, date and time. On Save they become 2 separate rows.',es:'Ajusta ambas partes: título, fecha y hora. Al guardar serán 2 filas separadas.'});
-  var titelLbl=tMap({nl:'Titel',en:'Title',es:'Título'});
-  var fromLbl=tMap({nl:'Van',en:'From',es:'Desde'});
-  var toLbl=tMap({nl:'Tot',en:'Through',es:'Hasta'});
-  var tijdLbl=tMap({nl:'Tijd',en:'Time',es:'Hora'});
-  var partLbl=tMap({nl:'Deel',en:'Part',es:'Parte'});
+  var titleLbl=tMap({nl:'Regel splitsen in 2',en:'Split row into 2',it:'Dividi la riga in 2',es:'Dividir fila en 2'});
+  var hintLbl=tMap({nl:'Pas beide delen aan: titel, datum en tijd. Bij Opslaan worden het 2 aparte regels.',en:'Adjust both parts: title, date and time. On Save they become 2 separate rows.',it:'Modifica entrambe le parti: titolo, data e ora. Dopo il salvataggio diventano 2 righe separate.',es:'Ajusta ambas partes: título, fecha y hora. Al guardar serán 2 filas separadas.'});
+  var titelLbl=tMap({nl:'Titel',en:'Title',it:'Titolo',es:'Título'});
+  var fromLbl=tMap({nl:'Van',en:'From',it:'Da',es:'Desde'});
+  var toLbl=tMap({nl:'Tot',en:'Through',it:'Fino a',es:'Hasta'});
+  var tijdLbl=tMap({nl:'Tijd',en:'Time',it:'Ora',es:'Hora'});
+  var partLbl=tMap({nl:'Deel',en:'Part',it:'Parte',es:'Parte'});
   var inputStyle='width:100%;padding:8px 9px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;box-sizing:border-box';
   var h='<div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>';
   h+='<div style="font-size:15px;font-weight:700;margin-bottom:8px">'+titleLbl+'</div>';
@@ -28777,7 +28826,7 @@ function confirmGemeentePlanningImportReview(){
   _gpReviewItems=null;
   _gpReviewShowInDays=null;
   save();
-  showImportResult('✓ '+added+' '+tMap({nl:'planningsregel(s) toegevoegd aan de kalender!',en:'schedule row(s) added to the calendar!',es:'fila(s) de cronograma añadidas al calendario!'}));
+  showImportResult('✓ '+added+' '+tMap({nl:'planningsregel(s) toegevoegd aan de kalender!',en:'schedule row(s) added to the calendar!',it:'riga/righe di programma aggiunta/e al calendario!',es:'fila(s) de cronograma añadidas al calendario!'}));
 }
 // Applies the two global display toggles (show gemeente planning at all,
 // and within that, show colleagues' absence rows) to the raw
@@ -28931,10 +28980,10 @@ function openGemeentePlanningDetail(id){
   h+='<div style="font-size:15px;font-weight:700">'+escapeHtml(item.titel)+'</div>';
   h+='</div>';
   h+='<div style="font-size:13px;color:var(--text2);margin-bottom:4px">'+escapeHtml(gpFormatRange(item))+(item.tijd?' · '+item.tijd:'')+'</div>';
-  if(item.verantwoordelijke)h+='<div style="font-size:13px;color:var(--text2);margin-bottom:4px">'+tMap({nl:'Verantwoordelijke: ',en:'Responsible: ',es:'Responsable: '})+escapeHtml(item.verantwoordelijke)+'</div>';
-  if(item.onduidelijkeDatum)h+='<div style="font-size:12px;color:var(--amber);margin-bottom:4px">'+tMap({nl:'Let op: de datum in de PDF was niet helemaal duidelijk.',en:'Note: the date in the PDF wasn\'t entirely clear.',es:'Nota: la fecha en el PDF no estaba del todo clara.'})+'</div>';
-  h+='<div style="font-size:11px;color:var(--text3);margin-bottom:14px">'+tMap({nl:'Uit een geïmporteerde gemeente-planning - telt niet mee als gewerkte uren.',en:'From an imported church schedule - does not count as worked hours.',es:'De un cronograma de iglesia importado - no cuenta como horas trabajadas.'})+'</div>';
-  var pinLbl=item.accented?tMap({nl:'Niet meer laten opvallen',en:'Unpin (make gray again)',es:'Dejar de destacar'}):tMap({nl:'Laten opvallen in de kalender',en:'Pin - make it stand out',es:'Destacar en el calendario'});
+  if(item.verantwoordelijke)h+='<div style="font-size:13px;color:var(--text2);margin-bottom:4px">'+tMap({nl:'Verantwoordelijke: ',en:'Responsible: ',it:'Responsabile: ',es:'Responsable: '})+escapeHtml(item.verantwoordelijke)+'</div>';
+  if(item.onduidelijkeDatum)h+='<div style="font-size:12px;color:var(--amber);margin-bottom:4px">'+tMap({nl:'Let op: de datum in de PDF was niet helemaal duidelijk.',en:'Note: the date in the PDF wasn\'t entirely clear.',it:'Nota: la data nel PDF non era del tutto chiara.',es:'Nota: la fecha en el PDF no estaba del todo clara.'})+'</div>';
+  h+='<div style="font-size:11px;color:var(--text3);margin-bottom:14px">'+tMap({nl:'Uit een geïmporteerde gemeente-planning - telt niet mee als gewerkte uren.',en:'From an imported church schedule - does not count as worked hours.',it:'Da un programma della chiesa importato: non conta come ore lavorate.',es:'De un cronograma de iglesia importado - no cuenta como horas trabajadas.'})+'</div>';
+  var pinLbl=item.accented?tMap({nl:'Niet meer laten opvallen',en:'Unpin (make gray again)',it:'Rimuovi evidenza (torna grigio)',es:'Dejar de destacar'}):tMap({nl:'Laten opvallen in de kalender',en:'Pin - make it stand out',it:'Evidenzia',es:'Destacar en el calendario'});
   // Edit/Split (task #1204) - the review-before-confirm step already let
   // someone fix badly-imported text or split a merged row before it landed
   // on the calendar, but there was no way to do either afterward - a typo
@@ -28949,7 +28998,7 @@ function openGemeentePlanningDetail(id){
   h+='</div>';
   h+='<button class="btn" onclick="toggleGpAccent('+item.id+')" style="width:100%;margin-bottom:8px'+(item.accented?';background:var(--brand-light);color:var(--brand);border-color:var(--brand)':'')+'"><svg width="14" height="14" style="margin-right:4px;vertical-align:-2px"><use href="#ico-pin"/></svg>'+pinLbl+'</button>';
   var isFootnote=item.showInDays===false;
-  var modeLbl=isFootnote?tMap({nl:'Toon op de kalenderdag',en:'Show on the calendar day',es:'Mostrar en el día del calendario'}):tMap({nl:'Verplaats naar voetnoot (niet op de dag)',en:'Move to footnote (not on the day)',es:'Mover a nota (no en el día)'});
+  var modeLbl=isFootnote?tMap({nl:'Toon op de kalenderdag',en:'Show on the calendar day',it:'Mostra nel giorno del calendario',es:'Mostrar en el día del calendario'}):tMap({nl:'Verplaats naar voetnoot (niet op de dag)',en:'Move to footnote (not on the day)',it:'Sposta nelle note (non nel giorno)',es:'Mover a nota (no en el día)'});
   h+='<button class="btn" onclick="toggleGpShowInDays('+item.id+')" style="width:100%;margin-bottom:8px"><svg width="14" height="14" style="margin-right:4px;vertical-align:-2px"><use href="#ico-calendar"/></svg>'+modeLbl+'</button>';
   h+='<button class="btn" onclick="deleteGemeentePlanningItem('+item.id+')" style="width:100%;color:var(--danger)">'+t('delete_btn')+'</button>';
   showModal(h);
@@ -29058,7 +29107,7 @@ function looksLikeNameLine(line){
   return true;
 }
 function processPdfImportFile(file){
-  showImportResult(tMap({nl:'PDF wordt gelezen...',en:'Reading PDF...',es:'Leyendo PDF...'}));
+  showImportResult(tMap({nl:'PDF wordt gelezen...',en:'Reading PDF...',it:'Lettura del PDF...',es:'Leyendo PDF...'}));
   extractPdfTextLines(file).then(function(lines){
     // A church activity-schedule PDF has a distinct, reliably-detectable
     // "<Maand> Activiteit Verantwoordelijk" table header - route those to
@@ -29082,12 +29131,12 @@ function processPdfImportFile(file){
       return true;
     });
     if(!candidates.length){
-      showImportResult(tMap({nl:'Geen namen gevonden in deze PDF. Probeer een CSV/JSON-export, of stuur de PDF door zodat we het importformaat kunnen uitbreiden.',en:'No names found in this PDF. Try a CSV/JSON export, or send the PDF through so the import format can be extended.',es:'No se encontraron nombres en este PDF. Prueba con una exportación CSV/JSON, o envía el PDF para ampliar el formato de importación.'}),true);
+      showImportResult(tMap({nl:'Geen namen gevonden in deze PDF. Probeer een CSV/JSON-export, of stuur de PDF door zodat we het importformaat kunnen uitbreiden.',en:'No names found in this PDF. Try a CSV/JSON export, or send the PDF through so the import format can be extended.',it:'Nessun nome trovato in questo PDF. Prova con un’esportazione CSV/JSON, oppure invia il PDF così da poter estendere il formato di importazione.',es:'No se encontraron nombres en este PDF. Prueba con una exportación CSV/JSON, o envía el PDF para ampliar el formato de importación.'}),true);
       return;
     }
     openPdfImportReview(candidates);
   }).catch(function(err){
-    showImportResult((tMap({nl:'Fout bij lezen PDF: ',en:'Error reading PDF: ',es:'Error al leer el PDF: '}))+(err&&err.message||err),true);
+    showImportResult((tMap({nl:'Fout bij lezen PDF: ',en:'Error reading PDF: ',it:'Errore nella lettura del PDF: ',es:'Error al leer el PDF: '}))+(err&&err.message||err),true);
   });
 }
 // Review step: every candidate line from the PDF gets its own checkbox
@@ -29099,8 +29148,8 @@ function processPdfImportFile(file){
 function openPdfImportReview(candidates){
   var existing={};
   (db.cursisten||[]).forEach(function(c){existing[(c.naam||'').toLowerCase().trim()]=true;});
-  var titleLbl=tMap({nl:'Gevonden namen',en:'Names found',es:'Nombres encontrados'});
-  var subLbl=tMap({nl:candidates.length+' regel(s) gevonden die op een naam lijken. Vink aan wat je wilt toevoegen als contact.',en:candidates.length+' line(s) found that look like a name. Check what you want to add as a contact.',es:candidates.length+' línea(s) encontradas que parecen un nombre. Marca lo que quieras añadir como contacto.'});
+  var titleLbl=tMap({nl:'Gevonden namen',en:'Names found',it:'Nomi trovati',es:'Nombres encontrados'});
+  var subLbl=tMap({nl:candidates.length+' regel(s) gevonden die op een naam lijken. Vink aan wat je wilt toevoegen als contact.',en:candidates.length+' line(s) found that look like a name. Check what you want to add as a contact.',it:candidates.length+' riga/righe trovata/e che sembra/no un nome. Controlla cosa vuoi aggiungere come contatto.',es:candidates.length+' línea(s) encontradas que parecen un nombre. Marca lo que quieras añadir como contacto.'});
   var h='<div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>';
   h+='<div style="font-size:15px;font-weight:700;margin-bottom:4px">'+titleLbl+'</div>';
   h+='<div style="font-size:12px;color:var(--text2);margin-bottom:12px">'+subLbl+'</div>';
@@ -29109,12 +29158,12 @@ function openPdfImportReview(candidates){
     var already=existing[name.toLowerCase().trim()];
     h+='<label style="display:flex;align-items:center;gap:8px;padding:6px 0;'+(i>0?'border-top:1px solid var(--border);':'')+'cursor:'+(already?'default':'pointer')+';opacity:'+(already?'.5':'1')+'">'
       +'<input type="checkbox" class="pdf-import-chk" data-name="'+name.replace(/"/g,'&quot;')+'" '+(already?'disabled':'checked')+' style="width:16px;height:16px;flex-shrink:0">'
-      +'<span style="font-size:13px;flex:1">'+name+(already?' &middot; '+tMap({nl:'al een contact',en:'already a contact',es:'ya es un contacto'}):'')+'</span></label>';
+      +'<span style="font-size:13px;flex:1">'+name+(already?' &middot; '+tMap({nl:'al een contact',en:'already a contact',it:'già un contatto',es:'ya es un contacto'}):'')+'</span></label>';
   });
   h+='</div>';
   h+='<div style="display:flex;gap:8px;margin-top:16px">';
   h+='<button class="btn" onclick="closeModals()" style="flex:1">'+t('cancel_btn')+'</button>';
-  h+='<button class="btn primary" onclick="confirmPdfImportReview()" style="flex:1">'+tMap({nl:'Toevoegen',en:'Add',es:'Añadir'})+'</button>';
+  h+='<button class="btn primary" onclick="confirmPdfImportReview()" style="flex:1">'+tMap({nl:'Toevoegen',en:'Add',it:'Aggiungi',es:'Añadir'})+'</button>';
   h+='</div>';
   showModal(h);
 }
@@ -29137,7 +29186,7 @@ function confirmPdfImportReview(){
   });
   save();
   if(typeof screen!=='undefined'&&screen==='cursisten')renderCursisten();
-  showImportResult('✓ '+names.length+' '+tMap({nl:'contact(en) toegevoegd uit PDF!',en:'contact(s) added from PDF!',es:'contacto(s) añadidos desde el PDF!'}));
+  showImportResult('✓ '+names.length+' '+tMap({nl:'contact(en) toegevoegd uit PDF!',en:'contact(s) added from PDF!',it:'contatto/i aggiunto/i dal PDF!',es:'contacto(s) añadidos desde el PDF!'}));
 }
 function parseExcelCSV(text){
   // Real-world "UrenCategorie" exports come from Excel, and Excel's CSV
@@ -29327,17 +29376,17 @@ function openCursistenRosterImportReview(candidates){
     var m=existing[(c.naam||'').toLowerCase().trim()];
     c.__matchId=m?m.id:null;
   });
-  var titleLbl=tMap({nl:'Contacten gevonden',en:'Contacts found',es:'Contactos encontrados'});
-  var subLbl=tMap({nl:candidates.length+' contact(en) gevonden in dit bestand. Vink aan wat je wilt toevoegen of samenvoegen.',en:candidates.length+' contact(s) found in this file. Check what you want to add or merge.',es:'Se encontraron '+candidates.length+' contacto(s) en este archivo. Marca lo que quieras añadir o fusionar.'});
+  var titleLbl=tMap({nl:'Contacten gevonden',en:'Contacts found',it:'Contatti trovati',es:'Contactos encontrados'});
+  var subLbl=tMap({nl:candidates.length+' contact(en) gevonden in dit bestand. Vink aan wat je wilt toevoegen of samenvoegen.',en:candidates.length+' contact(s) found in this file. Check what you want to add or merge.',it:candidates.length+' contatto/i trovato/i in questo file. Controlla cosa vuoi aggiungere o unire.',es:'Se encontraron '+candidates.length+' contacto(s) en este archivo. Marca lo que quieras añadir o fusionar.'});
   var h='<div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>';
   h+='<div style="font-size:15px;font-weight:700;margin-bottom:4px">'+titleLbl+'</div>';
   h+='<div style="font-size:12px;color:var(--text2);margin-bottom:12px">'+subLbl+'</div>';
-  var selectAllLbl=tMap({nl:'Alles selecteren',en:'Select all',es:'Seleccionar todo'});
+  var selectAllLbl=tMap({nl:'Alles selecteren',en:'Select all',it:'Seleziona tutto',es:'Seleccionar todo'});
   h+='<label style="display:flex;align-items:center;gap:8px;padding:4px 0 10px;cursor:pointer;font-size:13px;font-weight:600">'
     +'<input type="checkbox" id="roster-import-select-all" checked onchange="toggleRosterImportSelectAll(this)" style="width:16px;height:16px;flex-shrink:0">'
     +selectAllLbl+'</label>';
   h+='<div style="max-height:50vh;overflow-y:auto;border:1px solid var(--border);border-radius:10px;padding:4px 10px">';
-  var alreadyLbl=tMap({nl:'al een contact &middot; wordt samengevoegd',en:'already a contact &middot; will be merged',es:'ya es un contacto &middot; se fusionará'});
+  var alreadyLbl=tMap({nl:'al een contact &middot; wordt samengevoegd',en:'already a contact &middot; will be merged',it:'già un contatto &middot; verrà unito',es:'ya es un contacto &middot; se fusionará'});
   candidates.forEach(function(c,i){
     var already=!!c.__matchId;
     var addrBits=[c.adres,c.postcode,c.plaats].filter(Boolean).join(' ');
@@ -29348,7 +29397,7 @@ function openCursistenRosterImportReview(candidates){
   h+='</div>';
   h+='<div style="display:flex;gap:8px;margin-top:16px">';
   h+='<button class="btn" onclick="closeModals()" style="flex:1">'+t('cancel_btn')+'</button>';
-  h+='<button class="btn primary" onclick="confirmCursistenRosterImportReview()" style="flex:1">'+tMap({nl:'Toevoegen',en:'Add',es:'Añadir'})+'</button>';
+  h+='<button class="btn primary" onclick="confirmCursistenRosterImportReview()" style="flex:1">'+tMap({nl:'Toevoegen',en:'Add',it:'Aggiungi',es:'Añadir'})+'</button>';
   h+='</div>';
   showModal(h);
 }
@@ -29396,8 +29445,8 @@ function confirmCursistenRosterImportReview(){
   if(typeof screen!=='undefined'&&screen==='cursisten')renderCursisten();
   var resultMsg='✓ ';
   var parts=[];
-  if(addedCount)parts.push(addedCount+' '+tMap({nl:'toegevoegd',en:'added',es:'añadidos'}));
-  if(mergedCount)parts.push(mergedCount+' '+tMap({nl:'samengevoegd',en:'merged',es:'fusionados'}));
+  if(addedCount)parts.push(addedCount+' '+tMap({nl:'toegevoegd',en:'added',it:'aggiunto',es:'añadidos'}));
+  if(mergedCount)parts.push(mergedCount+' '+tMap({nl:'samengevoegd',en:'merged',it:'unito',es:'fusionados'}));
   resultMsg+=parts.join(', ');
   showImportResult(resultMsg);
 }
@@ -29512,37 +29561,37 @@ function smartAnalyzeCsv(text){
 var _pendingSmartImport=null;
 function smartImportFieldLabel(key){
   var map={
-    naam:tMap({nl:'Naam',en:'Name',es:'Nombre'}),
-    datum:tMap({nl:'Datum',en:'Date',es:'Fecha'}),
-    tijd:tMap({nl:'Tijd',en:'Time',es:'Hora'}),
-    uren:tMap({nl:'Uren',en:'Hours',es:'Horas'}),
+    naam:tMap({nl:'Naam',en:'Name',it:'Nome',es:'Nombre'}),
+    datum:tMap({nl:'Datum',en:'Date',it:'Data',es:'Fecha'}),
+    tijd:tMap({nl:'Tijd',en:'Time',it:'Ora',es:'Hora'}),
+    uren:tMap({nl:'Uren',en:'Hours',it:'Ore',es:'Horas'}),
     km:'Km',
-    kosten:tMap({nl:'Kosten',en:'Cost',es:'Costo'}),
-    categorie:tMap({nl:'Categorie',en:'Category',es:'Categoría'}),
-    thema:tMap({nl:'Thema/onderwerp',en:'Topic',es:'Tema'}),
-    omschrijving:tMap({nl:'Omschrijving',en:'Description',es:'Descripción'}),
-    adres:tMap({nl:'Adres',en:'Address',es:'Dirección'}),
-    postcode:tMap({nl:'Postcode',en:'Zip/postcode',es:'Código postal'}),
-    plaats:tMap({nl:'Plaats',en:'City',es:'Ciudad'}),
-    tel:tMap({nl:'Telefoon',en:'Phone',es:'Teléfono'}),
+    kosten:tMap({nl:'Kosten',en:'Cost',it:'Costo',es:'Costo'}),
+    categorie:tMap({nl:'Categorie',en:'Category',it:'Categoria',es:'Categoría'}),
+    thema:tMap({nl:'Thema/onderwerp',en:'Topic',it:'Argomento',es:'Tema'}),
+    omschrijving:tMap({nl:'Omschrijving',en:'Description',it:'Descrizione',es:'Descripción'}),
+    adres:tMap({nl:'Adres',en:'Address',it:'Indirizzo',es:'Dirección'}),
+    postcode:tMap({nl:'Postcode',en:'Zip/postcode',it:'CAP',es:'Código postal'}),
+    plaats:tMap({nl:'Plaats',en:'City',it:'Città',es:'Ciudad'}),
+    tel:tMap({nl:'Telefoon',en:'Phone',it:'Telefono',es:'Teléfono'}),
     email:'Email',
-    gemeente:tMap({nl:'Gemeente',en:'Church',es:'Iglesia'}),
-    opmerking:tMap({nl:'Notitie',en:'Note',es:'Nota'}),
-    negeren:tMap({nl:'— Negeren —',en:'— Ignore —',es:'— Ignorar —'})
+    gemeente:tMap({nl:'Gemeente',en:'Church',it:'Chiesa',es:'Iglesia'}),
+    opmerking:tMap({nl:'Notitie',en:'Note',it:'Nota',es:'Nota'}),
+    negeren:tMap({nl:'— Negeren —',en:'— Ignore —',it:'— Ignora —',es:'— Ignorar —'})
   };
   return map[key]||key;
 }
 function openSmartImportReview(analysis){
   _pendingSmartImport=analysis;
-  var titleLbl=tMap({nl:'Onbekend bestandsformaat herkend',en:'Unrecognized file format detected',es:'Formato de archivo no reconocido'});
+  var titleLbl=tMap({nl:'Onbekend bestandsformaat herkend',en:'Unrecognized file format detected',it:'Formato di file non riconosciuto',es:'Formato de archivo no reconocido'});
   var subLbl=tMap({
     nl:'Dit bestand komt niet overeen met een bekend formaat, maar er zijn '+analysis.headers.length+' kolommen gevonden in '+analysis.dataRows.length+' rijen, en er is een gok gemaakt voor elke kolom. Controleer of dit klopt en pas aan waar nodig.',
-    en:'This file doesn\'t match a known format, but '+analysis.headers.length+' columns were found across '+analysis.dataRows.length+' rows, with a guess made for each one. Check that it\'s right and adjust anything that isn\'t.',
+    en:'This file doesn\'t match a known format, but '+analysis.headers.length+' columns were found across '+analysis.dataRows.length+' rows, with a guess made for each one. Check that it\'s right and adjust anything that isn\'t.',it:'Questo file non corrisponde a un formato noto, ma sono state trovate '+analysis.headers.length+' colonne in '+analysis.dataRows.length+' righe, con un’ipotesi per ciascuna. Controlla che sia corretta e modifica ciò che non lo è.',
     es:'Este archivo no coincide con un formato conocido, pero se encontraron '+analysis.headers.length+' columnas en '+analysis.dataRows.length+' filas, con una suposición para cada una. Revisa que sea correcto y ajusta lo que haga falta.'
   });
-  var targetLbl=tMap({nl:'Waar hoort dit bij?',en:'Where does this belong?',es:'¿Dónde pertenece esto?'});
-  var targetRosterLbl=tMap({nl:'Contactenlijst (namen, adressen...)',en:'Contact list (names, addresses...)',es:'Lista de contactos (nombres, direcciones...)'});
-  var targetLogLbl=tMap({nl:'Logboek (activiteiten met datum)',en:'Logbook (activities with a date)',es:'Registro (actividades con fecha)'});
+  var targetLbl=tMap({nl:'Waar hoort dit bij?',en:'Where does this belong?',it:'A cosa appartiene?',es:'¿Dónde pertenece esto?'});
+  var targetRosterLbl=tMap({nl:'Contactenlijst (namen, adressen...)',en:'Contact list (names, addresses...)',it:'Elenco contatti (nomi, indirizzi...)',es:'Lista de contactos (nombres, direcciones...)'});
+  var targetLogLbl=tMap({nl:'Logboek (activiteiten met datum)',en:'Logbook (activities with a date)',it:'Registro (attività con una data)',es:'Registro (actividades con fecha)'});
   var h='<div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>';
   h+='<div style="font-size:15px;font-weight:700;margin-bottom:4px">'+titleLbl+'</div>';
   h+='<div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.4">'+subLbl+'</div>';
@@ -29554,7 +29603,7 @@ function openSmartImportReview(analysis){
   h+='<div id="smart-import-cols" style="max-height:44vh;overflow-y:auto;border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:14px"></div>';
   h+='<div style="display:flex;gap:8px">';
   h+='<button class="btn" onclick="closeModals()" style="flex:1">'+t('cancel_btn')+'</button>';
-  h+='<button class="btn primary" onclick="confirmSmartImportReview()" style="flex:1">'+tMap({nl:'Importeren',en:'Import',es:'Importar'})+'</button>';
+  h+='<button class="btn primary" onclick="confirmSmartImportReview()" style="flex:1">'+tMap({nl:'Importeren',en:'Import',it:'Importa',es:'Importar'})+'</button>';
   h+='</div>';
   showModal(h);
   renderSmartImportColumns();
@@ -29627,7 +29676,7 @@ function confirmSmartImportReview(){
   closeModals();
   if(target==='roster'){
     var iNaam=idxFor('naam');
-    if(iNaam<0){alert(tMap({nl:'Kies welke kolom de naam bevat.',en:'Pick which column holds the name.',es:'Elige qué columna contiene el nombre.'}));return;}
+    if(iNaam<0){alert(tMap({nl:'Kies welke kolom de naam bevat.',en:'Pick which column holds the name.',it:'Scegli quale colonna contiene il nome.',es:'Elige qué columna contiene el nombre.'}));return;}
     var iAdres=idxFor('adres'),iPostcode=idxFor('postcode'),iPlaats=idxFor('plaats'),iTel=idxFor('tel'),iEmail=idxFor('email'),iOpm=idxFor('opmerking');
     var cursisten=[];
     analysis.dataRows.forEach(function(r){
@@ -29643,11 +29692,11 @@ function confirmSmartImportReview(){
         opmerking:iOpm>=0?(r[iOpm]||'').trim():''
       });
     });
-    if(!cursisten.length){showImportResult(tMap({nl:'Geen contacten gevonden in dit bestand.',en:'No contacts found in this file.',es:'No se encontraron contactos en este archivo.'}),true);return;}
+    if(!cursisten.length){showImportResult(tMap({nl:'Geen contacten gevonden in dit bestand.',en:'No contacts found in this file.',it:'Nessun contatto trovato in questo file.',es:'No se encontraron contactos en este archivo.'}),true);return;}
     openCursistenRosterImportReview(cursisten);
   }else{
     var iDatum=idxFor('datum');
-    if(iDatum<0){alert(tMap({nl:'Kies welke kolom de datum bevat.',en:'Pick which column holds the date.',es:'Elige qué columna contiene la fecha.'}));return;}
+    if(iDatum<0){alert(tMap({nl:'Kies welke kolom de datum bevat.',en:'Pick which column holds the date.',it:'Scegli quale colonna contiene la data.',es:'Elige qué columna contiene la fecha.'}));return;}
     var iTijd=idxFor('tijd'),iNaam2=idxFor('naam'),iCat=idxFor('categorie'),iUren=idxFor('uren'),iKm=idxFor('km'),iKosten=idxFor('kosten'),iThema=idxFor('thema'),iOmsch=idxFor('omschrijving'),iOpm2=idxFor('opmerking');
     // Left blank rather than guessing a category when no column was mapped
     // to one - a blank categorie is already the app's own "needs a category"
@@ -29677,8 +29726,8 @@ function confirmSmartImportReview(){
       entries.push(entry);
       if(naam&&!cursistenMap[naam])cursistenMap[naam]={naam:naam};
     });
-    if(!entries.length){showImportResult(tMap({nl:'Geen bruikbare rijen gevonden (controleer de datumkolom).',en:'No usable rows found (check the date column).',es:'No se encontraron filas utilizables (revisa la columna de fecha).'}),true);return;}
-    applyImportedEntries({entries:entries,cursisten:Object.values(cursistenMap)},tMap({nl:'Herkende tabel',en:'Recognized table',es:'Tabla reconocida'}));
+    if(!entries.length){showImportResult(tMap({nl:'Geen bruikbare rijen gevonden (controleer de datumkolom).',en:'No usable rows found (check the date column).',it:'Nessuna riga utilizzabile trovata (controlla la colonna della data).',es:'No se encontraron filas utilizables (revisa la columna de fecha).'}),true);return;}
+    applyImportedEntries({entries:entries,cursisten:Object.values(cursistenMap)},tMap({nl:'Herkende tabel',en:'Recognized table',it:'Tabella riconosciuta',es:'Tabla reconocida'}));
   }
 }
 function parseAppCSV(text){const lines=text.split('\n').filter(l=>l.trim());if(!lines.length)return{entries:[],cursisten:[]};const headers=parseCSVLine(lines[0]);const col=k=>headers.findIndex(h=>h.toLowerCase().includes(k.toLowerCase()));const iDatum=col('datum'),iCat=col('categorie'),iUren=col('uren'),iKm=col('km'),iKosten=col('kosten'),iOmsch=col('omschrijving'),iCursist=col('cursist'),iThema=col('thema'),iThemacode=col('themacode'),iOpmerking=col('opmerking'),iReminder=col('reminder');const entries=[];lines.slice(1).forEach((line,i)=>{const cols=parseCSVLine(line);const datum=(cols[iDatum]||'').trim(),categorie=(cols[iCat]||'').trim();if(!datum&&!categorie)return;
@@ -32539,7 +32588,7 @@ function renderFcSearchResultsList(){
       h+='<div class="ac-stripe" style="background:'+gpItemColor(item)+'"></div>';
       h+='<div class="ac-body">';
       h+='<div class="ac-top"><div class="ac-who">'+escapeHtml(item.titel)+'</div><div class="ac-hours">'+(item.datumStart?formatDate(item.datumStart):'')+'</div></div>';
-      h+='<div class="ac-cat">'+(item.verantwoordelijke?escapeHtml(item.verantwoordelijke)+' · ':'')+tMap({nl:'Gemeente-planning',en:'Church schedule',es:'Cronograma de iglesia'})+'</div>';
+      h+='<div class="ac-cat">'+(item.verantwoordelijke?escapeHtml(item.verantwoordelijke)+' · ':'')+tMap({nl:'Gemeente-planning',en:'Church schedule',it:'Programma della chiesa',es:'Cronograma de iglesia'})+'</div>';
       h+='</div></div></div>';
       return;
     }
@@ -33006,7 +33055,7 @@ function fcOpenMonthFootnotesPopup(yr,mo){
   var h='<div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>';
   h+='<div style="font-size:14px;font-weight:700;margin-bottom:10px">'+MONTHS_FULL[mo]+' '+yr+'</div>';
   if(!items.length){
-    h+='<div style="font-size:13px;color:var(--text3)">'+tMap({nl:'Geen extra info deze maand.',en:'No extra info this month.',es:'Sin información adicional este mes.'})+'</div>';
+    h+='<div style="font-size:13px;color:var(--text3)">'+tMap({nl:'Geen extra info deze maand.',en:'No extra info this month.',it:'Nessuna informazione aggiuntiva questo mese.',es:'Sin información adicional este mes.'})+'</div>';
   }else{
     items.forEach(function(item,i){
       h+='<div onclick="openGemeentePlanningDetail('+item.id+')" style="display:flex;align-items:center;gap:8px;padding:7px 0;'+(i>0?'border-top:1px solid var(--border);':'')+'cursor:pointer">'
@@ -33284,8 +33333,8 @@ var _spGuess={cat:'',cursistId:'',datum:''};
 // where this belongs.
 function openSmartPlanHelper(){
   var titleLbl=tMap({nl:'Slim plannen',en:'Smart plan',es:'Planificación inteligente',fr:'Planification intelligente',de:'Intelligent planen',ro:'Planificare inteligentă',it:'Pianificazione intelligente',pt:'Planejamento inteligente'});
-  var hintLbl=tMap({nl:'Typ in je eigen woorden wat je wilt doen. De app doet een voorstel voor categorie, contact en datum, op basis van je eigen gegevens - je kunt daarna nog alles aanpassen.',en:'Type in your own words what you want to do. The app suggests a category, contact and date based on your own data - you can still adjust everything afterward.',es:'Escribe con tus propias palabras lo que quieres hacer. La app sugiere una categoría, contacto y fecha según tus propios datos - puedes ajustarlo todo después.'});
-  var placeholderLbl=tMap({nl:'bijv. bijbelstudie bij Maria volgende week',en:'e.g. bible study with Maria next week',es:'p. ej. estudio bíblico con María la próxima semana'});
+  var hintLbl=tMap({nl:'Typ in je eigen woorden wat je wilt doen. De app doet een voorstel voor categorie, contact en datum, op basis van je eigen gegevens - je kunt daarna nog alles aanpassen.',en:'Type in your own words what you want to do. The app suggests a category, contact and date based on your own data - you can still adjust everything afterward.',it:'Scrivi con parole tue cosa vuoi fare. L’app suggerisce una categoria, un contatto e una data in base ai tuoi dati: potrai comunque modificare tutto dopo.',es:'Escribe con tus propias palabras lo que quieres hacer. La app sugiere una categoría, contacto y fecha según tus propios datos - puedes ajustarlo todo después.'});
+  var placeholderLbl=tMap({nl:'bijv. bijbelstudie bij Maria volgende week',en:'e.g. bible study with Maria next week',it:'es. studio biblico con Maria la prossima settimana',es:'p. ej. estudio bíblico con María la próxima semana'});
   var nextLbl=tMap({nl:'Verder',en:'Next',es:'Siguiente',fr:'Suivant',de:'Weiter',ro:'Continuă',it:'Avanti',pt:'Avançar'});
   _spGuess={cat:'',cursistId:'',datum:ymdLocal()};
   var h='<div style="padding:16px">';
