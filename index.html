@@ -321,6 +321,7 @@ body{font-family:'Roboto','Segoe UI',system-ui,sans-serif;background:var(--bg);c
    (not inside the card itself) - collapse their own top/bottom padding too
    when closed, so there's no empty gray box hanging around with nothing
    inside it. */
+.card[data-acc-key="rp-dagoverzicht"].acc-open>.acc-body{max-height:none}
 .card.card-acc-plain{padding-top:0;padding-bottom:0;transition:padding .25s ease}
 .card.card-acc-plain.acc-open{padding-top:16px;padding-bottom:16px}
 .cal-acc{margin-top:10px}
@@ -24842,7 +24843,7 @@ function _buildRapportInner(){
         return `<div style="padding:${ei===0?'0':'5px'} 0 5px;cursor:pointer" onclick="openRapportEntrySummary(${idArg})" title="${LANG==='en'?'Tap for details':LANG==='es'?'Toca para más detalles':LANG==='fr'?'Touchez pour plus de détails':LANG==='de'?'Für Details tippen':LANG==='it'?'Tocca per i dettagli':'Tik voor details'}">
           <div style="display:flex;align-items:center;gap:6px">
             <div style="font-size:13px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;${bsColor}">${activityTitle(e)}</div>
-            <div style="font-size:12px;font-weight:600;color:var(--text2);flex-shrink:0;display:flex;gap:16px;align-items:baseline"><span>${entryUren(e)}${t('hours_abbr')}</span><span style="width:34px;text-align:right;color:var(--amber);font-size:11px">${e.km?e.km+distUnit():''}</span></div>
+            <div style="font-size:12px;font-weight:600;color:var(--text2);flex-shrink:0;display:flex;gap:16px;align-items:baseline"><span class="hrs">${entryUren(e)}${t('hours_abbr')}</span><span style="width:34px;text-align:right;color:var(--amber);font-size:11px">${e.km?e.km+distUnit():''}</span></div>
           </div>
           <div style="font-size:11px;color:var(--text3)">${getCatLabel(e.categorie)}</div>
         </div>`;
