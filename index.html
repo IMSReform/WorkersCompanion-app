@@ -148,6 +148,8 @@ html,body{overflow-x:hidden;overscroll-behavior-x:none;overscroll-behavior-y:non
    container, which can swallow mouse-wheel scrolling. clip clips the same way
    without creating a scroll container. */
 @supports (overflow-x:clip){body{overflow-x:clip}}
+/* "Track hours" switched off (Settings): hour fields/columns carry class "hrs". */
+html.no-hours .hrs{display:none!important}
 html{font-size:14px}html.text-sm{font-size:11px!important}html.text-lg{font-size:18px!important}html.text-xl{font-size:22px!important}
 /* Text size scaling on the app wrapper, via CSS zoom. transform:scale() was
    tried instead (zoom is non-standard and some engines ignore it), but
@@ -1875,6 +1877,7 @@ setTimeout(function(){ try{hideBootSplash();}catch(e){} },8000);
           <span class="acc-title"><span class="acc-icon"><svg><use href="#ico-target"/></svg></span><span data-i18n="goals_card">Persoonlijke doelen</span></span><span class="acc-chevron">⌄</span>
         </div>
         <div class="settings-item-body">
+        <div id="setting-hours-wrap"></div>
         <span class="form-label" data-i18n="studies_goal">Bijbelstudies per maand</span>
         <input type="number" id="goal-studies" min="0" placeholder="bijv. 8" oninput="saveSettings()">
         <span class="form-label" data-i18n="evang_goal">Evangelisatie bezoeken per maand</span>
@@ -6266,6 +6269,7 @@ const CHANGELOG=[
     {type:'new',nl:'Excel-bestanden (.xlsx) kunnen nu rechtstreeks worden geïmporteerd, ook de Nederlandse en Franse urenlijsten — opslaan als CSV is niet meer nodig. Alleen het eerste tabblad van het bestand wordt gelezen.',en:'Excel files (.xlsx) can now be imported directly, including the Dutch and French hour sheets — no need to save as CSV first. Only the first sheet of the file is read.',es:'Ahora se pueden importar archivos de Excel (.xlsx) directamente, también las hojas de horas neerlandesas y francesas; ya no hace falta guardarlos como CSV. Solo se lee la primera hoja del archivo.',fr:'Les fichiers Excel (.xlsx) peuvent désormais être importés directement, y compris les feuilles d\'heures néerlandaises et françaises — plus besoin de les enregistrer en CSV. Seule la première feuille du fichier est lue.',de:'Excel-Dateien (.xlsx) lassen sich jetzt direkt importieren, auch die niederländischen und französischen Stundenlisten — Speichern als CSV ist nicht mehr nötig. Nur das erste Tabellenblatt der Datei wird gelesen.'},
     {type:'new',nl:'Het Colombiaanse maandrapport "Informe de Gestión Contractual" (.xlsx) wordt herkend: de aantallen per kolom (CM, EB, CB, VM, P, CC, SC, R, OA) worden als activiteiten geïmporteerd, zonder uren, en de reiskosten worden verdeeld over lokaal, tussen steden en overig.',en:'The Colombian monthly report "Informe de Gestión Contractual" (.xlsx) is now recognized: the counts per column (CM, EB, CB, VM, P, CC, SC, R, OA) are imported as activities, without hours, and the travel expenses are split into local, intercity and other.',es:'Ahora se reconoce el informe mensual colombiano "Informe de Gestión Contractual" (.xlsx): los conteos por columna (CM, EB, CB, VM, P, CC, SC, R, OA) se importan como actividades, sin horas, y los gastos de viaje se dividen en urbanos, interurbanos y otros.',fr:'Le rapport mensuel colombien « Informe de Gestión Contractual » (.xlsx) est désormais reconnu : les nombres par colonne (CM, EB, CB, VM, P, CC, SC, R, OA) sont importés comme activités, sans heures, et les frais de déplacement sont répartis en local, interurbain et autre.',de:'Der kolumbianische Monatsbericht „Informe de Gestión Contractual" (.xlsx) wird jetzt erkannt: die Anzahlen pro Spalte (CM, EB, CB, VM, P, CC, SC, R, OA) werden als Aktivitäten ohne Stunden importiert, und die Reisekosten werden in lokal, zwischen Städten und sonstige aufgeteilt.'},
     {type:'new',nl:'Bij kosten kun je nu het type kiezen: lokaal/stad, tussen steden (reis) of overig. Het type staat ook in het rapport en de PDF.',en:'Expenses now have a type you can choose: local/urban, intercity travel or other. The type also shows in the Rapport and the PDF.',es:'Los gastos ahora tienen un tipo que puedes elegir: local/urbano, viaje interurbano u otros. El tipo también aparece en el informe y en el PDF.',fr:'Les frais ont désormais un type à choisir : local/urbain, déplacement interurbain ou autre. Le type apparaît aussi dans le rapport et le PDF.',de:'Bei Kosten kann jetzt die Art gewählt werden: lokal/städtisch, Reise zwischen Städten oder sonstige. Die Art erscheint auch im Bericht und im PDF.'},
+    {type:'new',nl:'Nieuwe instelling "Uren bijhouden" (Instellingen → Doelen). Zet je dit uit, dan verdwijnen alle urenvelden (wizard, bewerken, spreadsheet, rapport, PDF) en telt de app alleen het aantal activiteiten. Al ingevoerde uren blijven bewaard en komen terug als je het weer aanzet. De instelling geldt per apparaat.',en:'New "Track hours" setting (Settings → Goals). Turn it off and all hour fields (wizard, edit, spreadsheet, report, PDF) disappear and the app only counts activities. Hours already entered are kept and return if you turn it back on. The setting applies per device.',es:'Nuevo ajuste "Registrar horas" (Ajustes → Metas). Si lo desactivas, desaparecen todos los campos de horas (asistente, edición, hoja de cálculo, informe, PDF) y la app solo cuenta actividades. Las horas ya introducidas se conservan y vuelven si lo activas de nuevo. El ajuste es por dispositivo.',fr:'Nouveau réglage « Suivre les heures » (Réglages → Objectifs). Désactivé, tous les champs d\'heures (assistant, modification, tableur, rapport, PDF) disparaissent et l\'app ne compte que les activités. Les heures déjà saisies sont conservées et reviennent si vous le réactivez. Le réglage est propre à chaque appareil.',de:'Neue Einstellung „Stunden erfassen" (Einstellungen → Ziele). Wenn ausgeschaltet, verschwinden alle Stundenfelder (Assistent, Bearbeiten, Tabelle, Bericht, PDF) und die App zählt nur Aktivitäten. Bereits erfasste Stunden bleiben erhalten und kehren zurück, wenn du es wieder einschaltest. Die Einstellung gilt pro Gerät.'},
     {type:'bug',nl:'In Chrome op de computer kon de pagina soms niet scrollen (bijvoorbeeld in Instellingen). Dat is opgelost.',en:'In Chrome on a computer the page sometimes would not scroll (for example in Settings). This is fixed.',es:'En Chrome en el ordenador la página a veces no se desplazaba (por ejemplo en Ajustes). Esto está corregido.',fr:'Dans Chrome sur ordinateur, la page ne défilait parfois pas (par exemple dans Réglages). C\'est corrigé.',de:'In Chrome am Computer ließ sich die Seite manchmal nicht scrollen (zum Beispiel in den Einstellungen). Das ist behoben.'}
   ]},
   {date:'2026-09-01',items:[
@@ -8562,9 +8566,23 @@ var TRANSLATIONS = {
 };
 
 function t(key){
+  // "Track hours" switched off (Settings): show counts of activities instead of
+  // hours, so swap the few hour-specific words for count words (see hoursOn()).
+  if(_hoursOffFlag&&HOURS_OFF_STR[key]!==undefined){
+    var ho=HOURS_OFF_STR[key];
+    return typeof ho==='string'?ho:(ho[LANG]||ho.nl);
+  }
   var tr=TRANSLATIONS[LANG]||TRANSLATIONS['nl'];
   return tr[key]||TRANSLATIONS['nl'][key]||key;
 }
+var _hoursOffFlag=false;
+var _ACT_WORD={nl:'Activiteiten',en:'Activities',es:'Actividades',fr:'Activités',de:'Aktivitäten',ro:'Activități',it:'Attività',pt:'Atividades'};
+var HOURS_OFF_STR={
+  hours_abbr:'',
+  total_worked:_ACT_WORD,
+  rapport_grand_hours:_ACT_WORD,
+  rp_crit_hours:_ACT_WORD
+};
 // Small ad-hoc translator for one-off strings (confirm()/alert() dialogs
 // etc.) that don't warrant a full TRANSLATIONS key. Pass a {nl,en,es,...}
 // map; falls back to nl for any language not included.
@@ -8847,6 +8865,70 @@ function getAiKey(provider){return localStorage.getItem('aiKey_'+(provider||getA
 // this single function, plus aiCall()/hasAnyAiKey() below so even a direct
 // call site nobody remembered to hide still fails closed.
 function isAiEnabled(){return !!db.settings&&db.settings.aiEnabled===true;}
+// ═══ "Track hours" switch (Settings > Personal goals) ═══
+// On by default for everyone. Some unions (e.g. Colombia) report counts of
+// activities instead of hours; switching hours off hides every hour field and
+// shows activity counts in the reports instead. Entries keep any hours they
+// already have - nothing is deleted, they are just not shown.
+function hoursOn(){return !(db&&db.settings&&db.settings.hoursOff===true);}
+function applyHoursMode(){
+  _hoursOffFlag=!hoursOn();
+  document.documentElement.classList.toggle('no-hours',_hoursOffFlag);
+  // Hours you can't see must not get filled in behind your back: zero the
+  // *new-entry* hour inputs (edit forms keep their existing values).
+  if(_hoursOffFlag)zeroNewEntryHourInputs();
+}
+function zeroNewEntryHourInputs(){
+  ['w-uren','w-reisuren','qc-uren','qr-uren','qr-reisuren','cs-uren','cs-reisuren','plan-uren','confirm-uren','confirm-reisuren'].forEach(function(id){
+    var el=document.getElementById(id);if(!el)return;
+    if(el.tagName==='SELECT'){el.value='0';if(el.value!=='0'&&el.options.length)el.selectedIndex=0;}else el.value='';
+  });
+}
+// Keep zeroing as modals/wizard steps are created while hours are off.
+(function(){
+  if(typeof MutationObserver==='undefined')return;
+  var pend=false;
+  new MutationObserver(function(){
+    if(!_hoursOffFlag||pend)return;
+    pend=true;
+    Promise.resolve().then(function(){pend=false;if(_hoursOffFlag)zeroNewEntryHourInputs();});
+  }).observe(document.documentElement,{childList:true,subtree:true});
+})();
+function renderHoursToggle(){
+  var wrap=document.getElementById('setting-hours-wrap');
+  if(!wrap)return;
+  var on=hoursOn();
+  var h='<div class="toggle-row" style="margin-bottom:12px">';
+  h+='<div><div class="toggle-label">'+tMap({nl:'Uren bijhouden',en:'Track hours',es:'Registrar horas',fr:'Suivre les heures',de:'Stunden erfassen',ro:'Urmărește orele',it:'Registra le ore',pt:'Registar horas'})+'</div>';
+  h+='<div class="toggle-sub">'+tMap({nl:'Zet uit als je liever aantallen rapporteert dan uren: de uren-velden en uren-totalen verdwijnen en je rapport telt activiteiten.',en:'Turn off if you would rather report counts than hours: the hour fields and hour totals disappear and your report counts activities instead.',es:'Desactívalo si prefieres informar cantidades en lugar de horas: los campos y totales de horas desaparecen y tu informe cuenta actividades.',fr:'Désactivez si vous préférez rapporter des nombres plutôt que des heures : les champs et totaux d\'heures disparaissent et votre rapport compte des activités.',de:'Ausschalten, wenn du lieber Anzahlen statt Stunden berichtest: Stundenfelder und -summen verschwinden und dein Bericht zählt Aktivitäten.',ro:'Dezactivează dacă preferi să raportezi numere în loc de ore: câmpurile și totalurile de ore dispar, iar raportul numără activități.',it:'Disattiva se preferisci riportare quantità invece di ore: i campi e i totali delle ore scompaiono e il report conta le attività.',pt:'Desativa se preferires reportar quantidades em vez de horas: os campos e totais de horas desaparecem e o relatório conta atividades.'})+'</div></div>';
+  h+='<label class="toggle"><input type="checkbox" id="setting-hours-on" '+(on?'checked':'')+' onchange="toggleHoursSetting(this.checked)"><span class="toggle-slider"></span></label>';
+  h+='</div>';
+  wrap.innerHTML=h;
+  var g=document.getElementById('goal-uren-week');
+  if(g){var lbl=g.previousElementSibling;if(lbl)lbl.style.display=on?'':'none';g.style.display=on?'':'none';}
+}
+function toggleHoursSetting(val){
+  if(_suppressSettingsChange)return;
+  db.settings.hoursOff=!val;
+  applyHoursMode();
+  save();
+  renderHoursToggle();
+  if(typeof rerenderCurrentScreen==='function')rerenderCurrentScreen();
+}
+// In counts mode every reporting calculation that sums `uren` is fed a copy of
+// the entries whose `uren` is the number of activities (the imported `aantal`
+// when there is one, otherwise 1). Leave and pure travel entries count 0.
+function countWeight(e){
+  if(!e)return 0;
+  var c=findCatByLabel(e.categorie);
+  if(c&&(c.isTravel||c.leave||c.aard==='Vervoer'||c.aard==='Reistijd'||c.aard==='Afwezigheid'))return 0;
+  var a=parseFloat(e.aantal);
+  return a>0?a:1;
+}
+function entriesForReport(entries){
+  if(hoursOn())return entries;
+  return (entries||[]).map(function(e){return Object.assign({},e,{uren:countWeight(e),reisUren:0,_cnt:true});});
+}
 // True if AI is enabled AND any provider has a saved key - used to gate
 // AI-feature buttons, since aiCall() automatically uses whichever provider
 // actually has a key (see its fallback chain below), not necessarily the
@@ -9678,7 +9760,8 @@ function renderSpreadsheet(){
   var ssDoneLbl=tMap({nl:'Afgerond',en:'Finished',es:'Terminado',fr:'Terminé',de:'Fertig',ro:'Încheiat',it:'Concluso',pt:'Concluído'});
   var ssMoreTitle=tMap({nl:'Alle velden (o.a. bonnetjes, meerdere contacten)',en:'All fields (incl. receipts, extra contacts)',es:'Todos los campos (recibos, más contactos)',fr:'Tous les champs (reçus, autres contacts)',de:'Alle Felder (Belege, weitere Kontakte)',ro:'Toate câmpurile (chitanțe, alte contacte)',it:'Tutti i campi (ricevute, altri contatti)',pt:'Todos os campos (recibos, mais contactos)'});
   var ssDoneTitle=tMap({nl:'Bijbelstudie afgerond? Klik om te wisselen',en:'Study finished? Click to toggle',es:'¿Estudio terminado? Clic para cambiar',fr:'Étude terminée ? Cliquez pour changer',de:'Studie abgeschlossen? Klicken zum Wechseln',ro:'Studiu încheiat? Clic pentru a comuta',it:'Studio concluso? Clic per cambiare',pt:'Estudo concluído? Clique para alternar'});
-  var COL_WIDTHS=[30,78,112,126,wUren,wReisUren,wKm,wKosten,88,88].concat(showNiveauCol?[wNiveau]:[]).concat([96,Math.max(60,colLabelW(ssDoneLbl,60)),48,78,34]);
+  var ssHrs=hoursOn();
+  var COL_WIDTHS=[30,78,112,126].concat(ssHrs?[wUren,wReisUren]:[]).concat([wKm,wKosten,88,88]).concat(showNiveauCol?[wNiveau]:[]).concat([96,Math.max(60,colLabelW(ssDoneLbl,60)),48,78,34]);
   var colgroupHtml="<colgroup>"+COL_WIDTHS.map(function(w){return "<col style=\"width:"+w+"px\">";}).join("")+"</colgroup>";
   var tableStyle="min-width:"+COL_WIDTHS.reduce(function(s,w){return s+w;},0)+"px;width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0";
   // The header used to live inside .ss-scrollbox (the horizontally-scrolling div),
@@ -9698,7 +9781,7 @@ function renderSpreadsheet(){
   var headHtml="<div class=\"ss-headwrap\" id=\"ss-thead-wrap\" style=\"position:fixed;z-index:5;overflow:hidden;background:var(--surface2)\"><table class=\"ss-table\" style=\""+tableStyle+"\">"+colgroupHtml+"<thead id=\"ss-thead\"><tr>"
     +"<th id=\"ss-select-all-th\" style=\"width:30px;text-align:center;cursor:pointer;color:"+(allSelected?"var(--brand)":"var(--text3)")+"\" onclick=\"ssToggleSelectAll("+(allSelected?"false":"true")+")\" title=\""+(LANG==='en'?'Select all':LANG==='es'?'Seleccionar todo':LANG==='fr'?'Tout sélectionner':LANG==='de'?'Alle auswählen':LANG==='ro'?'Selectează tot':LANG==='it'?'Seleziona tutto':LANG==='pt'?'Selecionar tudo':'Alles selecteren')+"\">"+(allSelected?"&#10003;":"#")+"</th>"
     +th("datum",t("col_datum"),78,datumColTitle)+th("categorie",t("col_cat"),112)+th("omschrijving",t("col_desc"),126)
-    +th("uren",t("col_uren"),wUren)+th("reisUren",t("col_reisuren"),wReisUren)+th("km",distColLabel(),wKm)+th("kosten",t("col_kosten"),wKosten)
+    +(ssHrs?th("uren",t("col_uren"),wUren)+th("reisUren",t("col_reisuren"),wReisUren):"")+th("km",distColLabel(),wKm)+th("kosten",t("col_kosten"),wKosten)
     +th("cursistNaam",t("col_cursist"),88)+th("thema",t("col_thema"),88)+(showNiveauCol?th("niveau",orgSplitLbl("niveau_col"),wNiveau):"")
     +th("gemeente",ssGemLbl,96)+"<th style=\"min-width:60px;white-space:nowrap;user-select:none\" title=\""+ssDoneTitle+"\">"+ssDoneLbl+"</th>"
     +"<th style=\"min-width:44px;white-space:nowrap;user-select:none\">"+tMap({nl:'Reactie',en:'Reaction',es:'Reacción',fr:'Réaction',de:'Reaktion',ro:'Reacție',it:'Reazione',pt:'Reação'})+"</th>"
@@ -9713,8 +9796,8 @@ function renderSpreadsheet(){
       +"<td><span class=\"ss-cell\" title=\""+datumColTitle+"\" data-field=\"datum\" onclick=\"ssEditCell("+idArg+",'datum',this)\">"+(e.datum?ssFormatDateCell(e.datum):"")+"</span></td>"
       +"<td><span class=\"ss-cell\" data-field=\"categorie\" onclick=\"ssEditCat("+idArg+",this)\" style=\"white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:100%"+(e.categorie?"":";color:var(--text3);font-style:italic")+"\" title=\""+(e.categorie||"")+"\">"+(e.categorie?getCatLabel(e.categorie):(t('choose_category')||'Kies een optie'))+"</span></td>"
       +"<td><span class=\"ss-cell\" data-field=\"omschrijving\" onclick=\"ssEditCell("+idArg+",'omschrijving',this)\" style=\"display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis\">"+(e.omschrijving||"")+"</span></td>"
-      +"<td><span class=\"ss-cell\" data-field=\"uren\" onclick=\"ssEditCell("+idArg+",'uren',this)\" style=\"text-align:right;display:block\">"+(parseFloat(e.uren)||0)+t('hours_abbr')+"</span></td>"
-      +"<td><span class=\"ss-cell\" data-field=\"reisUren\" onclick=\"ssEditCell("+idArg+",'reisUren',this)\" style=\"text-align:right;display:block\">"+(parseFloat(e.reisUren)?parseFloat(e.reisUren)+t('hours_abbr'):"")+"</span></td>"
+      +(ssHrs?"<td><span class=\"ss-cell\" data-field=\"uren\" onclick=\"ssEditCell("+idArg+",'uren',this)\" style=\"text-align:right;display:block\">"+(parseFloat(e.uren)||0)+t('hours_abbr')+"</span></td>"
+      +"<td><span class=\"ss-cell\" data-field=\"reisUren\" onclick=\"ssEditCell("+idArg+",'reisUren',this)\" style=\"text-align:right;display:block\">"+(parseFloat(e.reisUren)?parseFloat(e.reisUren)+t('hours_abbr'):"")+"</span></td>":"")
       +"<td><span class=\"ss-cell\" data-field=\"km\" onclick=\"ssEditCell("+idArg+",'km',this)\" style=\"text-align:right;display:block\">"+(e.km?e.km+distUnit():"")+"</span></td>"
       +"<td><span class=\"ss-cell\" data-field=\"kosten\" onclick=\"ssEditCell("+idArg+",'kosten',this)\" style=\"text-align:right;display:block\">"+(e.kosten?currencySymbol()+parseFloat(e.kosten).toFixed(2):"")+"</span></td>"
       +"<td><span class=\"ss-cell\" data-field=\"cursistNaam\" onclick=\"ssEditCursist("+idArg+",this)\" style=\"display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis\">"+(e.cursistNaam||"")+"</span></td>"
@@ -9727,7 +9810,7 @@ function renderSpreadsheet(){
       +"<td style=\"text-align:center\"><span class=\"ss-btn\" onclick=\"ssOpenFullForm("+idArg+")\" title=\""+ssMoreTitle+"\" style=\"cursor:pointer;display:block;user-select:none;color:"+((typeof entryPhotos==='function'&&entryPhotos(e).length)?"var(--brand)":"var(--text3)")+"\">"+((typeof entryPhotos==='function'&&entryPhotos(e).length)?"<svg width=\"14\" height=\"14\"><use href=\"#ico-camera\"/></svg>":"&#8943;")+"</span></td>"
       +"</tr>";
   }).join("");
-  tbl+="<tr><td colspan=\""+(showNiveauCol?15:14)+"\" style=\"padding:5px\"><button class=\"btn sm\" style=\"width:100%;font-size:12px\" onclick=\"ssAddRow()\">"+(t("new_row")||"+ Nieuwe rij")+"</button></td></tr>"
+  tbl+="<tr><td colspan=\""+((showNiveauCol?15:14)-(ssHrs?0:2))+"\" style=\"padding:5px\"><button class=\"btn sm\" style=\"width:100%;font-size:12px\" onclick=\"ssAddRow()\">"+(t("new_row")||"+ Nieuwe rij")+"</button></td></tr>"
     +"</tbody></table></div>"
     +"<div id=\"ss-save-status\" style=\"padding:8px 4px 2px\"></div>";
   el.innerHTML=tbl;
@@ -12898,7 +12981,7 @@ function isDriveAuthError(e){
 // pulls Drive first, and Object.assign(db.settings,remote) would otherwise
 // restore Drive's older value before the new one ever uploads (same bug as
 // aiEnabled/#1286). Snapshot before the assign, restore after.
-var KEEP_LOCAL_SETTING_KEYS=['showGemeentePlanning','showGpAbsences','orgStructureMode','fieldLabel','unionLabel','orgBothCountBoth','receiptQuality'];
+var KEEP_LOCAL_SETTING_KEYS=['hoursOff','showGemeentePlanning','showGpAbsences','orgStructureMode','fieldLabel','unionLabel','orgBothCountBoth','receiptQuality'];
 function _snapKeepLocal(){var o={};KEEP_LOCAL_SETTING_KEYS.forEach(function(k){if(db.settings&&db.settings[k]!==undefined)o[k]=db.settings[k];});return o;}
 function _restoreKeepLocal(o){Object.keys(o||{}).forEach(function(k){db.settings[k]=o[k];});}
 async function syncToDrive(forceOverwrite){if(!useGoogleDrive||!accessToken){saveLocal();pulseSsSaveStatus('ok',(LANG==='en'?'Saved locally · ':LANG==='es'?'Guardado localmente · ':LANG==='fr'?'Enregistré localement · ':LANG==='de'?'Lokal gespeichert · ':'Lokaal opgeslagen · ')+new Date().toLocaleTimeString(getLocale(),{hour:'2-digit',minute:'2-digit'}));return;}setSyncStatus('info',LANG==='en'?'Saving…':LANG==='es'?'Guardando…':LANG==='fr'?'Sauvegarde…':LANG==='de'?'Speichern…':'Opslaan…',true);try{await pullEncMetaFromDrive();if(!driveFileId){const l=await gapi.client.drive.files.list({spaces:'appDataFolder',q:`name='${DRIVE_FILE_NAME}'`,fields:'files(id)'});const f=l.result.files;if(f&&f.length)driveFileId=f[0].id;}if(driveFileId&&!forceOverwrite){var _pullOk=false;try{const rres=await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,{headers:{'Authorization':'Bearer '+accessToken}});if(rres.ok){const rdata=await deserializeDb(await rres.text());_pullOk=true;if(rdata&&rdata.entries){db.tombstones=mergeTombstones(db.tombstones,rdata.tombstones||[]);var _tE=tombIdsFor('entries',db.tombstones),_tP=tombIdsFor('planned',db.tombstones),_tT=tombIdsFor('todos',db.tombstones),_tPr=tombIdsFor('prayers',db.tombstones),_tPj=tombIdsFor('projects',db.tombstones),_tCs=tombIdsFor('customStudies',db.tombstones),_tCu=tombIdsFor('cursisten',db.tombstones),_tGp=tombIdsFor('gemeentePlanning',db.tombstones),_tCc=tombIdsFor('customCategories',db.tombstones);db.entries=mergeArraysById(db.entries,rdata.entries,_tE);db.cursisten=mergeArraysById(db.cursisten,rdata.cursisten||[],_tCu);db.churches=mergeArraysByValue(db.churches,rdata.churches||[]);db.planned=mergeArraysById(db.planned,rdata.planned||[],_tP);db.vacationDays=mergeArraysByValue(db.vacationDays,rdata.vacationDays||[]);db.todos=mergeArraysById(db.todos,rdata.todos||[],_tT);db.prayers=mergeArraysById(db.prayers,rdata.prayers||[],_tPr);db.projects=mergeArraysById(db.projects||[],rdata.projects||[],_tPj);db.customStudies=mergeArraysById(db.customStudies,rdata.customStudies||[],_tCs);db.approvals=mergeArraysById(db.approvals,rdata.approvals||[]);db.gemeentePlanning=mergeArraysById(db.gemeentePlanning||[],rdata.gemeentePlanning||[],_tGp);
@@ -14100,6 +14183,7 @@ function applySettings(){const s=db.settings;
   var lSel=document.getElementById('lang-select');if(lSel){_suppressSettingsChange=true;lSel.value=LANG;_suppressSettingsChange=false;}
   buildIntervalSelect(parseInt(s.interval)||60);
   buildWorkRoleSelect(s.workRole||'bijbelwerker');
+  applyHoursMode();renderHoursToggle();
   buildOrgSplitSettings();
   var _orgLbl=document.getElementById('lbl-orgsplit-card');if(_orgLbl)_orgLbl.textContent=orgSplitLbl('mode_lbl');
   buildChurchRoleSelect(s.churchRoles&&s.churchRoles.length?s.churchRoles:(s.churchRole?[s.churchRole]:[]));
@@ -19054,7 +19138,7 @@ function renderWiz(){
       <div class="wiz-hint" style="margin-bottom:0">${t('wizard_linked_to')} <strong>${getCatLabel(draft.travelLabel)}</strong></div>
       <div class="travel-box">
         <div class="field-row">
-          <div><span class="form-label">${t('wizard_travel_hours')}</span><select id="w-reisuren" class="hour-picker">${buildHourOptions(draft.reisUren||draft._autoTravelUren||0)}</select></div>
+          <div class="hrs"><span class="form-label">${t('wizard_travel_hours')}</span><select id="w-reisuren" class="hour-picker">${buildHourOptions(draft.reisUren||draft._autoTravelUren||0)}</select></div>
           <div>
             <span class="form-label">${distLabel()}</span>
             <input type="number" id="w-km" min="0" step="1" placeholder="${draft._autoTravelKm&&!draft.km&&draft.kmHeen==null?draft._autoTravelKm:'0'}" value="${draft.kmHeen!=null?draft.kmHeen:(draft.km||'')}">
@@ -19633,6 +19717,8 @@ function wDecideType(){
   if(s==='travelRelated'&&draft.categorie!=='Vervoer')wizStep++;
   s=WIZ[wizStep];
   if(s==='travel'&&draft.noExpense)wizStep++;
+  s=WIZ[wizStep];
+  if(s==='tijd'&&!hoursOn())wizStep++;
   renderWiz();
 }
 function wNext(){
@@ -19646,6 +19732,8 @@ function wNext(){
   if(s==='travelRelated'&&draft.categorie!=='Vervoer')wizStep++;
   s=WIZ[wizStep];
   if(s==='travel'&&draft.noExpense)wizStep++;                     // skip if category has no travel/expense
+  s=WIZ[wizStep];
+  if(s==='tijd'&&!hoursOn())wizStep++;                            // "Track hours" off: no hours question
   renderWiz();
 }
 function wBack(){
@@ -19658,6 +19746,8 @@ function wBack(){
   if(s==='thema_details'&&!draft.needsBS)wizStep--;
   s=WIZ[wizStep];
   if(s==='cursist'&&!draft.needsCursist&&!draft.needsBS)wizStep--;
+  s=WIZ[wizStep];
+  if(s==='tijd'&&!hoursOn())wizStep--;
   renderWiz();
 }
 // Sets draft.travelLabel to the specific "Reizen - X" category the user says
@@ -20555,7 +20645,7 @@ function quickLogContact(cuId){
     +'</div>';
   h+='<input type="date" id="qc-datum" value="'+ymdLocal()+'" onchange="qcDateChanged()" style="display:none;margin-bottom:10px">';
   h+='<div style="display:flex;gap:8px;margin-bottom:8px">';
-  h+='<div style="flex:1"><span class="form-label">'+t('wizard_hours')+'</span><select id="qc-uren" class="hour-picker" style="width:100%">'+buildHourOptions(0.25)+'</select></div>';
+  h+='<div style="flex:1"><span class="form-label hrs">'+t('wizard_hours')+'</span><select id="qc-uren" class="hour-picker hrs" style="width:100%">'+buildHourOptions(0.25)+'</select></div>';
   // A call/WhatsApp check-in is almost always logged the moment it happens,
   // so default the time to right now instead of blank - one less thing to
   // fill in for what's meant to be a fast one-tap log.
@@ -21226,7 +21316,7 @@ function openQuickRepeatModal(last, prefillDate){
   h+=renderTimePicker('qr-time',roundToQuarterHour(),'qrTimeManualEdit()');
   var qrAutoTimeLbl=tMap({nl:'Huidige tijd gebruiken',en:'Use current time',es:'Usar la hora actual',fr:'Utiliser l\'heure actuelle',de:'Aktuelle Uhrzeit verwenden',ro:'Folosește ora curentă',it:'Usa l\'ora attuale',pt:'Usar hora atual'});
   h+='<label style="display:flex;align-items:center;gap:6px;margin:4px 0 8px;cursor:pointer;font-size:11.5px;color:var(--text3)"><input type="checkbox" id="qr-time-auto" checked onchange="qrToggleAutoTime(this.checked)" style="width:15px;height:15px;flex-shrink:0">'+qrAutoTimeLbl+'</label>';
-  h+='<span class="form-label">Uren</span><select id="qr-uren" class="hour-picker" style="width:100%;display:flex;align-items:center">'+buildHourOptions(last.uren||1)+'</select>';
+  h+='<span class="form-label hrs">Uren</span><select id="qr-uren" class="hour-picker hrs" style="width:100%;display:flex;align-items:center">'+buildHourOptions(last.uren||1)+'</select>';
   h+='</div>';
   h+='<div id="qr-more-toggle" onclick="document.getElementById(\'qr-more\').style.display=\'block\';this.style.display=\'none\'" style="font-size:12px;color:var(--brand);cursor:pointer;margin-bottom:10px">'+moreLbl+' &rsaquo;</div>';
   h+='<div id="qr-more" style="display:none">';
@@ -21244,7 +21334,7 @@ function openQuickRepeatModal(last, prefillDate){
   h+='<input type="text" id="qr-omschrijving" value="'+(last.omschrijving?String(last.omschrijving).replace(/"/g,'&quot;'):'')+'" style="margin-bottom:8px">';
   h+=themaBlock;
   h+=qrMultiHtml;
-  h+='<span class="form-label">'+t('wizard_travel_hours')+'</span><select id="qr-reisuren" class="hour-picker" style="margin-bottom:8px">'+buildHourOptions(last.reisUren||0)+'</select>';
+  h+='<span class="form-label hrs">'+t('wizard_travel_hours')+'</span><select id="qr-reisuren" class="hour-picker hrs" style="margin-bottom:8px">'+buildHourOptions(last.reisUren||0)+'</select>';
   h+='<span class="form-label">Km</span><input type="number" id="qr-km" value="'+(last.kmHeen!=null?last.kmHeen:(last.km||''))+'" min="0" placeholder="0" style="margin-bottom:8px">';
   h+=kmRetourBlockHtml('qr',last.kmRetour);
   if(orgNeedsNiveauTag()){
@@ -23481,11 +23571,11 @@ function openCursistDetail(id){
     +'<div><span class="form-label">'+t('wizard_time')+'</span>'+renderTimePicker('cs-tijd','')+'</div>'
     +'</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'
-    +'<div><span class="form-label">'+t('wizard_hours')+'</span><input type="number" id="cs-uren" min="0" step="0.25" value="1" style="width:100%"></div>'
+    +'<div class="hrs"><span class="form-label">'+t('wizard_hours')+'</span><input type="number" id="cs-uren" min="0" step="0.25" value="1" style="width:100%"></div>'
     +'</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'
     +'<div><span class="form-label">Km</span><input type="number" id="cs-km" min="0" value="0" style="width:100%">'+kmRetourBlockHtml('cs',null)+'</div>'
-    +'<div><span class="form-label">'+t('wizard_travel_hours')+'</span><select id="cs-reisuren" class="hour-picker" style="width:100%">'+buildHourOptions(0)+'</select></div>'
+    +'<div class="hrs"><span class="form-label">'+t('wizard_travel_hours')+'</span><select id="cs-reisuren" class="hour-picker" style="width:100%">'+buildHourOptions(0)+'</select></div>'
     +'</div>'
     +'<div style="margin-bottom:8px"><span class="form-label">'+t('wizard_cat')+'</span>'
     +'<select id="cs-cat" style="width:100%">'
@@ -23791,11 +23881,11 @@ function openLidDetail(id){
     +'<div id="cs-form-'+id+'" style="display:none">'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'
     +'<div><span class="form-label">Datum</span><input type="date" id="cs-datum" value="'+ymdLocal()+'" style="width:100%"></div>'
-    +'<div><span class="form-label">'+t('wizard_hours')+'</span><input type="number" id="cs-uren" min="0" step="0.25" value="1" style="width:100%"></div>'
+    +'<div class="hrs"><span class="form-label">'+t('wizard_hours')+'</span><input type="number" id="cs-uren" min="0" step="0.25" value="1" style="width:100%"></div>'
     +'</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'
     +'<div><span class="form-label">Km</span><input type="number" id="cs-km" min="0" value="0" style="width:100%">'+kmRetourBlockHtml('cs',null)+'</div>'
-    +'<div><span class="form-label">'+t('wizard_travel_hours')+'</span><select id="cs-reisuren" class="hour-picker" style="width:100%">'+buildHourOptions(0)+'</select></div>'
+    +'<div class="hrs"><span class="form-label">'+t('wizard_travel_hours')+'</span><select id="cs-reisuren" class="hour-picker" style="width:100%">'+buildHourOptions(0)+'</select></div>'
     +'</div>'
     +'<div style="margin-bottom:8px"><span class="form-label">'+t('wizard_cat')+'</span>'
     +'<select id="cs-cat" style="width:100%">'
@@ -24091,7 +24181,12 @@ function buildRapport(){
 // there's no double-counting risk here. Without this, an entry with uren=0
 // and reisUren=5 silently showed "0u" everywhere (Logboek, Rapport totals) -
 // the travel time was saved but invisible.
-function entryUren(e){return (parseFloat(e&&e.uren)||0)+(parseFloat(e&&e.reisUren)||0);}
+function entryUren(e){
+  // Hours off: stored hours are hidden everywhere; only count-projected copies
+  // (see entriesForReport) carry a number.
+  if(_hoursOffFlag&&!(e&&e._cnt))return 0;
+  return (parseFloat(e&&e.uren)||0)+(parseFloat(e&&e.reisUren)||0);
+}
 // The wizard used to physically split an activity + its travel time into two
 // separate entries - the activity itself, plus a synthetic "Reistijd" entry
 // carrying just the travel hours. Merging that into a single entry (so users
@@ -24193,7 +24288,7 @@ function _buildRapportInner(){
   // Rows created by "+ Nieuwe rij" but never given a category (categorie==='')
   // are drafts, not registered activities — exclude them here so they don't
   // show up as phantom 0u entries in every report/total below.
-  var dataAllLevels=(rapportViewMode==='year'?filterByYear(db.entries,rapportYear):rapportViewMode==='range'?filterByRange(db.entries,rapportRangeFrom,rapportRangeTo):filterByYearMonth(db.entries,rapportYear,rapportMonth)).filter(function(e){return !!e.categorie;});
+  var dataAllLevels=entriesForReport(rapportViewMode==='year'?filterByYear(db.entries,rapportYear):rapportViewMode==='range'?filterByRange(db.entries,rapportRangeFrom,rapportRangeTo):filterByYearMonth(db.entries,rapportYear,rapportMonth)).filter(function(e){return !!e.categorie;});
   var data=dataAllLevels;
   // Field/Union view toggle (only in 'both' mode): narrows everything below
   // (chart, category list, totals) to one level using orgEntryInLevel().
@@ -24346,7 +24441,7 @@ function _buildRapportInner(){
   // hours goal used everywhere else in Rapport/Doelen) - a past or future
   // month, or no goal at all, has nothing meaningful to pace against.
   var _paceBarHtml='';
-  if(rapportViewMode==='month'&&rapportMonth&&s.goalUrenWeek){
+  if(hoursOn()&&rapportViewMode==='month'&&rapportMonth&&s.goalUrenWeek){
     var _paceNow=new Date();
     var _paceCurYM=_paceNow.getFullYear()+'-'+String(_paceNow.getMonth()+1).padStart(2,'0');
     if(rapportMonth===_paceCurYM){
@@ -24896,7 +24991,7 @@ function _buildRapportInner(){
     let goalRows='';
     if(s.goalStudies)goalRows+=goalRow('book',t('studies_lbl'),_mStudyEntries.length,s.goalStudies,t('this_month'),'studies',goalDetailList(_mStudyEntries,t('goal_studies_explain')));
     if(s.goalEvang)goalRows+=goalRow('send',t('evangelism_type'),_mEvangEntries.length,s.goalEvang,t('this_month'),'evang',goalDetailList(_mEvangEntries,t('goal_evang_explain')));
-    if(s.goalUrenWeek)goalRows+=goalRow('clock',t('hours_lbl'),_mUren,monthlyGoalFromWeekly(s.goalUrenWeek,_thisMonth),t('this_month'),'uren','<div style="font-size:11px;color:var(--text3)">'+t('goal_uren_explain')+'</div>');
+    if(s.goalUrenWeek&&hoursOn())goalRows+=goalRow('clock',t('hours_lbl'),_mUren,monthlyGoalFromWeekly(s.goalUrenWeek,_thisMonth),t('this_month'),'uren','<div style="font-size:11px;color:var(--text3)">'+t('goal_uren_explain')+'</div>');
     if(s.goalFollowup)goalRows+=goalRow('members',t('followup_title'),_mFollowupUnique.length,s.goalFollowup,t('this_month'),'followup',goalDetailList(_mFollowupUnique,t('goal_followup_explain')));
     if(goalRows){
       return`<div class="settings-section-title" style="margin-bottom:8px">${t('goals_title')}</div><div class="card">${goalRows}
@@ -33356,7 +33451,7 @@ function openPlanModal(planId, prefillDate){
   h += '<select id="plan-cat" onchange="onPlanCatChange()" style="margin-bottom:8px"><option value="">'+( t('wizard_choose_cat')||'Kies categorie...')+'</option>'+catOpts+'</select>';
   h += '<span class="form-label">'+t('plan_contact')+'</span>';
   h += '<select id="plan-cursist" onchange="onPlanCursistChange()" style="margin-bottom:8px"><option value="">'+( t('wizard_no_contact')||'— geen —')+'</option>'+cursistenOpts+'</select>';
-  h += '<span class="form-label">'+t('wizard_hours')+'</span><select id="plan-uren" class="hour-picker" style="width:100%;margin-bottom:8px">'+(buildHourOptions(p&&p.uren?p.uren:''))+'</select>';
+  h += '<span class="form-label hrs">'+t('wizard_hours')+'</span><select id="plan-uren" class="hour-picker hrs" style="width:100%;margin-bottom:8px">'+(buildHourOptions(p&&p.uren?p.uren:''))+'</select>';
   // Everything below is secondary detail (description, km, notes, and —
   // for new items — repeat/calendar options) that most plans don't need to
   // touch. Collapsed by default so the common case is just date/time/cat/
@@ -34690,8 +34785,8 @@ function agendaComplete(planId){
   if(p.thema) h += '<div style="color:var(--text3);margin-top:2px">'+p.thema+'</div>';
   if(p.omschrijving) h += '<div style="color:var(--text3);margin-top:2px">'+p.omschrijving+'</div>';
   h += '</div>';
-  h += '<span class="form-label">'+actualHoursLbl+'</span>';
-  h += '<input type="number" id="confirm-uren" value="'+(p.uren||'')+'" min="0" step="0.25" style="margin-bottom:8px">';
+  h += '<span class="form-label hrs">'+actualHoursLbl+'</span>';
+  h += '<input type="number" id="confirm-uren" class="hrs" value="'+(p.uren||'')+'" min="0" step="0.25" style="margin-bottom:8px">';
   if(p.categorie==='Bijbelstudie geven'){
     h += '<label style="display:flex;align-items:flex-start;gap:8px;margin:4px 0 12px;cursor:pointer"><input id="confirm-thema-completed" type="checkbox" '+(p.themaCompleted===false?'':'checked')+' style="width:16px;height:16px;flex-shrink:0;margin-top:2px"><span><span style="font-size:13px;display:block">'+t('thema_completed_lbl')+'</span><span style="font-size:11px;color:var(--text3)">'+t('thema_completed_hint')+'</span></span></label>';
   }
@@ -34706,7 +34801,7 @@ function agendaComplete(planId){
   h += '<button type="button" id="confirm-more-toggle" onclick="toggleConfirmMoreFields()" style="display:'+(hasExtra?'none':'block')+';width:100%;text-align:left;background:none;border:none;padding:6px 0;margin-bottom:6px;color:var(--brand);font-size:13px;font-weight:600;cursor:pointer">'+moreFieldsLbl+'</button>';
   h += '<div id="confirm-more-fields" style="display:'+(hasExtra?'block':'none')+';margin-bottom:8px">';
   h += '<div class="field-row">';
-  h += '<div><span class="form-label">'+t('wizard_travel_hours')+'</span><select id="confirm-reisuren" class="hour-picker">'+buildHourOptions(p.reisUren||0)+'</select></div>';
+  h += '<div class="hrs"><span class="form-label">'+t('wizard_travel_hours')+'</span><select id="confirm-reisuren" class="hour-picker">'+buildHourOptions(p.reisUren||0)+'</select></div>';
   h += '<div><span class="form-label">'+distLabel()+'</span><input type="number" id="confirm-km" min="0" step="1" placeholder="0" value="'+(p.kmHeen!=null?p.kmHeen:(p.km||''))+'">'+kmRetourBlockHtml('confirm',p.kmRetour)+'</div>';
   h += '</div>';
   h += '<div style="margin-top:8px"><span class="form-label">'+t('wizard_expense_label')+'</span><input type="number" id="confirm-kosten" min="0" step="0.01" placeholder="0.00 ('+currencySymbol()+')" value="'+(p.kosten||'')+'">'+kostenTypeSelectHtml('confirm-kostentype',p.kostenType)+'</div>';
@@ -40971,7 +41066,7 @@ function openEditEntryModal(entryId,skipSummary){
   // form (unchanged field IDs, so saveEditEntry/duplicateEditEntry keep
   // working) for the gray/empty fields that still need completing.
   var eeSumRows='';
-  var eeSumRow=function(label,val){eeSumRows+='<div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:13px"><span style="color:var(--text3)">'+label+'</span><span style="font-weight:600;text-align:right">'+val+'</span></div>';};
+  var eeSumRow=function(label,val){eeSumRows+='<div'+(String(val).indexOf('ee-q-uren')>=0?' class="hrs"':'')+' style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:13px"><span style="color:var(--text3)">'+label+'</span><span style="font-weight:600;text-align:right">'+val+'</span></div>';};
   // Quick-edit: date + hours are editable right in the summary (Save below),
   // so a small change like "2h -> 2.5h" doesn't need the full form.
   var eeQIn='style="width:120px;text-align:right;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);font:inherit;font-weight:600"';
@@ -41030,7 +41125,7 @@ function openEditEntryModal(entryId,skipSummary){
   h+='<div class="settings-section-title settings-section-title-first">'+tMap({nl:'Wat & hoeveel',en:'What & how much',es:'Qué y cuánto',fr:'Quoi et combien',de:'Was & wie viel',ro:'Ce și cât',it:'Cosa e quanto',pt:'O quê e quanto'})+'</div>';
   h+='<div class="ee-fgrid">';
   h+='<div><span class="form-label">'+t('wizard_date')+'</span><input type="date" id="ee-datum" value="'+(e.datum||'')+'" style="width:100%"></div>';
-  h+='<div><span class="form-label">'+t('wizard_hours')+'</span><input type="number" id="ee-uren" min="0" step="0.25" value="'+(e.uren||0)+'" style="width:100%"></div>';
+  h+='<div class="hrs"><span class="form-label">'+t('wizard_hours')+'</span><input type="number" id="ee-uren" min="0" step="0.25" value="'+(e.uren||0)+'" style="width:100%"></div>';
   // Herhalen used to live in its own section way down past the Save/Cancel
   // buttons (Gabriel: "move herhalen... right next to the time and before
   // Km. There's a space there") - the Tijdstip row only ever filled its
@@ -41052,7 +41147,7 @@ function openEditEntryModal(entryId,skipSummary){
   // you fix that?"). With this order - Datum/Uren, Tijdstip/Reisuren,
   // Herhalen/Km - the last row is always Herhalen+Km on both the 2-col
   // (mobile) and 3-col (wide-screen) variants of .ee-fgrid; see its CSS.
-  h+='<div><span class="form-label">'+t('wizard_travel_hours')+'</span><input type="number" id="ee-reisuren" min="0" step="0.25" value="'+(e.reisUren||0)+'" style="width:100%"></div>';
+  h+='<div class="hrs"><span class="form-label">'+t('wizard_travel_hours')+'</span><input type="number" id="ee-reisuren" min="0" step="0.25" value="'+(e.reisUren||0)+'" style="width:100%"></div>';
   h+='<div><span class="form-label">'+t('repeat_lbl')+'</span>';
   // Gabriel: this cell had align-self:end left over from when it used to
   // share a row with the Tijdstip picker (which needs bottom-alignment to
