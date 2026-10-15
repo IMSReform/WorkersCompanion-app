@@ -20227,7 +20227,7 @@ function openMultiDaySpanSummary(ids,kind){
   var deleteAllLbl=tMap({nl:'Hele reeks verwijderen',en:'Delete whole span',es:'Eliminar toda la serie',fr:'Supprimer toute la période',de:'Ganzen Zeitraum löschen',ro:'Șterge toată perioada',it:'Elimina l\'intero periodo',pt:'Eliminar todo o período'});
   var h='<div style="padding:16px;max-height:80vh;overflow-y:auto">';
   h+='<div style="font-size:15px;font-weight:700;margin-bottom:2px">'+getCatLabel(first.categorie)+'</div>';
-  h+='<div style="font-size:12px;color:var(--text3);margin-bottom:12px">'+multiDaySpanLabel(first.datum,members[members.length-1].datum)+(totalU>0?' · '+fmtUren(totalU)+(t('hours_abbr')||'u'):'')+'</div>';
+  h+='<div style="font-size:12px;color:var(--text3);margin-bottom:12px">'+multiDaySpanLabel(first.datum,members[members.length-1].datum)+(hoursOn()&&totalU>0?' · '+fmtUren(totalU)+(t('hours_abbr')||'u'):'')+'</div>';
   members.forEach(function(m){
     var idArg=ssIdArg(m.id);
     var openFn=isPlanned?'openPlanModal':'openEditEntryModal';
@@ -20406,7 +20406,7 @@ function _renderLogInner(){
       <div class="day-col">
         <span class="day-date">${dayNum} ${monthStr}</span>
         <span class="day-weekday">${weekday.charAt(0).toUpperCase()+weekday.slice(1)}</span>
-        ${entries.length>1&&dayTotal>0?`<span class="day-total">${fmtUren(dayTotal)}${t('hours_abbr')}</span>`:''}
+        ${hoursOn()&&entries.length>1&&dayTotal>0?`<span class="day-total">${fmtUren(dayTotal)}${t('hours_abbr')}</span>`:''}
       </div>
       <div class="day-body">${activitiesHtml}</div>
     </div>`;
@@ -20497,7 +20497,7 @@ function renderCalendar(){
       return`<div class="cal-dot" style="background:${col}"></div>`;
     }).join('');
     const dotsHtml=entries.length>0?`<div class="cal-day-dots" style="display:flex">${dots}</div>`:'';
-    const hoursLabel=dayTotal>0?`<div style="font-size:8px;color:var(--text3);font-weight:600;margin-top:auto;padding-top:2px">${fmtUren(dayTotal)}${t('hours_abbr')}</div>`:'';
+    const hoursLabel=hoursOn()&&dayTotal>0?`<div style="font-size:8px;color:var(--text3);font-weight:600;margin-top:auto;padding-top:2px">${fmtUren(dayTotal)}${t('hours_abbr')}</div>`:'';
 
     html+=`<div class="cal-day${isToday?' today':''}${isSelected?' cal-day-selected':''}${hasData?' has-data':''}" onclick="calSelectDay(${d})" style="display:flex;flex-direction:column;min-height:58px">
       <div class="cal-day-num">${d}</div>
@@ -20522,7 +20522,7 @@ function renderCalendar(){
       <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:12px">
         <div style="font-size:17px;font-weight:700">${calSelectedDay} ${MONTHS_FULL[calMonth]} ${calYear}</div>
         <div style="font-size:12px;color:var(--text3)">${weekday}</div>
-        ${totalU>0?`<div style="margin-left:auto;font-size:12px;font-weight:600;background:var(--border);color:var(--text2);padding:2px 9px;border-radius:20px">${fmtUren(totalU)}${t('hours_abbr')}</div>`:''}
+        ${hoursOn()&&totalU>0?`<div style="margin-left:auto;font-size:12px;font-weight:600;background:var(--border);color:var(--text2);padding:2px 9px;border-radius:20px">${fmtUren(totalU)}${t('hours_abbr')}</div>`:''}
       </div>`;
 
     if(selEntries.length){
@@ -21089,7 +21089,7 @@ function fcOpenYearDayPopup(ds,anchorEl){
   var h='<div style="display:flex;align-items:baseline;gap:8px;padding:12px 14px 8px">';
   h+='<div style="font-size:14px;font-weight:700">'+d.getDate()+' '+MONTHS_FULL[d.getMonth()]+'</div>';
   h+='<div style="font-size:11px;color:var(--text3)">'+wday+'</div>';
-  if(totU>0)h+='<div style="margin-left:auto;font-size:11px;font-weight:600;background:var(--border);color:var(--text2);padding:2px 8px;border-radius:20px">'+fmtUren(totU)+t('hours_abbr')+'</div>';
+  if(hoursOn()&&totU>0)h+='<div style="margin-left:auto;font-size:11px;font-weight:600;background:var(--border);color:var(--text2);padding:2px 8px;border-radius:20px">'+fmtUren(totU)+t('hours_abbr')+'</div>';
   h+='<button onclick="closeFcYdPopup()" style="border:none;background:none;font-size:18px;color:var(--text3);cursor:pointer;line-height:1;padding:0 0 0 4px;margin-left:'+(totU>0?'4px':'auto')+'">&times;</button>';
   h+='</div>';
   // overscroll-behavior:contain stops scroll-chaining - without it, once this
@@ -24757,13 +24757,13 @@ function _buildRapportInner(){
     const dayNumStr=`${d.getDate()}`;
     const monthStr=MONTHS_FULL[d.getMonth()];
     const weekday=d.toLocaleDateString(getLocale(),{weekday:'long'});
-    const totalsHtml=`<span class="day-total" style="margin-top:0">${fmtUren(dayT)}${t('hours_abbr')}${dayKm>0?' · '+dayKm+distUnit():''}</span>`;
+    const totalsHtml=`<span class="day-total" style="margin-top:0">${hoursOn()?fmtUren(dayT)+t('hours_abbr'):''}${dayKm>0?(hoursOn()?' · ':'')+dayKm+distUnit():''}</span>`;
     // Bigger, bolder totals used only for the collapsed row — there's
     // plenty of horizontal space there since nothing else is showing.
     // Uses the .day-num class itself (not .day-total) so the collapsed
     // row's totals match the day NUMBER exactly - same color, same
     // font-size at every breakpoint - not the smaller month label.
-    const totalsHtmlBig=`<span class="day-total-big" style="margin-top:0">${fmtUren(dayT)}${t('hours_abbr')}${dayKm>0?' · '+dayKm+distUnit():''}</span>`;
+    const totalsHtmlBig=`<span class="day-total-big" style="margin-top:0">${hoursOn()?fmtUren(dayT)+t('hours_abbr'):''}${dayKm>0?(hoursOn()?' · ':'')+dayKm+distUnit():''}</span>`;
     var toggleCall,dayOpen;
     if(dagNumbersOnly){
       toggleCall="rpSetDagOpenDay('"+datum+"')";
@@ -24855,7 +24855,7 @@ function _buildRapportInner(){
       return `<div class="day-group" style="cursor:pointer;flex-direction:column;align-items:stretch;width:100%;${monthBorderStyle}padding:12px 16px" onclick="rpToggleMonthAcc('${ym}')">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%">
           <span style="font-size:14px;font-weight:600;text-transform:capitalize">${monthLabel}</span>
-          <span style="display:flex;align-items:center;gap:6px"><span style="font-size:13px;font-weight:600;color:var(--text2)">${fmtUren(monthTotalUren)}${t('hours_abbr')}${monthTotalKm>0?' · '+monthTotalKm+distUnit():''}</span><svg width="12" height="12" style="color:var(--text3);transition:transform .2s${monthOpen?';transform:rotate(180deg)':''}"><use href="#ico-chevron-down"/></svg></span>
+          <span style="display:flex;align-items:center;gap:6px"><span style="font-size:13px;font-weight:600;color:var(--text2)">${hoursOn()?fmtUren(monthTotalUren)+t('hours_abbr'):''}${monthTotalKm>0?(hoursOn()?' · ':'')+monthTotalKm+distUnit():''}</span><svg width="12" height="12" style="color:var(--text3);transition:transform .2s${monthOpen?';transform:rotate(180deg)':''}"><use href="#ico-chevron-down"/></svg></span>
         </div>
         ${monthOpen?`<div style="margin-top:8px;width:100%" onclick="event.stopPropagation()">${monthDaysHtml}</div>`:''}
       </div>`;
