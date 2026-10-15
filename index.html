@@ -27674,7 +27674,7 @@ function processXlsxImportFile(file){
         return;
       }
       applyImportedEntries(imported,'Informe de Gestión Contractual'+(imported.meta.nombre?' ('+imported.meta.nombre+')':''));
-    }).catch(function(err){showImportResult('Fout: '+err.message,true);});
+    }).catch(function(err){showImportResult(tMap({nl:'Fout: ',en:'Error: ',es:'Error: ',fr:'Erreur : ',de:'Fehler: ',ro:'Eroare: ',it:'Errore: ',pt:'Erro: '})+err.message,true);});
   };
   reader.readAsArrayBuffer(file);
 }
@@ -27737,7 +27737,7 @@ function processImportText(text,fileName){
         }
         var _split=splitNewFromDuplicateEntries(data.entries||[]);
         if(count>0&&_split.newEntries.length===0){
-          alert(`Dit bestand lijkt al eerder geïmporteerd: alle ${count} activiteiten bestaan al. Er is niets toegevoegd.`);
+          alert(tMap({nl:'Dit bestand lijkt al eerder geïmporteerd: alle '+count+' activiteiten bestaan al. Er is niets toegevoegd.',en:'This file looks already imported: all '+count+' activities already exist. Nothing was added.',es:'Este archivo parece ya importado: las '+count+' actividades ya existen. No se agregó nada.',fr:'Ce fichier semble déjà importé : les '+count+' activités existent déjà. Rien n’a été ajouté.',de:'Diese Datei scheint bereits importiert: alle '+count+' Aktivitäten existieren bereits. Nichts wurde hinzugefügt.',ro:'Acest fișier pare deja importat: toate cele '+count+' activități există deja. Nu s-a adăugat nimic.',it:'Questo file sembra già importato: tutte le '+count+' attività esistono già. Non è stato aggiunto nulla.',pt:'Este arquivo parece já importado: todas as '+count+' atividades já existem. Nada foi adicionado.'}));
           return;
         }
         var _confirmMsg=_shareConfirmMsg||(_split.dupeCount>0
@@ -27764,7 +27764,7 @@ function processImportText(text,fileName){
           db.entries=[...db.entries,..._newEntries];save();
           var _sCursisten=document.getElementById('s-cursisten');
           if(_sCursisten&&_sCursisten.classList.contains('active'))renderCursisten();
-          showImportResult('✓ '+_newEntries.length+' activiteiten geïmporteerd!'+(_split.dupeCount?' ('+_split.dupeCount+' bestonden al en zijn overgeslagen.)':''));
+          showImportResult(_split.dupeCount?_impMsg('doneSkip','',_newEntries.length,_split.dupeCount):_impMsg('done','',_newEntries.length));
           notifyPossibleDuplicatesAfterImport(_newEntries);}
         return;
       }
@@ -27801,7 +27801,7 @@ function processImportText(text,fileName){
       }
       const formatLabel=isMaandrapport?'Maandrapport (NL-formaat)':isLegacyReport?'Maandrapport (SMI-formaat)':isExcel?'Excel-urenregistratie':'App-export';
       applyImportedEntries(imported,formatLabel);
-    }catch(err){showImportResult('Fout: '+err.message,true);}
+    }catch(err){showImportResult(tMap({nl:'Fout: ',en:'Error: ',es:'Error: ',fr:'Erreur : ',de:'Fehler: ',ro:'Eroare: ',it:'Errore: ',pt:'Erro: '})+err.message,true);}
   }
 }
 // Shared "add these parsed entries to the log" flow - originally inlined in
@@ -27809,17 +27809,29 @@ function processImportText(text,fileName){
 // below (confirmSmartImportReview) so both paths get the exact same
 // duplicate-detection / replace-vs-skip confirmation instead of duplicating
 // the logic (and risking the two drifting apart).
+function _impMsg(kind,a,b,c){
+  var T={
+   add:{nl:'%1 met %2 activiteiten. Toevoegen?',en:'%1 with %2 activities. Add them?',es:'%1 con %2 actividades. ¿Agregar?',fr:'%1 avec %2 activités. Ajouter ?',de:'%1 mit %2 Aktivitäten. Hinzufügen?',ro:'%1 cu %2 activități. Adaugi?',it:'%1 con %2 attività. Aggiungere?',pt:'%1 com %2 atividades. Adicionar?'},
+   dupMix:{nl:'%1 met %2 activiteiten. %3 daarvan bestaan al.\n\nOK = bestaande vervangen door dit bestand (en %4 nieuwe toevoegen)\nAnnuleren = alleen de %4 nieuwe toevoegen, bestaande laten staan',en:'%1 with %2 activities. %3 of them already exist.\n\nOK = replace existing ones with this file (and add %4 new)\nCancel = only add the %4 new ones, keep existing',es:'%1 con %2 actividades. %3 ya existen.\n\nAceptar = reemplazar las existentes con este archivo (y agregar %4 nuevas)\nCancelar = agregar solo las %4 nuevas y dejar las existentes',fr:'%1 avec %2 activités. %3 existent déjà.\n\nOK = remplacer les existantes par ce fichier (et ajouter %4 nouvelles)\nAnnuler = ajouter seulement les %4 nouvelles, garder les existantes',de:'%1 mit %2 Aktivitäten. %3 davon existieren bereits.\n\nOK = Vorhandene durch diese Datei ersetzen (und %4 neue hinzufügen)\nAbbrechen = nur die %4 neuen hinzufügen, Vorhandene behalten',ro:'%1 cu %2 activități. %3 există deja.\n\nOK = înlocuiește cele existente cu acest fișier (și adaugă %4 noi)\nAnulare = adaugă doar cele %4 noi, păstrează cele existente',it:'%1 con %2 attività. %3 esistono già.\n\nOK = sostituisci quelle esistenti con questo file (e aggiungi %4 nuove)\nAnnulla = aggiungi solo le %4 nuove, lascia quelle esistenti',pt:'%1 com %2 atividades. %3 já existem.\n\nOK = substituir as existentes por este arquivo (e adicionar %4 novas)\nCancelar = adicionar apenas as %4 novas, manter as existentes'},
+   dupAll:{nl:'Dit bestand lijkt al eerder geïmporteerd: alle %2 activiteiten bestaan al.\n\nOK = bestaande vervangen door dit bestand\nAnnuleren = niets doen',en:'This file looks already imported: all %2 activities already exist.\n\nOK = replace existing ones with this file\nCancel = do nothing',es:'Este archivo parece ya importado: las %2 actividades ya existen.\n\nAceptar = reemplazar las existentes con este archivo\nCancelar = no hacer nada',fr:'Ce fichier semble déjà importé : les %2 activités existent déjà.\n\nOK = remplacer les existantes par ce fichier\nAnnuler = ne rien faire',de:'Diese Datei scheint bereits importiert: alle %2 Aktivitäten existieren bereits.\n\nOK = Vorhandene durch diese Datei ersetzen\nAbbrechen = nichts tun',ro:'Acest fișier pare deja importat: toate cele %2 activități există deja.\n\nOK = înlocuiește cele existente cu acest fișier\nAnulare = nu face nimic',it:'Questo file sembra già importato: tutte le %2 attività esistono già.\n\nOK = sostituisci quelle esistenti con questo file\nAnnulla = non fare nulla',pt:'Este arquivo parece já importado: todas as %2 atividades já existem.\n\nOK = substituir as existentes por este arquivo\nCancelar = não fazer nada'},
+   done:{nl:'✓ %2 activiteiten geïmporteerd!',en:'✓ %2 activities imported!',es:'✓ ¡%2 actividades importadas!',fr:'✓ %2 activités importées !',de:'✓ %2 Aktivitäten importiert!',ro:'✓ %2 activități importate!',it:'✓ %2 attività importate!',pt:'✓ %2 atividades importadas!'},
+   doneRepl:{nl:'✓ %2 activiteiten geïmporteerd (%3 bestaande vervangen).',en:'✓ %2 activities imported (%3 existing replaced).',es:'✓ %2 actividades importadas (%3 existentes reemplazadas).',fr:'✓ %2 activités importées (%3 existantes remplacées).',de:'✓ %2 Aktivitäten importiert (%3 vorhandene ersetzt).',ro:'✓ %2 activități importate (%3 existente înlocuite).',it:'✓ %2 attività importate (%3 esistenti sostituite).',pt:'✓ %2 atividades importadas (%3 existentes substituídas).'},
+   doneSkip:{nl:'✓ %2 activiteiten geïmporteerd! (%3 bestonden al en zijn overgeslagen.)',en:'✓ %2 activities imported! (%3 already existed and were skipped.)',es:'✓ ¡%2 actividades importadas! (%3 ya existían y se omitieron.)',fr:'✓ %2 activités importées ! (%3 existaient déjà et ont été ignorées.)',de:'✓ %2 Aktivitäten importiert! (%3 existierten bereits und wurden übersprungen.)',ro:'✓ %2 activități importate! (%3 existau deja și au fost omise.)',it:'✓ %2 attività importate! (%3 esistevano già e sono state saltate.)',pt:'✓ %2 atividades importadas! (%3 já existiam e foram ignoradas.)'}
+  }[kind];
+  var t=T[LANG]||T.nl;
+  return t.replace(/%1/g,a).replace(/%2/g,b).replace(/%3/g,c).replace(/%4/g,(arguments[4]==null?"":arguments[4]));
+}
 function applyImportedEntries(imported,formatLabel){
   const split=splitNewFromDuplicateEntries(imported.entries);
   if(split.dupeCount===0){
     // No overlap at all - the plain, original single-choice flow.
-    if(confirm(`${formatLabel} met ${imported.entries.length} activiteiten. Toevoegen?`)){
+    if(confirm(_impMsg('add',formatLabel,imported.entries.length))){
       const _added=dedupeImportIds(imported.entries);
       db.entries=[...db.entries,..._added];
       imported.cursisten.forEach(c=>{if(!db.cursisten.find(x=>x.naam===c.naam))db.cursisten.push(c);});
       save();
       if(typeof screen!=='undefined'&&screen==='cursisten')renderCursisten();
-      showImportResult('✓ '+imported.entries.length+' activiteiten geïmporteerd!');
+      showImportResult(_impMsg('done','',imported.entries.length));
       notifyPossibleDuplicatesAfterImport(_added);
     }
     return;
@@ -27830,8 +27842,8 @@ function applyImportedEntries(imported,formatLabel){
   // skip matters when some of the "duplicates" have since been hand-
   // edited in the app and shouldn't be overwritten by the raw import.
   const replaceMsg=split.newEntries.length>0
-    ?`${formatLabel} met ${imported.entries.length} activiteiten. ${split.dupeCount} daarvan bestaan al.\n\nOK = bestaande vervangen door dit bestand (en ${split.newEntries.length} nieuwe toevoegen)\nAnnuleren = alleen de ${split.newEntries.length} nieuwe toevoegen, bestaande laten staan`
-    :`Dit bestand lijkt al eerder geïmporteerd: alle ${imported.entries.length} activiteiten bestaan al.\n\nOK = bestaande vervangen door dit bestand\nAnnuleren = niets doen`;
+    ?_impMsg('dupMix',formatLabel,imported.entries.length,split.dupeCount,split.newEntries.length)
+    :_impMsg('dupAll',formatLabel,imported.entries.length);
   if(confirm(replaceMsg)){
     removeEntriesMatchingImport(imported.entries);
     const _added=dedupeImportIds(imported.entries);
@@ -27839,7 +27851,7 @@ function applyImportedEntries(imported,formatLabel){
     imported.cursisten.forEach(c=>{if(!db.cursisten.find(x=>x.naam===c.naam))db.cursisten.push(c);});
     save();
     if(typeof screen!=='undefined'&&screen==='cursisten')renderCursisten();
-    showImportResult('✓ '+imported.entries.length+' activiteiten geïmporteerd ('+split.dupeCount+' bestaande vervangen).');
+    showImportResult(_impMsg('doneRepl','',imported.entries.length,split.dupeCount));
     notifyPossibleDuplicatesAfterImport(_added);
   }else{
     if(split.newEntries.length===0)return;
@@ -27848,7 +27860,7 @@ function applyImportedEntries(imported,formatLabel){
     imported.cursisten.forEach(c=>{if(!db.cursisten.find(x=>x.naam===c.naam))db.cursisten.push(c);});
     save();
     if(typeof screen!=='undefined'&&screen==='cursisten')renderCursisten();
-    showImportResult('✓ '+split.newEntries.length+' activiteiten geïmporteerd! ('+split.dupeCount+' bestonden al en zijn overgeslagen.)');
+    showImportResult(_impMsg('doneSkip','',split.newEntries.length,split.dupeCount));
     notifyPossibleDuplicatesAfterImport(_added);
   }
 }
