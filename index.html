@@ -27576,7 +27576,7 @@ function parseColombiaGestionRows(rows,override){
     // "Nombre estudiante y comentarios" holds the people met (comma separated,
     // mixed with free comments). Pull out the plausible first names and hand
     // them out to the person-type activities (EB, CB, VM, CC) in order.
-    var rowNames=colombiaExtractNames(nameTxt);
+    var _sp=colombiaSplitNames(nameTxt),rowNames=_sp.names,rowComment=_sp.rest;
     rowNames.forEach(function(nm){if(!cursMap[nm.toLowerCase()]){cursMap[nm.toLowerCase()]=true;cursisten.push({naam:nm});}});
     var namePool=rowNames.slice();
     ['CM','EB','CB','VM','P','CC','S','R','OA'].forEach(function(code){
@@ -27594,7 +27594,9 @@ function parseColombiaGestionRows(rows,override){
       var personCode=(code==='EB'||code==='CB'||code==='VM'||code==='CC');
       var take=personCode?namePool.splice(0,Math.min(count,namePool.length)):[];
       function mk(n,nm){
-        var o=map.label+(n>1?' x '+n:'')+(lugar?' - '+lugar:'');
+        var o=map.label+(n>1?' x '+n:'')+(lugar?' - '+lugar:'')+(rowComment?' · '+rowComment:'');
+        // "Otras actividades" is described only by the free comment.
+        if(code==='OA'&&rowComment)o=rowComment+(n>1?' x '+n:'')+(lugar?' - '+lugar:'');
         return {id:Date.now()+entries.length,datum:datum,categorie:map.cat,uren:0,km:0,kosten:0,aantal:n,
           omschrijving:o,cursistNaam:nm||'',themacode:'',thema:'',opmerking:nameTxt,reminder:''};
       }
@@ -27623,19 +27625,27 @@ function parseColombiaGestionRows(rows,override){
 // cell, e.g. "isabel,karolina,y familia." -> [Isabel, Karolina]; comments such
 // as "predicacion campo de pueblo nuevo" are ignored (they stay in the note).
 var COLOMBIA_NAME_STOP=/^(y|e|de|del|la|el|los|las|en|al|a|por|con|para|etc|otros|otras|familia|familias|predicacion|predicaciones|prediccion|predicar|visita|visitas|visitacion|campo|campos|vereda|iglesia|templo|trabajo|trabajos|estudio|estudios|biblico|biblicos|tarde|manana|noche|limpieza|cotizacion|arreglo|techo|tesoreria|administrativo|administrativa|obra|misionera|misionero|regreso|viaje|volantes|volante|reparticion|respqarticion|culto|reunion|santa|cena|vigilia|funeral|enfermo|enfermos|hermano|hermana|hermanos|pastor|nuevo|nueva|pueblo|casa|oracion|clase|clases|bautismal|consejeria|conferencia|publica|sabado|domingo|llamada|llamadas|tel|telefono|whatsapp)$/;
-function colombiaExtractNames(txt){
-  if(!txt)return [];
-  var out=[];
+// Returns {names:[...], rest:'...'}: `rest` is the leftover text that is not a
+// name - it describes the activity done (e.g. "predicacion campo de pueblo
+// nuevo") and goes into the entry's description.
+function colombiaSplitNames(txt){
+  var out=[],rest=[];
+  if(!txt)return {names:out,rest:''};
   String(txt).split(/[,;.\/&+\n]+|\s+y\s+/i).forEach(function(tok){
-    var words=xlsxStripAccents(tok).trim().toLowerCase().replace(/[^a-z\s'-]/g,' ').split(/\s+/).filter(function(w){return w&&!/^(familia|familias|y|e)$/.test(w);});
-    if(!words.length||words.length>2)return;
-    if(words.some(function(w){return w.length<2||COLOMBIA_NAME_STOP.test(w);}))return;
-    var orig=xlsxStripAccents(tok).trim().split(/\s+/).filter(function(w){return w&&!/^(familia|familias|y|e)$/i.test(w);});
-    var nm=tok.trim().split(/\s+/).filter(function(w){return w&&!/^(familia|familias|y|e)$/i.test(xlsxStripAccents(w));}).map(function(w){return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase();}).join(' ');
-    if(nm&&out.indexOf(nm)<0)out.push(nm);
+    var t=tok.trim();if(!t)return;
+    var words=xlsxStripAccents(t).toLowerCase().replace(/[^a-z\s'-]/g,' ').split(/\s+/).filter(function(w){return w&&!/^(familia|familias|y|e)$/.test(w);});
+    var isName=words.length&&words.length<=2&&!words.some(function(w){return w.length<2||COLOMBIA_NAME_STOP.test(w);});
+    if(isName){
+      var nm=t.split(/\s+/).filter(function(w){return w&&!/^(familia|familias|y|e)$/i.test(xlsxStripAccents(w));}).map(function(w){return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase();}).join(' ');
+      if(nm&&out.indexOf(nm)<0)out.push(nm);
+    }else if(!/^(otros|otras|etc|y|e)$/i.test(xlsxStripAccents(t))){
+      rest.push(t);
+    }
   });
-  return out;
+  var r=rest.join(', ');
+  return {names:out,rest:r?r.charAt(0).toUpperCase()+r.slice(1):''};
 }
+function colombiaExtractNames(txt){return colombiaSplitNames(txt).names;}
 function processXlsxImportFile(file){
   var reader=new FileReader();
   reader.onload=function(ev){
