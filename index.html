@@ -1950,7 +1950,7 @@ setTimeout(function(){ try{hideBootSplash();}catch(e){} },8000);
           ondrop="handleImportDrop(event)">
           <div style="font-size:26px;margin-bottom:8px">&#x1F4C2;</div>
           <div style="font-weight:600;font-size:14px" data-i18n="import_btn">Klik of sleep bestand</div>
-          <div style="font-size:12px;margin-top:4px">CSV, JSON of PDF</div>
+          <div style="font-size:12px;margin-top:4px" data-i18n="import_formats">CSV, Excel, JSON of PDF</div>
         </div>
         <input type="file" id="import-file" accept=".csv,.json,.pdf,.xlsx" multiple
           style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;z-index:-1"
@@ -6930,8 +6930,8 @@ var TRANSLATIONS = {
     import_card:'Gegevens importeren',
     cat_manage:'Categorieën beheren',
     cat_add:'+ Voeg toe',new_cat_ph:'Naam nieuwe categorie...',
-    import_hint:'Sleep een CSV, JSON of PDF bestand hierin.',
-    import_btn:'Klik of sleep bestand',
+    import_hint:'Sleep een CSV-, Excel-, JSON- of PDF-bestand hierin.',
+    import_btn:'Klik of sleep bestand',import_formats:'CSV, Excel, JSON of PDF',
     approval_card:'Goedkeuring',
     approval_hint:'Geen code meer nodig — importeer het antwoordbestand van je voorzitter hieronder en het wordt automatisch toegepast.',
     approval_code_lbl:'Gedeelde goedkeuringscode',
@@ -7281,8 +7281,8 @@ var TRANSLATIONS = {
     import_card:'Import data',
     cat_manage:'Manage categories',
     cat_add:'+ Add',new_cat_ph:'New category name...',
-    import_hint:'Drag a CSV, JSON or PDF file here.',
-    import_btn:'Click or drag file',
+    import_hint:'Drag a CSV, Excel, JSON or PDF file here.',
+    import_btn:'Click or drag file',import_formats:'CSV, Excel, JSON or PDF',
     approval_card:'Approval',
     approval_hint:'No code needed — import the response file from your president below and it is applied automatically.',
     approval_code_lbl:'Shared approval code',
@@ -7699,8 +7699,8 @@ var TRANSLATIONS = {
     import_card:'Importar datos',
     cat_manage:'Gestionar categorías',
     cat_add:'+ Añadir',new_cat_ph:'Nombre nueva categoría...',
-    import_hint:'Arrastra un archivo CSV, JSON o PDF aqu\u00ed.',
-    import_btn:'Clic o arrastra archivo',
+    import_hint:'Arrastra un archivo CSV, Excel, JSON o PDF aqu\u00ed.',
+    import_btn:'Clic o arrastra archivo',import_formats:'CSV, Excel, JSON o PDF',
     approval_card:'Aprobaci\u00f3n',
     approval_hint:'Ya no hace falta c\u00f3digo \u2014 importa abajo el archivo de respuesta de tu presidente y se aplicar\u00e1 autom\u00e1ticamente.',
     approval_code_lbl:'C\u00f3digo de aprobaci\u00f3n compartido',
@@ -7912,7 +7912,7 @@ var TRANSLATIONS = {
     cursisten_tab:"Contacts", leden_tab:"Membres", sort_grouped:'Par type',
     import_card:"Importer des données",
     cat_manage:"Gérer les catégories",
-    cat_add:"+ Ajouter",new_cat_ph:"Nom nouvelle catégorie...",import_hint:"Faites glisser un fichier CSV, JSON ou PDF ici.",import_btn:"Cliquez ou déposez un fichier",
+    cat_add:"+ Ajouter",new_cat_ph:"Nom nouvelle catégorie...",import_hint:"Faites glisser un fichier CSV, Excel, JSON ou PDF ici.",import_btn:"Cliquez ou déposez un fichier",import_formats:"CSV, Excel, JSON ou PDF",
     approval_card:'Approbation',
     approval_hint:'Plus besoin de code — importez le fichier de réponse de votre président ci-dessous, il est appliqué automatiquement.',
     approval_code_lbl:'Code d\'approbation partagé',
@@ -8039,7 +8039,7 @@ var TRANSLATIONS = {
     cursisten_tab:'Kontakte', leden_tab:'Mitglieder', sort_grouped:'Nach Typ',
     import_card:'Daten importieren',
     cat_manage:'Kategorien verwalten',
-    cat_add:'+ Hinzufügen',new_cat_ph:'Name neue Kategorie...',import_hint:'CSV-, JSON- oder PDF-Datei hier ablegen.',import_btn:'Datei klicken oder ablegen',
+    cat_add:'+ Hinzufügen',new_cat_ph:'Name neue Kategorie...',import_hint:'CSV-, Excel-, JSON- oder PDF-Datei hier ablegen.',import_btn:'Datei klicken oder ablegen',import_formats:'CSV, Excel, JSON oder PDF',
     approval_card:'Genehmigung',
     approval_hint:'Kein Code mehr nötig — importieren Sie unten die Antwortdatei Ihres Vorsitzenden, sie wird automatisch angewendet.',
     approval_code_lbl:'Gemeinsamer Genehmigungscode',
@@ -8191,7 +8191,7 @@ var TRANSLATIONS = {
     cursisten_tab:'Contacte', leden_tab:'Membri', sort_grouped:'După tip',
     import_card:'Importă date',
     cat_manage:'Gestionează categorii',
-    cat_add:'+ Adaugă',new_cat_ph:'Nume categorie nouă...',import_hint:'Trage un fișier CSV, JSON sau PDF aici.',import_btn:'Faceți clic sau trageți fișierul',
+    cat_add:'+ Adaugă',new_cat_ph:'Nume categorie nouă...',import_hint:'Trage un fișier CSV, Excel, JSON sau PDF aici.',import_btn:'Faceți clic sau trageți fișierul',import_formats:'CSV, Excel, JSON sau PDF',
     approval_card:'Aprobare',
     approval_hint:'Nu mai este nevoie de cod — importă mai jos fișierul de răspuns de la președintele tău și se aplică automat.',
     approval_code_lbl:'Cod de aprobare comun',
@@ -8375,7 +8375,7 @@ var TRANSLATIONS = {
     worktype_card:'Tipo di lavoro', worktype_sub:'Adatta cosa vedi nell\'app', worktype_bijbelwerker:'Pastore / Operatore biblico', worktype_kantoor:'Ufficio / Segreteria', church_role_lbl:'Ruolo ecclesiastico', church_role_hint:'Condiviso con il presidente (ad es. per il rapporto GC) - lascia vuoto se nessuna di queste opzioni ti riguarda.', church_role_none:'Nessuno', church_role_predikant:'Pastore', church_role_ouderling:'Anziano', church_role_kantoorwerker:'Impiegato d\'ufficio', church_role_bijbelwerker:'Operatore biblico / Evangelista', wizard_new_gemeente:'+ Nuova chiesa...',
     import_card:'Importa dati',
     cat_manage:'Gestisci categorie',
-    cat_add:'+ Aggiungi',new_cat_ph:'Nome nuova categoria...',import_hint:'Trascina un file CSV, JSON o PDF qui.',import_btn:'Clicca o trascina file',
+    cat_add:'+ Aggiungi',new_cat_ph:'Nome nuova categoria...',import_hint:'Trascina un file CSV, Excel, JSON o PDF qui.',import_btn:'Clicca o trascina file',import_formats:'CSV, Excel, JSON o PDF',
     approval_card:'Approvazione',
     approval_hint:'Non serve più alcun codice — importa qui sotto il file di risposta del tuo presidente e verrà applicato automaticamente.',
     approval_code_lbl:'Codice di approvazione condiviso',
@@ -8507,7 +8507,7 @@ var TRANSLATIONS = {
     worktype_card:'Tipo de trabalho', worktype_sub:'Ajusta o que você vê no app', worktype_bijbelwerker:'Pastor / Obreiro bíblico', worktype_kantoor:'Escritório / Secretaria', church_role_lbl:'Função eclesiástica', church_role_hint:'Compartilhado com o presidente (por ex. para o relatório da CG) - deixe em branco se nenhuma delas se aplicar a você.', church_role_none:'Nenhuma', church_role_predikant:'Pastor', church_role_ouderling:'Ancião', church_role_kantoorwerker:'Funcionário de escritório', church_role_bijbelwerker:'Obreiro bíblico / Evangelista', wizard_new_gemeente:'+ Nova igreja...',
     import_card:'Importar dados',
     cat_manage:'Gerenciar categorias',
-    cat_add:'+ Adicionar',new_cat_ph:'Nome nova categoria...',import_hint:'Arraste um arquivo CSV, JSON ou PDF aqui.',import_btn:'Clique ou arraste o arquivo',
+    cat_add:'+ Adicionar',new_cat_ph:'Nome nova categoria...',import_hint:'Arraste um arquivo CSV, Excel, JSON ou PDF aqui.',import_btn:'Clique ou arraste o arquivo',import_formats:'CSV, Excel, JSON ou PDF',
     approval_card:'Aprovação',
     approval_hint:'Já não é necessário nenhum código — importe abaixo o ficheiro de resposta do seu presidente e será aplicado automaticamente.',
     approval_code_lbl:'Código de aprovação partilhado',
