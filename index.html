@@ -144,9 +144,9 @@ html.dark .dm-amber-accent{color:var(--amber)!important}
    down past a threshold), so it doesn't cover ordinary scroll-flick
    overscroll - this CSS property is what's needed for that general case. */
 html,body{overflow-x:hidden;overscroll-behavior-x:none;overscroll-behavior-y:none;width:100%}
-/* Desktop Chrome: hidden on BOTH html and body makes body its own scroll
-   container, which (with overscroll-behavior-y:none) swallows mouse-wheel
-   scrolling. clip clips the same way without creating a scroll container. */
+/* Desktop Chrome: hidden on BOTH html and body turns body into its own scroll
+   container, which can swallow mouse-wheel scrolling. clip clips the same way
+   without creating a scroll container. */
 @supports (overflow-x:clip){body{overflow-x:clip}}
 html{font-size:14px}html.text-sm{font-size:11px!important}html.text-lg{font-size:18px!important}html.text-xl{font-size:22px!important}
 /* Text size scaling on the app wrapper, via CSS zoom. transform:scale() was
@@ -1395,7 +1395,8 @@ function hideBootSplash(){
   el.style.opacity='0';
   setTimeout(function(){ if(el&&el.parentNode)el.parentNode.removeChild(el); },400);
 }
-// Failsafe: if startup throws before hideBootSplash() runs, the fixed overlay would swallow every scroll/tap.
+// Failsafe: if startup throws before hideBootSplash() runs, this fixed
+// full-screen overlay would stay on top and swallow every scroll/tap.
 setTimeout(function(){ try{hideBootSplash();}catch(e){} },8000);
 </script>
 
@@ -1948,7 +1949,7 @@ setTimeout(function(){ try{hideBootSplash();}catch(e){} },8000);
           <div style="font-weight:600;font-size:14px" data-i18n="import_btn">Klik of sleep bestand</div>
           <div style="font-size:12px;margin-top:4px">CSV, JSON of PDF</div>
         </div>
-        <input type="file" id="import-file" accept=".csv,.json,.pdf" multiple
+        <input type="file" id="import-file" accept=".csv,.json,.pdf,.xlsx" multiple
           style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;z-index:-1"
           onchange="handleImportFile(event)">
         <div id="import-result" style="margin-top:10px"></div>
@@ -6261,6 +6262,12 @@ const DRIVE_FILE_NAME='ZDA_Urenregistratie_'+new Date().getFullYear()+'.json';
 // Keep entries short and in plain language (what changed / where to find
 // it), not commit messages.
 const CHANGELOG=[
+  {date:'2026-10-15',items:[
+    {type:'new',nl:'Excel-bestanden (.xlsx) kunnen nu rechtstreeks worden geïmporteerd, ook de Nederlandse en Franse urenlijsten — opslaan als CSV is niet meer nodig. Alleen het eerste tabblad van het bestand wordt gelezen.',en:'Excel files (.xlsx) can now be imported directly, including the Dutch and French hour sheets — no need to save as CSV first. Only the first sheet of the file is read.',es:'Ahora se pueden importar archivos de Excel (.xlsx) directamente, también las hojas de horas neerlandesas y francesas; ya no hace falta guardarlos como CSV. Solo se lee la primera hoja del archivo.',fr:'Les fichiers Excel (.xlsx) peuvent désormais être importés directement, y compris les feuilles d\'heures néerlandaises et françaises — plus besoin de les enregistrer en CSV. Seule la première feuille du fichier est lue.',de:'Excel-Dateien (.xlsx) lassen sich jetzt direkt importieren, auch die niederländischen und französischen Stundenlisten — Speichern als CSV ist nicht mehr nötig. Nur das erste Tabellenblatt der Datei wird gelesen.'},
+    {type:'new',nl:'Het Colombiaanse maandrapport "Informe de Gestión Contractual" (.xlsx) wordt herkend: de aantallen per kolom (CM, EB, CB, VM, P, CC, SC, R, OA) worden als activiteiten geïmporteerd, zonder uren, en de reiskosten worden verdeeld over lokaal, tussen steden en overig.',en:'The Colombian monthly report "Informe de Gestión Contractual" (.xlsx) is now recognized: the counts per column (CM, EB, CB, VM, P, CC, SC, R, OA) are imported as activities, without hours, and the travel expenses are split into local, intercity and other.',es:'Ahora se reconoce el informe mensual colombiano "Informe de Gestión Contractual" (.xlsx): los conteos por columna (CM, EB, CB, VM, P, CC, SC, R, OA) se importan como actividades, sin horas, y los gastos de viaje se dividen en urbanos, interurbanos y otros.',fr:'Le rapport mensuel colombien « Informe de Gestión Contractual » (.xlsx) est désormais reconnu : les nombres par colonne (CM, EB, CB, VM, P, CC, SC, R, OA) sont importés comme activités, sans heures, et les frais de déplacement sont répartis en local, interurbain et autre.',de:'Der kolumbianische Monatsbericht „Informe de Gestión Contractual" (.xlsx) wird jetzt erkannt: die Anzahlen pro Spalte (CM, EB, CB, VM, P, CC, SC, R, OA) werden als Aktivitäten ohne Stunden importiert, und die Reisekosten werden in lokal, zwischen Städten und sonstige aufgeteilt.'},
+    {type:'new',nl:'Bij kosten kun je nu het type kiezen: lokaal/stad, tussen steden (reis) of overig. Het type staat ook in het rapport en de PDF.',en:'Expenses now have a type you can choose: local/urban, intercity travel or other. The type also shows in the Rapport and the PDF.',es:'Los gastos ahora tienen un tipo que puedes elegir: local/urbano, viaje interurbano u otros. El tipo también aparece en el informe y en el PDF.',fr:'Les frais ont désormais un type à choisir : local/urbain, déplacement interurbain ou autre. Le type apparaît aussi dans le rapport et le PDF.',de:'Bei Kosten kann jetzt die Art gewählt werden: lokal/städtisch, Reise zwischen Städten oder sonstige. Die Art erscheint auch im Bericht und im PDF.'},
+    {type:'bug',nl:'In Chrome op de computer kon de pagina soms niet scrollen (bijvoorbeeld in Instellingen). Dat is opgelost.',en:'In Chrome on a computer the page sometimes would not scroll (for example in Settings). This is fixed.',es:'En Chrome en el ordenador la página a veces no se desplazaba (por ejemplo en Ajustes). Esto está corregido.',fr:'Dans Chrome sur ordinateur, la page ne défilait parfois pas (par exemple dans Réglages). C\'est corrigé.',de:'In Chrome am Computer ließ sich die Seite manchmal nicht scrollen (zum Beispiel in den Einstellungen). Das ist behoben.'}
+  ]},
   {date:'2026-09-01',items:[
     {type:'new',nl:'Bij elke notitie/opmerking (in de wizard, bij het bewerken van een activiteit, en in het dagoverzicht) staat nu een vinkje "Delen met voorzitter". Een notitie gaat alleen mee in het PDF/JSON-rapport als dat vinkje voor die specifieke notitie is aangezet — standaard staat het uit, dus je persoonlijke aantekeningen blijven privé tenzij je ze zelf deelt. De oude algemene "Persoonlijke notities"-instelling bij het exporteren is hierdoor vervallen.',en:'Every note/comment (in the wizard, when editing an activity, and in the daily overview) now has a "Share with president" checkbox next to it. A note only goes into the PDF/JSON report if that checkbox was turned on for that specific note — it\'s off by default, so your personal notes stay private unless you choose to share them. The old blanket "Personal notes" export setting has been removed since it\'s no longer needed.',es:'Cada nota/comentario (en el asistente, al editar una actividad, y en el resumen diario) ahora tiene una casilla "Compartir con el presidente" junto a él. Una nota solo se incluye en el informe PDF/JSON si esa casilla se activó para esa nota en concreto — está desactivada por defecto, así que tus notas personales permanecen privadas a menos que elijas compartirlas. El antiguo ajuste general de exportación "Notas personales" ha sido eliminado por ya no ser necesario.',fr:'Chaque note/commentaire (dans l\'assistant, lors de la modification d\'une activité, et dans l\'aperçu quotidien) a désormais une case « Partager avec le président » à côté. Une note n\'est incluse dans le rapport PDF/JSON que si cette case a été cochée pour cette note précise — elle est désactivée par défaut, donc vos notes personnelles restent privées sauf si vous choisissez de les partager. L\'ancien réglage général d\'export « Notes personnelles » a été supprimé car il n\'est plus nécessaire.',de:'Bei jeder Notiz/Bemerkung (im Assistenten, beim Bearbeiten einer Aktivität und in der Tagesübersicht) gibt es jetzt ein Kontrollkästchen „Mit dem Vorsitzenden teilen". Eine Notiz gelangt nur dann in den PDF-/JSON-Bericht, wenn dieses Kästchen für diese bestimmte Notiz aktiviert wurde — standardmäßig ist es aus, sodass Ihre persönlichen Notizen privat bleiben, sofern Sie sie nicht selbst teilen. Die alte allgemeine Export-Einstellung „Persönliche Notizen" wurde entfernt, da sie nicht mehr nötig ist.',ro:'Fiecare notiță/comentariu (în asistent, la editarea unei activități și în prezentarea zilnică) are acum o casetă „Distribuie președintelui" alături. O notiță ajunge în raportul PDF/JSON doar dacă acea casetă a fost bifată pentru notița respectivă — este dezactivată implicit, deci notițele tale personale rămân private dacă nu alegi să le distribui. Vechea setare generală de export „Notițe personale" a fost eliminată, nemaifiind necesară.',it:'Ogni nota/commento (nella procedura guidata, durante la modifica di un\'attività e nella panoramica giornaliera) ha ora una casella "Condividi con il presidente" accanto. Una nota viene inclusa nel report PDF/JSON solo se quella casella è stata attivata per quella nota specifica — è disattivata per impostazione predefinita, quindi le tue note personali restano private a meno che tu non scelga di condividerle. La vecchia impostazione generale di esportazione "Note personali" è stata rimossa perché non più necessaria.',pt:'Cada nota/comentário (no assistente, ao editar uma atividade, e na visão geral diária) agora tem uma caixa "Partilhar com o presidente" ao lado. Uma nota só vai para o relatório PDF/JSON se essa caixa foi ativada para essa nota específica — está desativada por predefinição, para que as suas notas pessoais permaneçam privadas a menos que escolha partilhá-las. A antiga definição geral de exportação "Notas pessoais" foi removida por já não ser necessária.'}
   ]},
@@ -19073,6 +19080,7 @@ function renderWiz(){
         <div style="margin-top:10px">
           <span class="form-label">${t('wizard_expense_label')}</span>
           <input type="number" id="w-kosten" min="0" step="0.01" placeholder="0.00 (${currencySymbol()})" value="${draft.kosten||''}">
+          ${kostenTypeSelectHtml('w-kostentype',draft.kostenType)}
           <div style="font-size:11px;color:var(--text3);margin-top:3px">${t('wizard_expense_hint')}</div>
           ${receiptPhotoFieldHtml()}
         </div>
@@ -19095,6 +19103,7 @@ function renderWiz(){
         </div>
         <div style="margin-top:10px">
           <input type="number" id="w-kosten" min="0" step="0.01" placeholder="0.00 (${currencySymbol()})" value="${draft.kosten||''}">
+          ${kostenTypeSelectHtml('w-kostentype',draft.kostenType)}
           ${receiptPhotoFieldHtml()}
         </div>
       </div>
@@ -19104,6 +19113,7 @@ function renderWiz(){
       <div class="wiz-hint" style="margin-bottom:0">${t('wizard_expense_hint')}</div>
       <div class="travel-box">
         <input type="number" id="w-kosten" min="0" step="0.01" placeholder="0.00 (${currencySymbol()})" value="${draft.kosten||''}">
+          ${kostenTypeSelectHtml('w-kostentype',draft.kostenType)}
         ${receiptPhotoFieldHtml()}
       </div>
       <div class="btn-row"><button class="btn" onclick="wBack()">${t('wizard_back')}</button><button class="btn" onclick="wQuickSave()">${t('save_btn')}</button><button class="btn primary" onclick="wSet('kosten','w-kosten');wNext()">${t('wizard_next')}</button></div>`;
@@ -19471,7 +19481,37 @@ function wSetGemeente(){
     draft.gemeente=sel.value||'';
   }
 }
-function wSet(key,id){const el=document.getElementById(id);if(el)draft[key]=el.value;}
+// Expense type (task: Colombia "Relación de gastos" splits URBANOS / VIAJES /
+// OTROS). Stored as entry.kostenType: ''(unspecified) | 'local' | 'intercity'
+// | 'other'. Generic enough for any country: local = in-city transport,
+// intercity = trips between cities, other = everything else (mail, copies, food).
+var KOSTEN_TYPES=['local','intercity','other'];
+function kostenTypeLabel(k){
+  if(!k)return '';
+  var L={
+    local:{nl:'Lokaal (in de stad)',en:'Local (in the city)',es:'Local / urbano',fr:'Local (en ville)',de:'Lokal (in der Stadt)',pt:'Local (na cidade)',it:'Locale (in città)',ro:'Local (în oraș)'},
+    intercity:{nl:'Interstedelijk (reis)',en:'Intercity (travel)',es:'Interurbano (viaje)',fr:'Interurbain (voyage)',de:'Überregional (Reise)',pt:'Intermunicipal (viagem)',it:'Interurbano (viaggio)',ro:'Interurban (călătorie)'},
+    other:{nl:'Overig',en:'Other',es:'Otros',fr:'Autres',de:'Sonstiges',pt:'Outros',it:'Altro',ro:'Altele'}
+  }[k];
+  if(!L)return '';
+  return L[LANG]||L.en;
+}
+function kostenTypeShort(k){
+  if(!k)return '';
+  var S={local:{nl:'Lokaal',en:'Local',es:'Urbano',fr:'Local',de:'Lokal',pt:'Local',it:'Locale',ro:'Local'},
+    intercity:{nl:'Interstedelijk',en:'Intercity',es:'Viaje',fr:'Interurbain',de:'Überregional',pt:'Viagem',it:'Interurbano',ro:'Interurban'},
+    other:{nl:'Overig',en:'Other',es:'Otros',fr:'Autres',de:'Sonstiges',pt:'Outros',it:'Altro',ro:'Altele'}}[k];
+  return S?(S[LANG]||S.en):'';
+}
+function kostenTypeSelectHtml(id,cur,style){
+  var ph={nl:'Soort onkosten…',en:'Expense type…',es:'Tipo de gasto…',fr:'Type de frais…',de:'Art der Ausgabe…',pt:'Tipo de despesa…',it:'Tipo di spesa…',ro:'Tip cheltuială…'};
+  return '<select id="'+id+'" style="'+(style||'margin-top:6px;width:100%')+'">'
+    +'<option value="">'+(ph[LANG]||ph.en)+'</option>'
+    +KOSTEN_TYPES.map(function(k){return '<option value="'+k+'"'+(cur===k?' selected':'')+'>'+kostenTypeLabel(k)+'</option>';}).join('')
+    +'</select>';
+}
+function wSet(key,id){const el=document.getElementById(id);if(el)draft[key]=el.value;
+  if(key==='kosten'){var kt=document.getElementById('w-kostentype');if(kt)draft.kostenType=kt.value||'';}}
 // Reads w-km + (if opened) w-km-retour via the shared readKmWithRetour
 // helper - draft.km always ends up as the combined total (same as every
 // other wSet('km',...) call site used to write), with kmHeen/kmRetour only
@@ -19675,6 +19715,7 @@ function saveDraftAsPlanned(){
     uren:parseFloat(draft.uren)||0,
     km:parseFloat(draft.km)||0,
     kosten:parseFloat(draft.kosten)||0,
+    kostenType:draft.kostenType||'',
     opmerking:draft.opmerking||'',
     notitiePrive:!!draft.notitiePrive,
     completed:false,skipped:false,reminded:false
@@ -21479,6 +21520,7 @@ function saveQuickRepeat(sourceEntryId){
       kmHeen:newEntry.kmHeen,
       kmRetour:newEntry.kmRetour,
       kosten:newEntry.kosten||0,
+      kostenType:newEntry.kostenType||'',
       reisUren:newEntry.reisUren||0,
       gemeente:newEntry.gemeente||'',
       opmerking:newEntry.opmerking||'',
@@ -22056,7 +22098,7 @@ function renderCursistenSummary(){
   // flex-basis, which pushed it outside the row/card entirely instead of
   // wrapping onto its own line.
   h+='<button class="btn sm" onclick="handleImportClick()" style="font-size:11px;flex-shrink:0;display:flex;align-items:center;gap:5px;cursor:pointer;margin:0"><svg width="12" height="12"><use href="#ico-import"/></svg>'+tMap({nl:'Importeren',en:'Import',es:'Importar',fr:'Importer',de:'Importieren',ro:'Importă',it:'Importa',pt:'Importar'})+'</button>';
-  h+='<input type="file" id="cursist-import-file" accept=".csv,.json,.pdf" multiple style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;z-index:-1" onchange="handleImportFile(event);this.value=\'\'">';
+  h+='<input type="file" id="cursist-import-file" accept=".csv,.json,.pdf,.xlsx" multiple style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;z-index:-1" onchange="handleImportFile(event);this.value=\'\'">';
   h+='<button class="btn sm" onclick="openBulkSharePicker()" style="font-size:11px;flex-shrink:0;display:flex;align-items:center;gap:5px"><svg width="12" height="12"><use href="#ico-share-ios"/></svg>'+tMap({nl:'Delen',en:'Share',es:'Compartir',fr:'Partager',de:'Teilen',ro:'Distribuie',it:'Condividi',pt:'Partilhar'})+'</button>';
   // Kantoor/secretariaat only: a secretary's Contacts tab doubles as the
   // church-membership database she maintains directly (addresses/phone
@@ -24195,6 +24237,9 @@ function _buildRapportInner(){
   // the km-based reimbursement total rather than replacing it, since a person
   // could have both in the same month.
   const totalKosten=data.reduce((t,e)=>t+(parseFloat(e.kosten)||0),0);
+  // Expense-type split (Local / Intercity / Other) - only shown when at least one entry has a type.
+  const kostenByType={};data.forEach(e=>{const kk=parseFloat(e.kosten)||0;if(kk>0&&e.kostenType)kostenByType[e.kostenType]=(kostenByType[e.kostenType]||0)+kk;});
+  const kostenByTypeHtml=Object.keys(kostenByType).length?`<div style="display:flex;flex-wrap:wrap;gap:6px 16px;margin:2px 0 10px;font-size:12px;color:var(--text2)">${KOSTEN_TYPES.filter(k=>kostenByType[k]).map(k=>`<span><strong>${currencySymbol()}${kostenByType[k].toFixed(2).replace('.',',')}</strong> ${kostenTypeShort(k)}</span>`).join('')}</div>`:'';
   // Pure km-based reimbursement on its own (no other costs mixed in) - shown
   // as its own tile between "km driven" and "other costs" so the order reads
   // km -> what that's worth -> what else was declared, left to right.
@@ -24933,6 +24978,7 @@ function _buildRapportInner(){
         ${totalKm>0?`<div><div style="font-size:18px;font-weight:700;color:var(--amber)">${currencySymbol()}${kmOnlyVergoeding}</div><div style="font-size:11px;color:var(--text3)">${t('vergoeding')}</div></div>`:''}
         ${totalKosten>0?`<div><div style="font-size:18px;font-weight:700;color:var(--amber)">${currencySymbol()}${totalKosten.toFixed(2).replace('.',',')}</div><div style="font-size:11px;color:var(--text3)">${t('col_kosten')||'Onkosten'}</div></div>`:''}
       </div>
+      ${kostenByTypeHtml}
       ${Object.entries(byCatKm).sort((a,b)=>b[1].km-a[1].km).map(([cat,v],rpKmIdx)=>{
         const parts=[];
         if(v.km>0)parts.push(`<strong>${Math.round(v.km)}${distUnit()}</strong> &middot; ${currencySymbol()}${kmReimbursementForEntries(byCatKmEntries[cat]||[]).toFixed(2).replace('.',',')}`);
@@ -24951,7 +24997,7 @@ function _buildRapportInner(){
           const whoBit=who&&who!==e.categorie?(' &middot; '+who):'';
           const bits=[];
           if(parseFloat(e.km))bits.push(Math.round(parseFloat(e.km))+distUnit());
-          if(parseFloat(e.kosten))bits.push(currencySymbol()+parseFloat(e.kosten).toFixed(2).replace('.',','));
+          if(parseFloat(e.kosten))bits.push(currencySymbol()+parseFloat(e.kosten).toFixed(2).replace('.',',')+(e.kostenType?' ('+kostenTypeShort(e.kostenType)+')':''));
           return `<div onclick="rpJumpToDay('${e.datum||''}')" style="display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:6px 4px 6px 17px;cursor:pointer;color:var(--text2)" title="${LANG==='en'?'Jump to this day':LANG==='es'?'Ir a este día':LANG==='fr'?'Aller à ce jour':LANG==='de'?'Zu diesem Tag springen':'Ga naar deze dag'}">`
             +`<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${dateStr}${whoBit}</span>`
             +`<span style="font-weight:600;flex-shrink:0;white-space:nowrap;color:var(--text)">${bits.join(' &middot; ')}</span>`
@@ -25270,6 +25316,7 @@ function _buildRapportInner(){
       <div class="rp-km-total">${currencySymbol()}${totalKosten.toFixed(2).replace('.',',')}</div>
     </div>
     ${Object.entries(byAard).filter(([,v])=>v.kosten>0).map(([aard,v])=>`<div class="rp-km-row"><div class="rp-km-label">${getAardLabel(aard)}</div><div class="rp-km-val">${currencySymbol()}${v.kosten.toFixed(2).replace('.',',')}</div></div>`).join('')}
+    ${KOSTEN_TYPES.filter(k=>kostenByType[k]).map(k=>`<div class="rp-km-row"><div class="rp-km-label">${kostenTypeLabel(k)}</div><div class="rp-km-val">${currencySymbol()}${kostenByType[k].toFixed(2).replace('.',',')}</div></div>`).join('')}
     ${!Object.entries(byAard).some(([,v])=>v.kosten>0)?`<div style="font-size:7pt;color:#B45309">${LANG==='en'?'No expenses':LANG==='es'?'Sin gastos':LANG==='fr'?'Pas de frais':LANG==='de'?'Keine Ausgaben':LANG==='it'?'Nessuna spesa':LANG==='pt'?'Sem despesas':'Geen onkosten'}</div>`:''}
     <div class="rp-km-row rp-sec-km rp-sec-kosten" style="border-top:.5pt solid #ddd;margin-top:3pt;padding-top:3pt;font-weight:700">
       <div class="rp-km-label">${LANG==='en'?'Total — kilometers + expenses':LANG==='es'?'Total — kilómetros + gastos':LANG==='fr'?'Total — kilomètres + frais':LANG==='de'?'Gesamt — Kilometer + Ausgaben':LANG==='ro'?'Total — kilometri + cheltuieli':LANG==='it'?'Totale — chilometri + spese':LANG==='pt'?'Total — quilómetros + despesas':'Totaal — kilometers + onkosten'}</div>
@@ -26723,8 +26770,8 @@ function processImportFileList(files){
     processImportFile(files[0]);
     return;
   }
-  var textFiles=files.filter(function(f){return !f.name.toLowerCase().endsWith('.pdf');});
-  var otherFiles=files.filter(function(f){return f.name.toLowerCase().endsWith('.pdf');});
+  var textFiles=files.filter(function(f){return !/\.(pdf|xlsx)$/i.test(f.name);});
+  var otherFiles=files.filter(function(f){return /\.(pdf|xlsx)$/i.test(f.name);});
   Promise.all(textFiles.map(function(file){
     return new Promise(function(resolve){
       var reader=new FileReader();
@@ -27172,7 +27219,278 @@ function applyDossierImportPlan(plan){
   if(typeof screen!=='undefined'&&screen==='cursisten')renderCursisten();
   return {cursistenAdded:plan.cursistenToAdd.length,entriesAdded:newEntries.length};
 }
+// ═══ Excel (.xlsx) import: "Informe de Gestión Contractual" (Colombia) ═══
+// An .xlsx file is a zip of XML parts. Rather than shipping a ~900 KB spreadsheet
+// library, this reads just what is needed with the browser's built-in
+// DecompressionStream (no dependencies, works offline). Only the first
+// worksheet's cell values are read - enough for plain grid reports.
+function xlsxStripAccents(s){return String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'');}
+function xlsxInflate(bytes,method){
+  if(method===0)return Promise.resolve(bytes);
+  if(typeof DecompressionStream==='undefined')return Promise.reject(new Error('This browser cannot read .xlsx files directly - save the sheet as CSV first.'));
+  var stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+  return new Response(stream).arrayBuffer().then(function(b){return new Uint8Array(b);});
+}
+// Returns {name: {method, data}} for every file in the zip (data still compressed).
+function xlsxListZip(buf){
+  var u8=new Uint8Array(buf),dv=new DataView(buf.buffer&&buf.buffer!==buf?buf.buffer:buf,buf.byteOffset||0,buf.byteLength),eocd=-1,i;
+  for(i=u8.length-22;i>=Math.max(0,u8.length-65557);i--){if(dv.getUint32(i,true)===0x06054b50){eocd=i;break;}}
+  if(eocd<0)throw new Error('Not a valid .xlsx file.');
+  var count=dv.getUint16(eocd+10,true),p=dv.getUint32(eocd+16,true),files={},dec=new TextDecoder('utf-8');
+  for(i=0;i<count;i++){
+    if(dv.getUint32(p,true)!==0x02014b50)break;
+    var method=dv.getUint16(p+10,true),csize=dv.getUint32(p+20,true),nlen=dv.getUint16(p+28,true),elen=dv.getUint16(p+30,true),clen=dv.getUint16(p+32,true),loff=dv.getUint32(p+42,true);
+    var name=dec.decode(u8.subarray(p+46,p+46+nlen));
+    var lnlen=dv.getUint16(loff+26,true),lelen=dv.getUint16(loff+28,true),start=loff+30+lnlen+lelen;
+    files[name]={method:method,data:u8.subarray(start,start+csize)};
+    p+=46+nlen+elen+clen;
+  }
+  return files;
+}
+function xlsxReadText(files,name){
+  var f=files[name];if(!f)return Promise.resolve('');
+  return xlsxInflate(f.data,f.method).then(function(b){return new TextDecoder('utf-8').decode(b);});
+}
+// -> Promise<{rows:{rowNumber:{COL:value}}}>
+function readXlsxFirstSheet(buf){
+  var files;
+  try{files=xlsxListZip(buf);}catch(e){return Promise.reject(e);}
+  var sheetName=Object.keys(files).filter(function(n){return /^xl\/worksheets\/sheet\d+\.xml$/.test(n);}).sort(function(a,b){return parseInt(a.match(/\d+/)[0],10)-parseInt(b.match(/\d+/)[0],10);})[0];
+  if(!sheetName)return Promise.reject(new Error('No worksheet found in this .xlsx file.'));
+  return Promise.all([xlsxReadText(files,'xl/sharedStrings.xml'),xlsxReadText(files,sheetName),xlsxReadText(files,'xl/styles.xml')]).then(function(r){
+    var parser=new DOMParser(),shared=[],dateXf={},dates={};
+    // Which cell styles are dates? (Dates are stored as plain serial numbers;
+    // only the style says "show this as a date".)
+    if(r[2]){
+      var st=parser.parseFromString(r[2],'text/xml'),customDate={},nf=st.getElementsByTagName('numFmt'),ni;
+      for(ni=0;ni<nf.length;ni++){
+        var code=(nf[ni].getAttribute('formatCode')||'').replace(/"[^"]*"/g,'').replace(/\[[^\]]*\]/g,'').replace(/\\./g,'');
+        if(/[dmy]/i.test(code)&&!/[hs]/i.test(code.replace(/mm?/gi,'')) )customDate[nf[ni].getAttribute('numFmtId')]=true;
+        else if(/[dy]/i.test(code))customDate[nf[ni].getAttribute('numFmtId')]=true;
+      }
+      var cx=st.getElementsByTagName('cellXfs')[0],xfs=cx?cx.getElementsByTagName('xf'):[];
+      for(ni=0;ni<xfs.length;ni++){
+        var fid=parseInt(xfs[ni].getAttribute('numFmtId')||'0',10);
+        if((fid>=14&&fid<=22)||(fid>=27&&fid<=36)||(fid>=45&&fid<=47)||(fid>=50&&fid<=58)||customDate[String(fid)])dateXf[ni]=true;
+      }
+    }
+    if(r[0]){
+      var sd=parser.parseFromString(r[0],'text/xml'),sis=sd.getElementsByTagName('si');
+      for(var i=0;i<sis.length;i++){
+        var ts=sis[i].getElementsByTagName('t'),txt='';
+        for(var j=0;j<ts.length;j++)txt+=ts[j].textContent;
+        shared.push(txt);
+      }
+    }
+    var doc=parser.parseFromString(r[1],'text/xml'),cells=doc.getElementsByTagName('c'),rows={};
+    for(var k=0;k<cells.length;k++){
+      var c=cells[k],ref=c.getAttribute('r')||'',m=ref.match(/^([A-Z]+)(\d+)$/);
+      if(!m)continue;
+      var t=c.getAttribute('t'),vEl=c.getElementsByTagName('v')[0],val=null;
+      if(t==='inlineStr'){var it=c.getElementsByTagName('t');val='';for(var q=0;q<it.length;q++)val+=it[q].textContent;}
+      else if(vEl){
+        var raw=vEl.textContent;
+        if(t==='s')val=shared[parseInt(raw,10)];
+        else if(t==='str'||t==='e'||t==='b')val=raw;
+        else{var nv=parseFloat(raw);val=isNaN(nv)?raw:nv;}
+      }
+      if(val===null||val===''||val===undefined)continue;
+      var rn=parseInt(m[2],10);
+      if(!rows[rn])rows[rn]={};
+      rows[rn][m[1]]=val;
+      if(typeof val==='number'&&t!=='s'&&t!=='str'&&dateXf[parseInt(c.getAttribute('s')||'0',10)])dates[rn+':'+m[1]]=true;
+    }
+    return {rows:rows,dates:dates};
+  });
+}
+// Turns the sheet into the same comma-separated text a "Save as CSV" would
+// give, so the existing CSV importers (Dutch/French/SMI/app formats) work on
+// .xlsx files unchanged. Dates are written as dd/mm/yyyy.
+function xlsxToCsvText(sheet,delim){
+  delim=delim||';';
+  var rows=sheet.rows,dates=sheet.dates||{},maxR=0,maxC=0,rn,col;
+  for(rn in rows){maxR=Math.max(maxR,+rn);for(col in rows[rn])maxC=Math.max(maxC,xlsxColNum(col));}
+  function colName(n){var s='';while(n>0){var m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26);}return s;}
+  function p2(n){return (n<10?'0':'')+n;}
+  var out=[];
+  for(var r=1;r<=maxR;r++){
+    var line=[],row=rows[r]||{};
+    for(var c=1;c<=maxC;c++){
+      var cn=colName(c),v=row[cn],s='';
+      if(v!==undefined&&v!==null){
+        if(dates[r+':'+cn]){var d=new Date(Math.round((v-25569)*86400000));s=p2(d.getUTCDate())+'/'+p2(d.getUTCMonth()+1)+'/'+d.getUTCFullYear();}
+        else if(typeof v==='number')s=String(Math.round(v*1e9)/1e9);
+        else s=String(v);
+      }
+      if(s.indexOf(delim)>=0||/["\n\r]/.test(s))s='"'+s.replace(/"/g,'""')+'"';
+      line.push(s);
+    }
+    out.push(line.join(delim));
+  }
+  return out.join('\n');
+}
+function xlsxColNum(col){var n=0;for(var i=0;i<col.length;i++)n=n*26+col.charCodeAt(i)-64;return n;}
+function isColombiaGestionReport(rows){
+  for(var rn=1;rn<=12;rn++){
+    var r=rows[rn];if(!r)continue;
+    for(var c in r){if(xlsxStripAccents(r[c]).toUpperCase().indexOf('GESTION CONTRACTUAL')>=0)return true;}
+  }
+  return false;
+}
+var SPANISH_MONTH_NAMES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+// Activity code -> app category. Counts, not hours: the Colombian form tracks
+// how many of each activity happened per day, so entries are created with 0
+// hours and the count in `aantal` (shown as "x N" in the description).
+var COLOMBIA_ACTIVITY_MAP={
+  CM:{cat:'Evangeliseren extern',label:'Contacto misionero'},
+  EB:{cat:'Bijbelstudie geven',label:'Estudio bíblico'},
+  CB:{cat:'Bijbelstudie geven',label:'Clase bautismal'},
+  VM:{cat:'Bezoek',label:'Visita misionera'},
+  P:{cat:'Predicacion',label:'Predicación'},
+  CC:{cat:'Pastoraal contact',label:'Consejería cristiana'},
+  S:{cat:'Pastoraal werk',label:'Santa Cena'},
+  R:{cat:'Vergaderen',label:'Reunión'},
+  OA:{cat:'Administratie',label:'Otras actividades'}
+};
+// Sub-codes the form's legend lists under "otra actividad".
+var COLOMBIA_OA_CODES={
+  V:{cat:'Pastoraal werk',label:'Vigilia'},
+  STC:{cat:'Pastoraal werk',label:'Santa Cena'},
+  AE:{cat:'Bezoek',label:'Atención a enfermos'},
+  F:{cat:'Pastoraal werk',label:'Funeral'},
+  AL:{cat:'Onderhoud',label:'Arreglos locativos'},
+  T:{cat:'Financiële administratie',label:'Tesorería'},
+  CP:{cat:'Predicacion',label:'Conferencia pública'}
+};
+// Pure function (no DOM / db access) so it can be tested directly.
+// `override` ({year,month}) is used when the sheet's AÑO/MES cells were empty.
+function parseColombiaGestionRows(rows,override){
+  var meta={nombre:'',asociacion:'',year:null,month:null};
+  var rowNums=Object.keys(rows).map(Number).sort(function(a,b){return a-b;});
+  function valueRightOf(rn,col){
+    var r=rows[rn],cn=xlsxColNum(col),best=null,bestN=1e9;
+    for(var c in r){var n=xlsxColNum(c);if(n>cn&&n<bestN){bestN=n;best=r[c];}}
+    return best;
+  }
+  var headerRow=-1,cols={};
+  rowNums.forEach(function(rn){
+    var r=rows[rn];
+    for(var c in r){
+      var v=xlsxStripAccents(r[c]).trim().toUpperCase();
+      if(rn<=7){
+        if(v==='NOMBRE:'||v==='NOMBRE')meta.nombre=String(valueRightOf(rn,c)||'').trim();
+        else if(v==='ASOCIACION:'||v==='ASOCIACION')meta.asociacion=String(valueRightOf(rn,c)||'').trim();
+        else if(v==='ANO:'||v==='ANO'){var yv=parseInt(valueRightOf(rn,c),10);if(yv>1900&&yv<2200)meta.year=yv;}
+        else if(v==='MES:'||v==='MES'){
+          var mv=valueRightOf(rn,c);
+          if(typeof mv==='number'&&mv>=1&&mv<=12)meta.month=Math.round(mv);
+          else if(mv!=null){
+            var ms=xlsxStripAccents(mv).trim().toLowerCase(),idx=-1;
+            SPANISH_MONTH_NAMES.forEach(function(nm,i){if(ms===nm||ms.slice(0,3)===nm.slice(0,3))idx=i;});
+            if(idx<0&&/^\d{1,2}$/.test(ms))idx=parseInt(ms,10)-1;
+            if(idx>=0&&idx<12)meta.month=idx+1;
+          }
+        }
+      }
+      if(headerRow<0&&v==='DIA'&&c==='A'){headerRow=rn;}
+    }
+  });
+  if(override){if(override.year)meta.year=override.year;if(override.month)meta.month=override.month;}
+  if(headerRow<0)return {entries:[],cursisten:[],meta:meta,error:'header'};
+  Object.keys(rows[headerRow]).forEach(function(c){
+    var v=xlsxStripAccents(rows[headerRow][c]).trim().toUpperCase();
+    if(v==='LUGAR')cols.lugar=c;
+    else if(v==='S'||v==='SC')cols.S=c;
+    else if(COLOMBIA_ACTIVITY_MAP[v])cols[v]=c;
+    else if(v.indexOf('NOMBRE')===0)cols.nombre=c;
+    else if(v==='VIAJES')cols.viajes=c;
+    else if(v==='URBANOS')cols.urbanos=c;
+    else if(v==='OTROS')cols.otros=c;
+  });
+  var year=meta.year,month=meta.month;
+  var entries=[];
+  var prevDay=null,inPrev=null,sawDay=false;
+  for(var i=0;i<rowNums.length;i++){
+    var rn=rowNums[i];if(rn<=headerRow)continue;
+    var r=rows[rn];
+    var dN=r.D!=null?xlsxStripAccents(r.D).toUpperCase():'';
+    if(dN.indexOf('TOTALES')>=0||(r.N!=null&&xlsxStripAccents(r.N).toUpperCase().trim()==='TOTALES'))break;
+    var day=parseInt(r.A,10);
+    if(isNaN(day)||day<1||day>31)continue;
+    sawDay=true;
+    if(inPrev===null)inPrev=(day>=20); // period starts on the 25th of the previous month
+    else if(prevDay!==null&&day<prevDay)inPrev=false;
+    prevDay=day;
+    if(!year||!month)continue;
+    var y=year,m=month;
+    if(inPrev){m=month-1;if(m<1){m=12;y=year-1;}}
+    var datum=y+'-'+String(m).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+    var lugar=cols.lugar&&r[cols.lugar]!=null?String(r[cols.lugar]).trim():'';
+    var nameTxt=cols.nombre&&r[cols.nombre]!=null?String(r[cols.nombre]).trim():'';
+    var shortName=(nameTxt&&nameTxt.length<=40&&!/\d/.test(nameTxt))?nameTxt:'';
+    ['CM','EB','CB','VM','P','CC','S','R','OA'].forEach(function(code){
+      var cell=cols[code]?r[cols[code]]:null;if(cell==null||cell==='')return;
+      var count=null,sub=null;
+      if(typeof cell==='number')count=cell;
+      else{
+        var tx=xlsxStripAccents(cell).trim().toUpperCase(),mm=tx.match(/^(\d+(?:[.,]\d+)?)?\s*([A-Z]{1,3})?$/);
+        if(mm){if(mm[1])count=parseFloat(mm[1].replace(',','.'));if(mm[2])sub=mm[2];if(count==null)count=1;}
+        else count=1;
+      }
+      if(!count||count<=0)return;
+      var map=COLOMBIA_ACTIVITY_MAP[code];
+      if(code==='OA'&&sub&&COLOMBIA_OA_CODES[sub])map=COLOMBIA_OA_CODES[sub];
+      var oms=map.label+(count>1?' x '+count:'')+(lugar?' - '+lugar:'');
+      entries.push({id:Date.now()+entries.length,datum:datum,categorie:map.cat,uren:0,km:0,kosten:0,aantal:count,
+        omschrijving:oms,cursistNaam:(code==='EB'||code==='CB'||code==='VM'||code==='CC')?shortName:'',themacode:'',thema:'',
+        opmerking:nameTxt,reminder:''});
+    });
+    // Expenses: one cost-only entry per non-empty column, tagged with its type.
+    [['viajes','intercity','Vervoer'],['urbanos','local','Vervoer'],['otros','other','Administratie']].forEach(function(ex){
+      var cell=cols[ex[0]]?r[cols[ex[0]]]:null;
+      var amt=typeof cell==='number'?cell:parseFloat(String(cell==null?'':cell).replace(/[^\d.,-]/g,'').replace(/\.(?=\d{3}\b)/g,'').replace(',','.'));
+      if(!amt||isNaN(amt)||amt<=0)return;
+      entries.push({id:Date.now()+entries.length,datum:datum,categorie:ex[2],uren:0,km:0,kosten:amt,kostenType:ex[1],
+        omschrijving:(lugar||'')+(lugar?' - ':'')+kostenTypeLabel(ex[1]),cursistNaam:'',themacode:'',thema:'',opmerking:'',reminder:''});
+    });
+  }
+  return {entries:entries,cursisten:[],meta:meta,needsPeriod:(sawDay&&(!year||!month))};
+}
+function processXlsxImportFile(file){
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    readXlsxFirstSheet(ev.target.result).then(function(sheet){
+      if(!isColombiaGestionReport(sheet.rows)){
+        // Any other workbook (Dutch/French/app formats): turn the first sheet
+        // into CSV text and hand it to the normal CSV importers.
+        processImportText(xlsxToCsvText(sheet),file.name.replace(/\.xlsx$/i,'.csv'));
+        return;
+      }
+      var imported=parseColombiaGestionRows(sheet.rows);
+      if(imported.needsPeriod && !parseColombiaGestionRows(sheet.rows,{year:2000,month:1}).entries.length){
+        showImportResult(tMap({nl:'Geen activiteiten gevonden in dit rapport (is het leeg?).',en:'No activities found in this report (is it empty?).',es:'No se encontraron actividades en este informe (¿está vacío?).'}),true);
+        return;
+      }
+      if(imported.needsPeriod){
+        // Month/year cells were empty - ask instead of guessing.
+        var now=new Date();
+        var yy=imported.meta.year||parseInt(prompt(tMap({nl:'Welk jaar is dit rapport?',en:'Which year is this report for?',es:'¿De qué año es este informe?'}),String(now.getFullYear())),10);
+        var mm=imported.meta.month||parseInt(prompt(tMap({nl:'Welke maand (1-12)?',en:'Which month (1-12)?',es:'¿Qué mes (1-12)?'}),String(now.getMonth()+1)),10);
+        if(!yy||!mm||mm<1||mm>12)return;
+        imported=parseColombiaGestionRows(sheet.rows,{year:yy,month:mm});
+      }
+      if(!imported.entries.length){
+        showImportResult(tMap({nl:'Geen activiteiten gevonden in dit rapport (is het leeg?).',en:'No activities found in this report (is it empty?).',es:'No se encontraron actividades en este informe (¿está vacío?).'}),true);
+        return;
+      }
+      applyImportedEntries(imported,'Informe de Gestión Contractual'+(imported.meta.nombre?' ('+imported.meta.nombre+')':''));
+    }).catch(function(err){showImportResult('Fout: '+err.message,true);});
+  };
+  reader.readAsArrayBuffer(file);
+}
+
 function processImportFile(file){
+  if(file.name.toLowerCase().endsWith('.xlsx')){processXlsxImportFile(file);return;}
   // PDFs are binary, not text - readAsText would just return garbage, so
   // they get their own extraction path (pdf.js, loaded lazily) instead of
   // falling into the CSV/JSON text branch below. See processPdfImportFile.
@@ -27189,6 +27507,14 @@ function processImportFile(file){
     let text;
     try{text=new TextDecoder('utf-8',{fatal:true}).decode(ev.target.result);}
     catch(_e){text=new TextDecoder('windows-1252').decode(ev.target.result);}
+    processImportText(text,file.name);
+  };
+  reader.readAsArrayBuffer(file);
+}
+// Text part of the import (CSV / JSON), split out so .xlsx files can reuse it.
+function processImportText(text,fileName){
+  const file={name:fileName};
+  {
     text=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
     try{
       if(file.name.toLowerCase().endsWith('.json')){
@@ -27286,8 +27612,7 @@ function processImportFile(file){
       const formatLabel=isMaandrapport?'Maandrapport (NL-formaat)':isLegacyReport?'Maandrapport (SMI-formaat)':isExcel?'Excel-urenregistratie':'App-export';
       applyImportedEntries(imported,formatLabel);
     }catch(err){showImportResult('Fout: '+err.message,true);}
-  };
-  reader.readAsArrayBuffer(file);
+  }
 }
 // Shared "add these parsed entries to the log" flow - originally inlined in
 // processImportFile, now also called by the smart/generic CSV import review
@@ -34384,7 +34709,7 @@ function agendaComplete(planId){
   h += '<div><span class="form-label">'+t('wizard_travel_hours')+'</span><select id="confirm-reisuren" class="hour-picker">'+buildHourOptions(p.reisUren||0)+'</select></div>';
   h += '<div><span class="form-label">'+distLabel()+'</span><input type="number" id="confirm-km" min="0" step="1" placeholder="0" value="'+(p.kmHeen!=null?p.kmHeen:(p.km||''))+'">'+kmRetourBlockHtml('confirm',p.kmRetour)+'</div>';
   h += '</div>';
-  h += '<div style="margin-top:8px"><span class="form-label">'+t('wizard_expense_label')+'</span><input type="number" id="confirm-kosten" min="0" step="0.01" placeholder="0.00 ('+currencySymbol()+')" value="'+(p.kosten||'')+'"></div>';
+  h += '<div style="margin-top:8px"><span class="form-label">'+t('wizard_expense_label')+'</span><input type="number" id="confirm-kosten" min="0" step="0.01" placeholder="0.00 ('+currencySymbol()+')" value="'+(p.kosten||'')+'">'+kostenTypeSelectHtml('confirm-kostentype',p.kostenType)+'</div>';
   h += '</div>';
   h += '<span class="form-label">'+noteOptLbl+'</span>';
   h += '<textarea id="confirm-opm" placeholder="'+howWentPh+'">'+(p.opmerking||'')+'</textarea>';
@@ -34426,6 +34751,7 @@ function agendaConfirmSave(planId){
     kmHeen: confirmKmR?confirmKmR.kmHeen:(p.kmHeen||undefined),
     kmRetour: confirmKmR?confirmKmR.kmRetour:(p.kmRetour||undefined),
     kosten: kostenEl?(parseFloat(kostenEl.value)||0):(p.kosten||0),
+    kostenType: (document.getElementById('confirm-kostentype')||{}).value!==undefined?document.getElementById('confirm-kostentype').value:(p.kostenType||''),
     reisUren: reisEl?(parseFloat(reisEl.value)||0):(p.reisUren||0),
     cursistId: p.cursistId||'',
     cursistNaam: p.cursistNaam||'',
@@ -34653,6 +34979,7 @@ function agendaQuickConfirm(planId){
     uren: p.uren||0,
     km: p.km||0,
     kosten: p.kosten||0,
+    kostenType: p.kostenType||'',
     reisUren: 0,
     cursistId: p.cursistId||'',
     cursistNaam: p.cursistNaam||'',
@@ -40653,7 +40980,7 @@ function openEditEntryModal(entryId,skipSummary){
   eeSumRow(t('wizard_hours'), '<input type="number" id="ee-q-uren" min="0" step="0.25" value="'+(parseFloat(e.uren)||0)+'" '+eeQIn+'>');
   if(parseFloat(e.km)>0)eeSumRow('Km', Math.round(parseFloat(e.km))+distUnit()+kmBreakdownSuffix(e.kmHeen,e.kmRetour));
   if(parseFloat(e.reisUren)>0)eeSumRow(t('wizard_travel_hours'), parseFloat(e.reisUren)+t('hours_abbr'));
-  if(parseFloat(e.kosten)>0)eeSumRow(t('col_kosten'), currencySymbol()+parseFloat(e.kosten).toFixed(2).replace('.',','));
+  if(parseFloat(e.kosten)>0)eeSumRow(t('col_kosten'), currencySymbol()+parseFloat(e.kosten).toFixed(2).replace('.',',')+(e.kostenType?' · '+kostenTypeLabel(e.kostenType):''));
   var eePhotos=entryPhotos(e);
   if(eePhotos.length)eeSumRow(receiptPhotoLabel(), eePhotos.map(function(p){return '<img src="'+p.thumb+'" style="width:32px;height:32px;object-fit:cover;border-radius:6px;border:1px solid var(--border);vertical-align:middle;margin-left:4px">';}).join(''));
   eeSumRow(t('wizard_cat'), '<select id="ee-q-cat" '+eeQIn.replace('width:120px','width:200px;max-width:100%')+'>'+catOpts.replace(/ selected(="selected")?/g,'').replace('value="'+String(e.categorie||'').replace(/"/g,'&quot;')+'"','value="'+String(e.categorie||'').replace(/"/g,'&quot;')+'" selected')+'</select>');
@@ -40747,7 +41074,7 @@ function openEditEntryModal(entryId,skipSummary){
   h+='<input type="number" id="ee-repeat-count" value="8" min="2" max="52" style="width:100%">';
   h+='</div>';
   h+='</div>'; // close .ee-fgrid
-  h+='<div style="margin-bottom:8px"><span class="form-label">'+t('col_kosten')+' ('+currencySymbol()+')</span><input type="number" id="ee-kosten" min="0" step="0.01" value="'+(e.kosten||0)+'" style="width:100%"></div>';
+  h+='<div style="margin-bottom:8px"><span class="form-label">'+t('col_kosten')+' ('+currencySymbol()+')</span><input type="number" id="ee-kosten" min="0" step="0.01" value="'+(e.kosten||0)+'" style="width:100%">'+kostenTypeSelectHtml('ee-kostentype',e.kostenType,'margin-top:6px;width:100%')+'</div>';
   h+=receiptPhotoFieldHtml('ee-receipt-photo-widget');
   h+='<div class="settings-section-title" style="margin-top:22px;padding-top:14px;border-top:1px solid var(--border)">'+tMap({nl:'Categorie & met wie',en:'Category & with whom',es:'Categoría y con quién',fr:'Catégorie et avec qui',de:'Kategorie & mit wem',ro:'Categorie și cu cine',it:'Categoria e con chi',pt:'Categoria e com quem'})+'</div>';
   h+='<span class="form-label">'+t('wizard_cat')+'</span>';
@@ -40892,6 +41219,7 @@ function duplicateEditEntry(entryId){
   }
   if(reisuren)e.reisUren=parseFloat(reisuren.value)||0;
   if(kosten)e.kosten=parseFloat(kosten.value)||0;
+  var _ktEl=document.getElementById('ee-kostentype');if(_ktEl)e.kostenType=_ktEl.value||'';
   if(cat)e.categorie=cat.value;
   if(cursist&&cursist.value==='__new__'){
     var newCu=resolveEeNewCursist();
@@ -41017,7 +41345,7 @@ function duplicateEditEntry(entryId){
         thema:occ.thema||'',themacode:occ.themacode||'',
         themaCompleted:occ.themaCompleted!==false,
         uren:parseFloat(occ.uren)||0,reisUren:parseFloat(occ.reisUren)||0,
-        km:parseFloat(occ.km)||0,kosten:parseFloat(occ.kosten)||0,
+        km:parseFloat(occ.km)||0,kosten:parseFloat(occ.kosten)||0,kostenType:occ.kostenType||'',
         opmerking:occ.opmerking||'',notitiePrive:!!occ.notitiePrive,
         completed:false,skipped:false,reminded:false,
         niveau:occ.niveau||undefined,
@@ -41062,6 +41390,7 @@ function saveEditEntry(entryId){
   }
   if(reisuren)e.reisUren=parseFloat(reisuren.value)||0;
   if(kosten)e.kosten=parseFloat(kosten.value)||0;
+  var _ktEl=document.getElementById('ee-kostentype');if(_ktEl)e.kostenType=_ktEl.value||'';
   if(cat)e.categorie=cat.value;
   if(cursist&&cursist.value==='__new__'){
     var newCu=resolveEeNewCursist();
