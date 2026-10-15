@@ -9274,6 +9274,7 @@ function setLanguage(lang){
   MONTHS_FULL=getMonthsFull();
   try{document.documentElement.lang=lang;}catch(e){}
   db.settings.lang=lang;
+  try{localStorage.setItem('wc_lang_pref',lang);}catch(e){}
   if(typeof save==='function')save();
   // Update lang button states
   // Update dropdown indicator
@@ -14261,6 +14262,9 @@ function updateReminderBar(){
 // SETTINGS
 function applySettings(){const s=db.settings;
   // Restore language from saved settings
+  // The language is a per-device choice: a sync/update from another device
+  // (e.g. one still set to English) must never flip this device's language.
+  try{var _lp=localStorage.getItem('wc_lang_pref');if(_lp&&TRANSLATIONS[_lp]&&_lp!==s.lang)s.lang=_lp;}catch(e){}
   if(s.lang&&s.lang!==LANG)setLanguage(s.lang);
   if(s.textSize)setTextSize(s.textSize);
   // Populate interval select with translated options
