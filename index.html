@@ -8922,7 +8922,11 @@ function isAiEnabled(){return !!db.settings&&db.settings.aiEnabled===true;}
 // activities instead of hours; switching hours off hides every hour field and
 // shows activity counts in the reports instead. Entries keep any hours they
 // already have - nothing is deleted, they are just not shown.
-function hoursOn(){return !(db&&db.settings&&db.settings.hoursOff===true);}
+function hoursOn(){
+  // Per-device preference (survives updates/sync); falls back to the synced setting.
+  try{var _hp=localStorage.getItem('wc_hours_off');if(_hp==='1')return false;if(_hp==='0')return true;}catch(e){}
+  return !(db&&db.settings&&db.settings.hoursOff===true);
+}
 function applyHoursMode(){
   _hoursOffFlag=!hoursOn();
   document.documentElement.classList.toggle('no-hours',_hoursOffFlag);
@@ -8962,6 +8966,7 @@ function renderHoursToggle(){
 function toggleHoursSetting(val){
   if(_suppressSettingsChange)return;
   db.settings.hoursOff=!val;
+  try{localStorage.setItem('wc_hours_off',val?'0':'1');}catch(e){}
   applyHoursMode();
   save();
   renderHoursToggle();
