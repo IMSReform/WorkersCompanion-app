@@ -20375,7 +20375,7 @@ function _renderLogInner(){
           <div class="ac-body" style="cursor:pointer" onclick="openMultiDaySpanSummary(${spanIdsJson},'entries')">
             <div class="ac-top">
               <div class="ac-who" style="${bsColor}">${title}</div>
-              <div class="ac-hours" style="display:flex;gap:16px;align-items:baseline"><span>${entryUren(e)||0}${t('hours_abbr')}</span><span style="min-width:34px;text-align:right;color:var(--amber);white-space:nowrap">${e.km?Math.round(e.km)+distUnit():(parseFloat(e.kosten)>0?currencySymbol()+parseFloat(e.kosten).toFixed(2).replace('.',','):'')}</span></div>
+              <div class="ac-hours" style="display:flex;gap:16px;align-items:baseline"><span class="hrs">${entryUren(e)||0}${t('hours_abbr')}</span><span style="min-width:34px;text-align:right;color:var(--amber);white-space:nowrap">${e.km?Math.round(e.km)+distUnit():(parseFloat(e.kosten)>0?currencySymbol()+parseFloat(e.kosten).toFixed(2).replace('.',','):'')}</span></div>
             </div>
             <div class="ac-cat">${getCatLabel(e.categorie)}</div>
             <div class="ac-desc">🗓 ${spanLbl}${subtitle?' · '+subtitle:''}</div>
@@ -20388,7 +20388,7 @@ function _renderLogInner(){
           <div class="ac-body">
             <div class="ac-top">
               <div class="ac-who" style="cursor:pointer;${bsColor}" onclick="openEditEntryModal(${idArg})">${title}</div>
-              <div class="ac-hours" style="display:flex;gap:16px;align-items:baseline"><span>${entryUren(e)||0}${t('hours_abbr')}</span><span style="min-width:34px;text-align:right;color:var(--amber);white-space:nowrap">${e.km?Math.round(e.km)+distUnit():(parseFloat(e.kosten)>0?currencySymbol()+parseFloat(e.kosten).toFixed(2).replace('.',','):'')}</span></div>
+              <div class="ac-hours" style="display:flex;gap:16px;align-items:baseline"><span class="hrs">${entryUren(e)||0}${t('hours_abbr')}</span><span style="min-width:34px;text-align:right;color:var(--amber);white-space:nowrap">${e.km?Math.round(e.km)+distUnit():(parseFloat(e.kosten)>0?currencySymbol()+parseFloat(e.kosten).toFixed(2).replace('.',','):'')}</span></div>
             </div>
             <div class="ac-cat">${e.tijd?formatTimeDisplay(e.tijd)+' · ':''}${getCatLabel(e.categorie)}${e.isAutoTravel?' 🚗':''}</div>
             ${subtitle?`<div class="ac-desc"${hasDescWithContact?' style="color:var(--brand);font-weight:600"':''}>${subtitle}</div>`:''}
@@ -20545,7 +20545,7 @@ function renderCalendar(){
           <div class="activity-card-inner">
             <div class="ac-stripe" style="background:${col}"></div>
             <div class="ac-body">
-              <div class="ac-top"><div class="ac-who" style="${titleClickable?'cursor:pointer;color:var(--brand)':''}" ${titleClickable?`onclick="openCursistByNaam('${e.cursistNaam||activityTitle(e)}')"`:''}>${titleTxt}</div><div class="ac-hours">${e.uren||0}${t('hours_abbr')}${e.km?' · '+e.km+distUnit():''}</div></div>
+              <div class="ac-top"><div class="ac-who" style="${titleClickable?'cursor:pointer;color:var(--brand)':''}" ${titleClickable?`onclick="openCursistByNaam('${e.cursistNaam||activityTitle(e)}')"`:''}>${titleTxt}</div><div class="ac-hours">${hoursOn()?(e.uren||0)+t('hours_abbr'):''}${e.km?(hoursOn()?' · ':'')+e.km+distUnit():''}</div></div>
               <div class="ac-cat">${e.categorie}</div>
               ${hasDescWithContact?`<div class="ac-desc" style="color:var(--brand);font-weight:600${e.cursistId?';cursor:pointer':''}" ${e.cursistId?`onclick="openCursistByNaam('${e.cursistNaam}')"`:''}>${e.cursistNaam}</div>`:''}
             </div>
@@ -32428,7 +32428,7 @@ function renderHomeCalendar(){
         h+='<div class="ac-stripe" style="background:'+col+'"></div>';
         h+='<div class="ac-body">';
         h+='<div class="ac-top"><div class="ac-who" style="cursor:pointer;color:var(--brand)" onclick="openEditEntryModal('+idArg+')">'+titleTxt+'</div>';
-        h+='<div class="ac-hours">'+(e.uren||0)+t('hours_abbr')+(e.km?' \u00b7 '+e.km+distUnit():'')+'</div></div>';
+        h+='<div class="ac-hours">'+(hoursOn()?(e.uren||0)+t('hours_abbr'):'')+(e.km?(hoursOn()?' \u00b7 ':'')+e.km+distUnit():'')+'</div></div>';
         h+='<div class="ac-cat">'+(e.tijd?formatTimeDisplay(e.tijd)+' · ':'')+getCatLabel(e.categorie)+'</div>';
         if(hasDescWithContact)h+='<div class="ac-desc" style="color:var(--brand);font-weight:600">'+e.cursistNaam+'</div>';
         h+='</div><div class="ac-actions" style="display:flex;align-items:center"><button class="ac-del" style="color:var(--brand)" onclick="quickRepeatFromLogEntry('+idArg+')" title="'+(t('repeat_lbl')||'Herhaal')+'"><svg width="14" height="14"><use href="#ico-refresh"/></svg></button><button class="ac-del" onclick="deleteEntry('+idArg+');renderHomeCalendar()" title="'+t('delete_btn')+'">&times;</button></div>';
