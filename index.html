@@ -27631,7 +27631,7 @@ function parseColombiaGestionRows(rows,override){
         // "Otras actividades" is described only by the free comment.
         if(code==='OA'&&rowComment)o=rowComment+(n>1?' x '+n:'')+(lugar?' - '+lugar:'');
         return {id:Date.now()+entries.length,datum:datum,categorie:map.cat,uren:0,km:0,kosten:0,aantal:n,
-          omschrijving:o,cursistNaam:nm||'',themacode:'',thema:'',opmerking:nameTxt,reminder:''};
+          omschrijving:o,cursistNaam:nm||'',themacode:'',thema:'',opmerking:'',reminder:''};
       }
       if(personCode&&take.length>=2&&take.length>=count){
         // One entry per person (the count matches the number of names).
