@@ -12188,6 +12188,7 @@ function migrateSettings(){
   migrateDuplicatePlannedIds();
   migrateDuplicateTodoIds();
   migrateDuplicatePrayerIds();
+  migrateContactsWithoutId();
   migrateDuplicateCursistIds();
   migrateLidPersonType();
   migrateCompanionPhotos();
@@ -12388,6 +12389,37 @@ function migrateDuplicatePrayerIds(){
 // contact keeps the original id (the first one in the array) - in
 // practice that's the real contact with real history, and the
 // second/duplicate is normally just an empty imported stub anyway.
+// Contacts coming out of an import used to be pushed as bare {naam} objects
+// with no id. Because history is matched with e.cursistId==cu.id, an id-less
+// contact matched EVERY entry that had no cursistId (undefined==undefined),
+// so all imported activities showed up in each such contact's history.
+// This gives imported contacts a real id and links the imported entries to
+// them by name.
+function _normPersonName(x){return xlsxStripAccents(x==null?'':x).trim().toLowerCase().replace(/\s+/g,' ');}
+function linkImportedContacts(cursisten,entries){
+  var byName={};
+  (db.cursisten||[]).forEach(function(c){if(c&&c.naam&&c.id!=null)byName[_normPersonName(c.naam)]=c;});
+  (cursisten||[]).forEach(function(c){
+    if(!c||!c.naam)return;
+    var k=_normPersonName(c.naam);if(byName[k])return;
+    var nc=Object.assign({voornaam:'',achternaam:'',type:'cursist',adres:'',postcode:'',plaats:'',land:'',tel:'',email:'',contactFrequency:'',extraZorg:false,opmerking:'',doopkandidaat:false,personTypes:['student'],personType:'student',status:'actief'},c);
+    if(nc.id==null||nc.id==='')nc.id=genUniqueId(db.cursisten);
+    db.cursisten.push(nc);byName[k]=nc;
+  });
+  (entries||[]).forEach(function(e){
+    if(e&&!e.cursistId&&e.cursistNaam){var c=byName[_normPersonName(e.cursistNaam)];if(c)e.cursistId=c.id;}
+  });
+}
+// Repairs contacts that were saved without an id by the old import code, and
+// links entries whose cursistNaam matches them.
+function migrateContactsWithoutId(){
+  (db.cursisten||[]).forEach(function(c){
+    if(!c||(c.id!=null&&c.id!==''))return;
+    c.id=genUniqueId(db.cursisten);
+    var k=_normPersonName(c.naam);
+    (db.entries||[]).forEach(function(e){if(e&&!e.cursistId&&e.cursistNaam&&_normPersonName(e.cursistNaam)===k)e.cursistId=c.id;});
+  });
+}
 function migrateDuplicateCursistIds(){
   if(!db.cursisten||!db.cursisten.length)return;
   var seen={};
@@ -13134,7 +13166,7 @@ async function syncToDrive(forceOverwrite){if(!useGoogleDrive||!accessToken){sav
       // group came right back - "I keep clicking it but it keeps coming
       // back". Union local+remote instead of overwriting, so a dismissal
       // made on either device always sticks.
-      db.settings.dismissedDupeGroups=Array.from(new Set([].concat((rdata.settings&&rdata.settings.dismissedDupeGroups)||[],_ddg||[])));}migrateCategoryLabels();migrateThemaOmschrijvingBug();migrateReizenTravelHours();migrateDuplicateEntryIds();migrateDuplicatePlannedIds();migrateDuplicateTodoIds();migrateDuplicatePrayerIds();migrateLidPersonType();saveLocal();}}}catch(pullErr){}
+      db.settings.dismissedDupeGroups=Array.from(new Set([].concat((rdata.settings&&rdata.settings.dismissedDupeGroups)||[],_ddg||[])));}migrateCategoryLabels();migrateThemaOmschrijvingBug();migrateReizenTravelHours();migrateDuplicateEntryIds();migrateDuplicatePlannedIds();migrateDuplicateTodoIds();migrateDuplicatePrayerIds();migrateContactsWithoutId();migrateLidPersonType();saveLocal();}}}catch(pullErr){}
   // If the pre-upload pull above didn't actually succeed (network blip,
   // transient Drive error, malformed/empty response) we have no idea what's
   // currently on Drive. Falling through to upload db as-is in that case used
@@ -13190,7 +13222,7 @@ async function loadFromDrive(){setSyncStatus('info',LANG==='en'?'Loading from Dr
       // Same fix as syncToDrive for dismissedDupeGroups - union instead of
       // overwrite, so a "geen duplicaten - negeren" dismissal made on this
       // device (or another one) never gets silently undone by a Drive pull.
-      db.settings.dismissedDupeGroups=Array.from(new Set([].concat((data.settings&&data.settings.dismissedDupeGroups)||[],_ddg2||[])));}migrateCategoryLabels();migrateThemaOmschrijvingBug();migrateDuplicateEntryIds();migrateDuplicatePlannedIds();migrateDuplicateTodoIds();migrateDuplicatePrayerIds();migrateLidPersonType();saveLocal();try{if(typeof renderHomeCalendar==='function')renderHomeCalendar();if(typeof fcRefreshFull==='function'&&document.getElementById('full-cal-overlay'))fcRefreshFull();}catch(_rc){}await syncToDrive();setSyncStatus('ok',LANG==='en'?'Loaded from Drive':LANG==='es'?'Cargado de Drive':LANG==='fr'?'Chargé depuis Drive':LANG==='de'?'Von Drive geladen':LANG==='it'?'Caricato da Drive':'Geladen vanuit Drive');}}else{
+      db.settings.dismissedDupeGroups=Array.from(new Set([].concat((data.settings&&data.settings.dismissedDupeGroups)||[],_ddg2||[])));}migrateCategoryLabels();migrateThemaOmschrijvingBug();migrateDuplicateEntryIds();migrateDuplicatePlannedIds();migrateDuplicateTodoIds();migrateDuplicatePrayerIds();migrateContactsWithoutId();migrateLidPersonType();saveLocal();try{if(typeof renderHomeCalendar==='function')renderHomeCalendar();if(typeof fcRefreshFull==='function'&&document.getElementById('full-cal-overlay'))fcRefreshFull();}catch(_rc){}await syncToDrive();setSyncStatus('ok',LANG==='en'?'Loaded from Drive':LANG==='es'?'Cargado de Drive':LANG==='fr'?'Chargé depuis Drive':LANG==='de'?'Von Drive geladen':LANG==='it'?'Caricato da Drive':'Geladen vanuit Drive');}}else{
   // No file at all in this account's appDataFolder - this is NOT the same as
   // "loaded and merged successfully". It happens on a genuinely fresh
   // account (fine, nothing to warn about) but ALSO happens silently if this
@@ -27828,7 +27860,7 @@ function applyImportedEntries(imported,formatLabel){
     if(confirm(_impMsg('add',formatLabel,imported.entries.length))){
       const _added=dedupeImportIds(imported.entries);
       db.entries=[...db.entries,..._added];
-      imported.cursisten.forEach(c=>{if(!db.cursisten.find(x=>x.naam===c.naam))db.cursisten.push(c);});
+      linkImportedContacts(imported.cursisten,_added);
       save();
       if(typeof screen!=='undefined'&&screen==='cursisten')renderCursisten();
       showImportResult(_impMsg('done','',imported.entries.length));
@@ -27848,7 +27880,7 @@ function applyImportedEntries(imported,formatLabel){
     removeEntriesMatchingImport(imported.entries);
     const _added=dedupeImportIds(imported.entries);
     db.entries=[...db.entries,..._added];
-    imported.cursisten.forEach(c=>{if(!db.cursisten.find(x=>x.naam===c.naam))db.cursisten.push(c);});
+    linkImportedContacts(imported.cursisten,_added);
     save();
     if(typeof screen!=='undefined'&&screen==='cursisten')renderCursisten();
     showImportResult(_impMsg('doneRepl','',imported.entries.length,split.dupeCount));
@@ -27857,7 +27889,7 @@ function applyImportedEntries(imported,formatLabel){
     if(split.newEntries.length===0)return;
     const _added=dedupeImportIds(split.newEntries);
     db.entries=[...db.entries,..._added];
-    imported.cursisten.forEach(c=>{if(!db.cursisten.find(x=>x.naam===c.naam))db.cursisten.push(c);});
+    linkImportedContacts(imported.cursisten,_added);
     save();
     if(typeof screen!=='undefined'&&screen==='cursisten')renderCursisten();
     showImportResult(_impMsg('doneSkip','',split.newEntries.length,split.dupeCount));
