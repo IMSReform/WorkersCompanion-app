@@ -1897,7 +1897,6 @@ setTimeout(function(){ try{hideBootSplash();}catch(e){} },8000);
         <div class="settings-item-body">
         <span class="form-label" data-i18n="vacation_days_goal">Vakantiedagen per jaar</span>
         <input type="number" id="goal-vacation-days" min="0" max="60" placeholder="24" oninput="saveSettings()">
-        <div class="toggle-row" style="margin-top:6px"><span class="toggle-label" id="lbl-use-moto">Motorbike</span><label class="toggle"><input type="checkbox" id="setting-use-moto" onchange="saveSettings();applyMotoSettingsUi()"><span class="toggle-slider"></span></label></div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0 16px">
           <div>
             <span class="form-label" data-i18n="km_rate_goal" id="lbl-km-rate-car">Km-vergoeding</span> <span id="km-rate-unit-suffix" style="color:var(--text3);font-size:12px"></span>
@@ -1908,6 +1907,7 @@ setTimeout(function(){ try{hideBootSplash();}catch(e){} },8000);
             <input type="number" id="goal-km-rate-moto" min="0" step="0.01" placeholder="0" oninput="saveSettings()">
           </div>
         </div>
+        <label style="display:flex;align-items:center;gap:8px;margin:2px 0 14px;cursor:pointer;font-size:12px;color:var(--text3)"><input type="checkbox" id="setting-use-moto" onchange="saveSettings();applyMotoSettingsUi()"><span id="lbl-use-moto">Motorbike</span></label>
         <span class="form-label" data-i18n="currency_label">Valuta</span>
         <select id="setting-currency" onchange="onCurrencyChanged()">
           <option value="EUR">EUR (€)</option>
