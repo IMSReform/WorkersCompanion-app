@@ -14317,7 +14317,7 @@ function applySettings(){const s=db.settings;
   updateAiKeyStatus();
   var kmRateEl=document.getElementById('goal-km-rate');
   try{applyMotoSettingsUi(true);}catch(e){}
-  if(kmRateEl)kmRateEl.placeholder=(LANG==='en'?'auto: ':LANG==='es'?'auto: ':LANG==='fr'?'auto : ':LANG==='de'?'auto: ':LANG==='ro'?'auto: ':LANG==='it'?'auto: ':'auto: ')+getKmRate(new Date().getFullYear(),'');
+  if(kmRateEl)kmRateEl.placeholder=rateDefaultPrefix()+getKmRate(new Date().getFullYear(),'');
   const sv=(id,val)=>{const el=document.getElementById(id);if(el){if(el.type==='checkbox')el.checked=!!val;else el.value=val||'';}};sv('setting-reminder-on',s.reminderOn);
   // Reminder text: show current language default if empty or equals any known default
   // Set reminder text field
@@ -31051,6 +31051,7 @@ function onCurrencyChanged(){
   if(prev!==now){['goal-km-rate','goal-km-rate-moto'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});}
   saveSettings();updateKmRateLabel();
 }
+function rateDefaultPrefix(){return tMap({nl:'standaard: ',en:'default: ',es:'por defecto: ',fr:'par défaut : ',de:'Standard: ',ro:'implicit: ',it:'predefinito: ',pt:'predefinido: '});}
 function applyMotoSettingsUi(fromLoad){
   var cb=document.getElementById('setting-use-moto');
   if(!cb)return;
@@ -31065,9 +31066,9 @@ function applyMotoSettingsUi(fromLoad){
   var l2=document.getElementById('lbl-km-rate-moto');
   if(l2)l2.textContent=tMap({nl:'Km-vergoeding motor',en:'Km reimbursement - motorbike',es:'Reembolso km - moto',fr:'Remboursement km - moto',de:'Km-Vergütung - Motorrad',ro:'Rambursare km - motocicletă',it:'Rimborso km - moto',pt:'Reembolso km - moto'});
   var mEl=document.getElementById('goal-km-rate-moto');
-  if(mEl){mEl.placeholder='auto: '+getKmRate(new Date().getFullYear(),'moto');if(fromLoad&&db.settings&&db.settings.goalKmRateMoto)mEl.value=db.settings.goalKmRateMoto;}
+  if(mEl){mEl.placeholder=rateDefaultPrefix()+getKmRate(new Date().getFullYear(),'moto');if(fromLoad&&db.settings&&db.settings.goalKmRateMoto)mEl.value=db.settings.goalKmRateMoto;}
   var cEl=document.getElementById('goal-km-rate');
-  if(cEl)cEl.placeholder='auto: '+getKmRate(new Date().getFullYear(),'');
+  if(cEl)cEl.placeholder=rateDefaultPrefix()+getKmRate(new Date().getFullYear(),'');
 }
 function currencySymbol(){
   var c=(db.settings&&db.settings.currency)||'EUR';
