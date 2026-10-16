@@ -1899,8 +1899,13 @@ setTimeout(function(){ try{hideBootSplash();}catch(e){} },8000);
         <input type="number" id="goal-vacation-days" min="0" max="60" placeholder="24" oninput="saveSettings()">
         <span class="form-label" data-i18n="km_rate_goal">Km-vergoeding</span> <span id="km-rate-unit-suffix" style="color:var(--text3);font-size:12px"></span>
         <input type="number" id="goal-km-rate" min="0" step="0.01" placeholder="0.23" oninput="saveSettings()">
+        <label class="toggle-row" style="display:flex;align-items:center;gap:8px;margin:10px 0 4px;cursor:pointer"><input type="checkbox" id="setting-use-moto" onchange="saveSettings();applyMotoSettingsUi()" style="width:auto;margin:0"><span class="form-label" style="margin:0" id="lbl-use-moto">Motorbike</span></label>
+        <div id="moto-rate-wrap" style="display:none">
+          <span class="form-label" id="lbl-km-rate-moto">Km reimbursement - motorbike</span> <span id="km-rate-unit-suffix-moto" style="color:var(--text3);font-size:12px"></span>
+          <input type="number" id="goal-km-rate-moto" min="0" step="0.01" placeholder="0" oninput="saveSettings()">
+        </div>
         <span class="form-label" data-i18n="currency_label">Valuta</span>
-        <select id="setting-currency" onchange="saveSettings();updateKmRateLabel()">
+        <select id="setting-currency" onchange="onCurrencyChanged()">
           <option value="EUR">EUR (€)</option>
           <option value="USD">USD ($)</option>
           <option value="GBP">GBP (£)</option>
@@ -6733,9 +6738,33 @@ function getKmRateForYear(year){
   var y=parseInt(year);
   return KM_RATE_BY_YEAR.hasOwnProperty(y)?KM_RATE_BY_YEAR[y]:KM_RATE_DEFAULT;
 }
-function getKmRate(year){
+// South-American default km allowances per currency: [car, motorbike] per km.
+// Colombia (COP) is 650 / 300; the other countries keep the same ~2.17 : 1
+// car-to-motorbike proportion, scaled to roughly the same real value in the
+// local currency. These are only starting points - both rates stay editable
+// in Settings to match the local agreement.
+var SA_KM_RATES={COP:[650,300],BRL:[0.9,0.4],MXN:[3,1.4],ARS:[200,90],CLP:[150,70],PEN:[0.6,0.28],BOB:[1.1,0.5],PYG:[1250,580],UYU:[6.5,3],VES:[25,12],GYD:[33,15],SRD:[6,2.8]};
+function curCode(){return (db&&db.settings&&db.settings.currency)||'EUR';}
+// Motorbike choice is offered when the worker ticked "I also use a motorbike"
+// in Settings; until they decide, it's on by default for South-American currencies.
+function vehicleEnabled(){
+  var s=db&&db.settings;
+  if(s&&s.useMoto===true)return true;
+  if(s&&s.useMoto===false)return false;
+  return !!SA_KM_RATES[curCode()];
+}
+function getKmRate(year,vehicle){
+  var s=db&&db.settings;
+  if(vehicle==='moto'){
+    if(s&&s.goalKmRateMoto>0)return s.goalKmRateMoto;
+    var sa=SA_KM_RATES[curCode()];
+    if(sa)return sa[1];
+    return Math.round(getKmRate(year,'')*(300/650)*100)/100;
+  }
   // A manually-set rate in Settings always wins (explicit user override).
-  if(db&&db.settings&&db.settings.goalKmRate&&db.settings.goalKmRate>0)return db.settings.goalKmRate;
+  if(s&&s.goalKmRate&&s.goalKmRate>0)return s.goalKmRate;
+  var sa2=SA_KM_RATES[curCode()];
+  if(sa2)return sa2[0];
   return getKmRateForYear(year!==undefined&&year!==null?year:new Date().getFullYear());
 }
 // Correct km-reimbursement total for a set of entries that may span more
@@ -6753,11 +6782,11 @@ function kmReimbursementForEntries(entries){
   (entries||[]).forEach(function(e){
     var km=parseFloat(e&&e.km)||0;
     if(!km)return;
-    var y=(e&&e.datum||'').slice(0,4);
+    var y=(e&&e.datum||'').slice(0,4)+'|'+(e&&e.vehicle==='moto'?'moto':'');
     byYear[y]=(byYear[y]||0)+km;
   });
   var total=0;
-  Object.keys(byYear).forEach(function(y){total+=byYear[y]*getKmRate(y);});
+  Object.keys(byYear).forEach(function(k){var pr=k.split('|');total+=byYear[k]*getKmRate(pr[0],pr[1]);});
   return total;
 }
 function getMonthsShort(){if(LANG==='en')return['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];if(LANG==='es')return['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];if(LANG==='fr')return['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];if(LANG==='de')return['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];if(LANG==='ro')return['Ian','Feb','Mar','Apr','Mai','Iun','Iul','Aug','Sep','Oct','Nov','Dec'];if(LANG==='it')return['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];if(LANG==='pt')return['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];return['Jan','Feb','Mrt','Apr','Mei','Jun','Jul','Aug','Sept','Okt','Nov','Dec'];}
@@ -14283,7 +14312,8 @@ function applySettings(){const s=db.settings;
   renderGpDisplaySettings();
   updateAiKeyStatus();
   var kmRateEl=document.getElementById('goal-km-rate');
-  if(kmRateEl)kmRateEl.placeholder=(LANG==='en'?'auto: ':LANG==='es'?'auto: ':LANG==='fr'?'auto : ':LANG==='de'?'auto: ':LANG==='ro'?'auto: ':LANG==='it'?'auto: ':'auto: ')+getKmRateForYear(new Date().getFullYear());
+  try{applyMotoSettingsUi(true);}catch(e){}
+  if(kmRateEl)kmRateEl.placeholder=(LANG==='en'?'auto: ':LANG==='es'?'auto: ':LANG==='fr'?'auto : ':LANG==='de'?'auto: ':LANG==='ro'?'auto: ':LANG==='it'?'auto: ':'auto: ')+getKmRate(new Date().getFullYear(),'');
   const sv=(id,val)=>{const el=document.getElementById(id);if(el){if(el.type==='checkbox')el.checked=!!val;else el.value=val||'';}};sv('setting-reminder-on',s.reminderOn);
   // Reminder text: show current language default if empty or equals any known default
   // Set reminder text field
@@ -14371,6 +14401,8 @@ function saveSettings(){if(_suppressSettingsChange)return;const s=db.settings;s.
   var _gvdNum=parseInt(_gvdRaw);
   s.goalVacationDays=(_gvdRaw===''||_gvdRaw===undefined||isNaN(_gvdNum))?null:_gvdNum;
   s.goalKmRate=parseFloat(document.getElementById('goal-km-rate')?.value)||0;
+  s.goalKmRateMoto=parseFloat(document.getElementById('goal-km-rate-moto')?.value)||0;
+  var _umEl=document.getElementById('setting-use-moto');if(_umEl&&_umEl.dataset.touched==='1')s.useMoto=!!_umEl.checked;
   s.currency=document.getElementById('setting-currency')?.value||'EUR';
   s.distanceUnit=document.getElementById('setting-distance-unit')?.value||'km';
   s.myAdres=document.getElementById('setting-adres')?.value||'';
@@ -19074,13 +19106,27 @@ function kmRetourAddLbl(){return tMap({nl:'+ Retour toevoegen',en:'+ Add return 
 function kmRetourRemoveLbl(){return tMap({nl:'– Retour verwijderen',en:'– Remove return trip',es:'– Quitar viaje de vuelta',fr:'– Retirer le trajet retour',de:'– Rückfahrt entfernen',ro:'– Elimină drumul de întoarcere',it:'– Rimuovi viaggio di ritorno',pt:'– Remover viagem de volta'});}
 function kmRetourFieldLbl(){return tMap({nl:'Retour (km)',en:'Return (km)',es:'Vuelta (km)',fr:'Retour (km)',de:'Rückfahrt (km)',ro:'Întoarcere (km)',it:'Ritorno (km)',pt:'Volta (km)'});}
 function kmRetourWordLbl(){return tMap({nl:'retour',en:'return',es:'vuelta',fr:'retour',de:'Rückfahrt',ro:'întoarcere',it:'ritorno',pt:'volta'});}
-function kmRetourBlockHtml(prefix,kmRetourVal){
+function vehicleLbl(v){return v==='moto'?tMap({nl:'Motor',en:'Motorbike',es:'Moto',fr:'Moto',de:'Motorrad',ro:'Motocicletă',it:'Moto',pt:'Moto'}):tMap({nl:'Auto',en:'Car',es:'Carro',fr:'Voiture',de:'Auto',ro:'Mașină',it:'Auto',pt:'Carro'});}
+function vehicleSelectHtml(prefix,cur){
+  if(!vehicleEnabled())return '';
+  var v=cur!=null&&cur!==undefined?cur:((db.settings&&db.settings.lastVehicle)||'');
+  return '<div style="margin-top:6px"><span class="form-label" style="font-size:11px">'+tMap({nl:'Voertuig',en:'Vehicle',es:'Vehículo',fr:'Véhicule',de:'Fahrzeug',ro:'Vehicul',it:'Veicolo',pt:'Veículo'})+'</span><select id="'+prefix+'-veh"><option value=""'+(v==='moto'?'':' selected')+'>'+vehicleLbl('')+'</option><option value="moto"'+(v==='moto'?' selected':'')+'>'+vehicleLbl('moto')+'</option></select></div>';
+}
+function readVehicle(prefix){
+  var el=document.getElementById(prefix+'-veh');
+  if(!el)return undefined;
+  var v=el.value==='moto'?'moto':'';
+  try{db.settings.lastVehicle=v;}catch(e){}
+  return v;
+}
+function kmRetourBlockHtml(prefix,kmRetourVal,vehicleVal){
   var has=kmRetourVal!=null&&parseFloat(kmRetourVal)>0;
   var h='<div id="'+prefix+'-retour-wrap" style="display:'+(has?'block':'none')+';margin-top:6px">';
   h+='<span class="form-label" style="font-size:11px">'+kmRetourFieldLbl()+'</span>';
   h+='<input type="number" id="'+prefix+'-km-retour" min="0" step="1" placeholder="0" value="'+(has?kmRetourVal:'')+'">';
   h+='</div>';
   h+='<div style="margin-top:4px"><a href="javascript:void(0)" id="'+prefix+'-retour-link" onclick="toggleKmRetour(\''+prefix+'\')" style="font-size:12px;color:var(--brand);text-decoration:none;font-weight:600">'+(has?kmRetourRemoveLbl():kmRetourAddLbl())+'</a></div>';
+  h+=vehicleSelectHtml(prefix,vehicleVal);
   return h;
 }
 function toggleKmRetour(prefix){
@@ -19114,8 +19160,9 @@ function readKmWithRetour(prefix){
   var heen=kmEl?(parseFloat(kmEl.value)||0):0;
   var retourActive=wrap&&wrap.style.display!=='none';
   var retour=retourActive&&retourEl?(parseFloat(retourEl.value)||0):0;
-  if(retourActive&&retour>0)return {km:heen+retour,kmHeen:heen,kmRetour:retour};
-  return {km:heen,kmHeen:null,kmRetour:null};
+  var veh=readVehicle(prefix);
+  if(retourActive&&retour>0)return {km:heen+retour,kmHeen:heen,kmRetour:retour,vehicle:veh};
+  return {km:heen,kmHeen:null,kmRetour:null,vehicle:veh};
 }
 // Small " (12 + 12 retour)" suffix for anywhere that already prints a km
 // number and wants to show the heen/retour breakdown alongside the total -
@@ -19251,7 +19298,7 @@ function renderWiz(){
                  empty and nothing gets saved unless the person actually
                  types a number in. -->
             ${(db.settings&&db.settings.myAdres&&draft.cursistId&&db.cursisten.find(c=>c.id==draft.cursistId)?.adres)?`<button type="button" onclick="autoFillKmInWizard()" style="margin-top:6px;width:100%;padding:6px;font-size:12px;border:1px dashed var(--brand);border-radius:6px;background:var(--brand-light);color:var(--brand);cursor:pointer">📍 ${t('calc_km_auto')||'Km automatisch berekenen'}</button><div id="km-auto-info" style="font-size:11px;color:var(--text3);margin-top:4px"></div>`:''}
-            ${kmRetourBlockHtml('w',draft.kmRetour)}
+            ${kmRetourBlockHtml('w',draft.kmRetour,draft.vehicle)}
           </div>
         </div>
         <div style="margin-top:10px">
@@ -19276,7 +19323,7 @@ function renderWiz(){
         <div>
           <span class="form-label">${distLabel()}</span>
           <input type="number" id="w-km" min="0" step="1" placeholder="0" value="${draft.kmHeen!=null?draft.kmHeen:(draft.km||'')}">
-          ${kmRetourBlockHtml('w',draft.kmRetour)}
+          ${kmRetourBlockHtml('w',draft.kmRetour,draft.vehicle)}
         </div>
         <div style="margin-top:10px">
           <input type="number" id="w-kosten" min="0" step="0.01" placeholder="0.00 (${currencySymbol()})" value="${draft.kosten||''}">
@@ -19696,6 +19743,7 @@ function wSet(key,id){const el=document.getElementById(id);if(el)draft[key]=el.v
 function wSetKm(){
   var r=readKmWithRetour('w');
   draft.km=r.km;
+  if(r.vehicle!==undefined)draft.vehicle=r.vehicle;
   if(r.kmHeen!=null){draft.kmHeen=r.kmHeen;draft.kmRetour=r.kmRetour;}
   else{delete draft.kmHeen;delete draft.kmRetour;}
 }
@@ -19897,6 +19945,7 @@ function saveDraftAsPlanned(){
     themaCompleted:draft.themaCompleted!==false,
     uren:parseFloat(draft.uren)||0,
     km:parseFloat(draft.km)||0,
+    vehicle:(parseFloat(draft.km)>0&&draft.vehicle==='moto')?'moto':'',
     kosten:parseFloat(draft.kosten)||0,
     kostenType:draft.kostenType||'',
     opmerking:draft.opmerking||'',
@@ -21429,7 +21478,7 @@ function openQuickRepeatModal(last, prefillDate){
   h+=qrMultiHtml;
   h+='<span class="form-label hrs">'+t('wizard_travel_hours')+'</span><select id="qr-reisuren" class="hour-picker hrs" style="margin-bottom:8px">'+buildHourOptions(last.reisUren||0)+'</select>';
   h+='<span class="form-label">Km</span><input type="number" id="qr-km" value="'+(last.kmHeen!=null?last.kmHeen:(last.km||''))+'" min="0" placeholder="0" style="margin-bottom:8px">';
-  h+=kmRetourBlockHtml('qr',last.kmRetour);
+  h+=kmRetourBlockHtml('qr',last.kmRetour,last.vehicle);
   if(orgNeedsNiveauTag()){
     // #1305 Field/Union tag - preselected from the source entry (unset = Field).
     var qrNv=last.niveau==='union'?'union':'field';
@@ -21664,6 +21713,7 @@ function saveQuickRepeat(sourceEntryId){
   if(km){
     var kmR=readKmWithRetour('qr');
     newEntry.km=kmR.km;
+    if(kmR.vehicle!==undefined)newEntry.vehicle=kmR.vehicle;
     if(kmR.kmHeen!=null){newEntry.kmHeen=kmR.kmHeen;newEntry.kmRetour=kmR.kmRetour;}
     else{delete newEntry.kmHeen;delete newEntry.kmRetour;}
   }
@@ -21700,6 +21750,7 @@ function saveQuickRepeat(sourceEntryId){
       themaCompleted:newEntry.themaCompleted!==false,
       uren:newEntry.uren||0,
       km:newEntry.km||0,
+      vehicle:newEntry.vehicle||'',
       kmHeen:newEntry.kmHeen,
       kmRetour:newEntry.kmRetour,
       kosten:newEntry.kosten||0,
@@ -30980,6 +31031,37 @@ function distColLabel(){
 function updateKmRateLabel(){
   var el=document.getElementById('km-rate-unit-suffix');
   if(el)el.textContent='('+currencySymbol()+'/'+distUnit()+')';
+  var el2=document.getElementById('km-rate-unit-suffix-moto');
+  if(el2)el2.textContent='('+currencySymbol()+'/'+distUnit()+')';
+  try{applyMotoSettingsUi(true);}catch(e){}
+}
+// Shows/hides the motorbike-rate field and keeps labels + placeholders (the
+// current default rates) in sync with the chosen currency. fromLoad=true
+// means "just reflect saved state"; otherwise the user changed the checkbox.
+// Switching currency makes any previously typed rate meaningless (e.g. a euro
+// 0.23 would read as 0.23 pesos), so both rate fields go back to "auto" and
+// the new country's defaults apply until the worker types their own.
+function onCurrencyChanged(){
+  var prev=(db.settings&&db.settings.currency)||'EUR';
+  var now=(document.getElementById('setting-currency')||{}).value||prev;
+  if(prev!==now){['goal-km-rate','goal-km-rate-moto'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});}
+  saveSettings();updateKmRateLabel();
+}
+function applyMotoSettingsUi(fromLoad){
+  var cb=document.getElementById('setting-use-moto');
+  if(!cb)return;
+  if(!fromLoad)cb.dataset.touched='1';
+  else if(cb.dataset.touched!=='1')cb.checked=vehicleEnabled();
+  var on=cb.checked;
+  var w=document.getElementById('moto-rate-wrap');if(w)w.style.display=on?'block':'none';
+  var l=document.getElementById('lbl-use-moto');
+  if(l)l.textContent=tMap({nl:'Ik gebruik ook een motor',en:'I also use a motorbike',es:'También uso moto',fr:'J\'utilise aussi une moto',de:'Ich nutze auch ein Motorrad',ro:'Folosesc și motocicletă',it:'Uso anche una moto',pt:'Uso também moto'});
+  var l2=document.getElementById('lbl-km-rate-moto');
+  if(l2)l2.textContent=tMap({nl:'Km-vergoeding motor',en:'Km reimbursement - motorbike',es:'Reembolso km - moto',fr:'Remboursement km - moto',de:'Km-Vergütung - Motorrad',ro:'Rambursare km - motocicletă',it:'Rimborso km - moto',pt:'Reembolso km - moto'});
+  var mEl=document.getElementById('goal-km-rate-moto');
+  if(mEl){mEl.placeholder='auto: '+getKmRate(new Date().getFullYear(),'moto');if(fromLoad&&db.settings&&db.settings.goalKmRateMoto)mEl.value=db.settings.goalKmRateMoto;}
+  var cEl=document.getElementById('goal-km-rate');
+  if(cEl)cEl.placeholder='auto: '+getKmRate(new Date().getFullYear(),'');
 }
 function currencySymbol(){
   var c=(db.settings&&db.settings.currency)||'EUR';
@@ -33634,7 +33716,7 @@ function openPlanModal(planId, prefillDate){
   h += '<label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer"><input id="plan-thema-completed" type="checkbox" '+(p&&p.themaCompleted===false?'':'checked')+' style="width:16px;height:16px;flex-shrink:0;margin-top:2px"><span><span style="font-size:13px;display:block">'+t('thema_completed_lbl')+'</span><span style="font-size:11px;color:var(--text3)">'+t('thema_completed_hint')+'</span></span></label>';
   h += '</div>';
   h += '<span class="form-label">'+(t('wizard_km')||'Km')+'</span><input type="number" id="plan-km" value="'+(p&&p.kmHeen!=null?p.kmHeen:(p&&p.km?p.km:''))+'" min="0" placeholder="0" style="margin-bottom:8px">';
-  h += kmRetourBlockHtml('plan',p&&p.kmRetour);
+  h += kmRetourBlockHtml('plan',p&&p.kmRetour,p&&p.vehicle);
   h += '<span class="form-label">'+t('wizard_note')+'</span>';
   h += '<textarea id="plan-opmerking" placeholder="'+(t('wizard_notes_ph')||'Notities...')+'" style="height:60px">'+(p&&p.opmerking?p.opmerking:'')+'</textarea>';
   if(!p){
@@ -34679,6 +34761,7 @@ function savePlanModal(planId){
     km: (km?readKmWithRetour('plan').km:0),
     kmHeen: (km?readKmWithRetour('plan').kmHeen:null),
     kmRetour: (km?readKmWithRetour('plan').kmRetour:null),
+    vehicle: (km?(readKmWithRetour('plan').vehicle||''):''),
     opmerking: opm?opm.value:'',
     completed: false, skipped: false, reminded: false
   };
@@ -34951,7 +35034,7 @@ function agendaComplete(planId){
   h += '<div id="confirm-more-fields" style="display:'+(hasExtra?'block':'none')+';margin-bottom:8px">';
   h += '<div class="field-row">';
   h += '<div class="hrs"><span class="form-label">'+t('wizard_travel_hours')+'</span><select id="confirm-reisuren" class="hour-picker">'+buildHourOptions(p.reisUren||0)+'</select></div>';
-  h += '<div><span class="form-label">'+distLabel()+'</span><input type="number" id="confirm-km" min="0" step="1" placeholder="0" value="'+(p.kmHeen!=null?p.kmHeen:(p.km||''))+'">'+kmRetourBlockHtml('confirm',p.kmRetour)+'</div>';
+  h += '<div><span class="form-label">'+distLabel()+'</span><input type="number" id="confirm-km" min="0" step="1" placeholder="0" value="'+(p.kmHeen!=null?p.kmHeen:(p.km||''))+'">'+kmRetourBlockHtml('confirm',p.kmRetour,p.vehicle)+'</div>';
   h += '</div>';
   h += '<div style="margin-top:8px"><span class="form-label">'+t('wizard_expense_label')+'</span><input type="number" id="confirm-kosten" min="0" step="0.01" placeholder="0.00 ('+currencySymbol()+')" value="'+(p.kosten||'')+'">'+kostenTypeSelectHtml('confirm-kostentype',p.kostenType)+'</div>';
   h += '</div>';
@@ -34994,6 +35077,7 @@ function agendaConfirmSave(planId){
     km: confirmKmR?confirmKmR.km:(p.km||0),
     kmHeen: confirmKmR?confirmKmR.kmHeen:(p.kmHeen||undefined),
     kmRetour: confirmKmR?confirmKmR.kmRetour:(p.kmRetour||undefined),
+    vehicle: (confirmKmR&&confirmKmR.vehicle!==undefined)?confirmKmR.vehicle:(p.vehicle||''),
     kosten: kostenEl?(parseFloat(kostenEl.value)||0):(p.kosten||0),
     kostenType: (document.getElementById('confirm-kostentype')||{}).value!==undefined?document.getElementById('confirm-kostentype').value:(p.kostenType||''),
     reisUren: reisEl?(parseFloat(reisEl.value)||0):(p.reisUren||0),
@@ -35222,6 +35306,7 @@ function agendaQuickConfirm(planId){
     themaCompleted: p.themaCompleted!==false,
     uren: p.uren||0,
     km: p.km||0,
+    vehicle: p.vehicle||'',
     kosten: p.kosten||0,
     kostenType: p.kostenType||'',
     reisUren: 0,
@@ -41296,6 +41381,7 @@ function saveStudyEntry(cursistId){
     km:(km?readKmWithRetour('cs').km:0),
     kmHeen:(km?readKmWithRetour('cs').kmHeen:null),
     kmRetour:(km?readKmWithRetour('cs').kmRetour:null),
+    vehicle:(km?(readKmWithRetour('cs').vehicle||''):''),
     reisUren:parseFloat(reisuren&&reisuren.value)||0,
     opmerking:opm?opm.value:'',
     isManual:true
@@ -41469,7 +41555,7 @@ function openEditEntryModal(entryId,skipSummary){
   h+='<option value="biweekly">'+t('repeat_biweekly')+'</option>';
   h+='<option value="monthly">'+t('repeat_monthly')+'</option>';
   h+='</select></div>';
-  h+='<div><span class="form-label">Km</span><input type="number" id="ee-km" min="0" value="'+(e.kmHeen!=null?e.kmHeen:(e.km||0))+'" style="width:100%">'+kmRetourBlockHtml('ee',e.kmRetour)+'</div>';
+  h+='<div><span class="form-label">Km</span><input type="number" id="ee-km" min="0" value="'+(e.kmHeen!=null?e.kmHeen:(e.km||0))+'" style="width:100%">'+kmRetourBlockHtml('ee',e.kmRetour,e.vehicle||'')+'</div>';
   h+='<div id="ee-repeat-count-wrap" style="display:none;grid-column:1/-1">';
   h+='<span class="form-label">'+t('repeat_count_lbl')+'</span>';
   h+='<input type="number" id="ee-repeat-count" value="8" min="2" max="52" style="width:100%">';
@@ -41615,6 +41701,7 @@ function duplicateEditEntry(entryId){
   if(km){
     var eeKmR2=readKmWithRetour('ee');
     e.km=eeKmR2.km;
+    if(eeKmR2.vehicle!==undefined)e.vehicle=eeKmR2.vehicle;
     if(eeKmR2.kmHeen!=null){e.kmHeen=eeKmR2.kmHeen;e.kmRetour=eeKmR2.kmRetour;}
     else{delete e.kmHeen;delete e.kmRetour;}
   }
@@ -41746,7 +41833,7 @@ function duplicateEditEntry(entryId){
         thema:occ.thema||'',themacode:occ.themacode||'',
         themaCompleted:occ.themaCompleted!==false,
         uren:parseFloat(occ.uren)||0,reisUren:parseFloat(occ.reisUren)||0,
-        km:parseFloat(occ.km)||0,kosten:parseFloat(occ.kosten)||0,kostenType:occ.kostenType||'',
+        km:parseFloat(occ.km)||0,vehicle:occ.vehicle||'',kosten:parseFloat(occ.kosten)||0,kostenType:occ.kostenType||'',
         opmerking:occ.opmerking||'',notitiePrive:!!occ.notitiePrive,
         completed:false,skipped:false,reminded:false,
         niveau:occ.niveau||undefined,
@@ -41786,6 +41873,7 @@ function saveEditEntry(entryId){
   if(km){
     var eeKmR=readKmWithRetour('ee');
     e.km=eeKmR.km;
+    if(eeKmR.vehicle!==undefined)e.vehicle=eeKmR.vehicle;
     if(eeKmR.kmHeen!=null){e.kmHeen=eeKmR.kmHeen;e.kmRetour=eeKmR.kmRetour;}
     else{delete e.kmHeen;delete e.kmRetour;}
   }
