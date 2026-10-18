@@ -1962,7 +1962,7 @@ setTimeout(function(){ try{hideBootSplash();}catch(e){} },8000);
           <div style="font-weight:600;font-size:14px" data-i18n="import_btn">Klik of sleep bestand</div>
           <div style="font-size:12px;margin-top:4px" data-i18n="import_formats">CSV, Excel, JSON of PDF</div>
         </div>
-        <input type="file" id="import-file" accept=".csv,.json,.pdf,.xlsx" multiple
+        <input type="file" id="import-file" accept=".csv,.json,.pdf,.xlsx,.ics" multiple
           style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;z-index:-1"
           onchange="handleImportFile(event)">
         <div id="import-result" style="margin-top:10px"></div>
@@ -6275,6 +6275,12 @@ const DRIVE_FILE_NAME='ZDA_Urenregistratie_'+new Date().getFullYear()+'.json';
 // Keep entries short and in plain language (what changed / where to find
 // it), not commit messages.
 const CHANGELOG=[
+  {date:'2026-10-18',items:[
+    {type:'new',nl:"Google Agenda (of een andere agenda) importeren: exporteer je agenda als .ics-bestand en sleep of kies het bij Instellingen → Gegevens. Je kiest welke afspraken erbij komen; terugkerende afspraken worden automatisch uitgeschreven. Ze tellen niet mee als gewerkte uren.",en:"Import Google Calendar (or any other calendar): export your calendar as an .ics file and drop or pick it under Settings → Data. You choose which events to add; recurring events are expanded automatically. They do not count as worked hours.",es:"Importar Google Calendar (u otro calendario): exporta tu calendario como archivo .ics y arrástralo o elígelo en Ajustes → Datos. Eliges qué eventos añadir; los eventos recurrentes se expanden automáticamente. No cuentan como horas trabajadas.",fr:"Importer Google Agenda (ou un autre calendrier) : exportez votre calendrier en fichier .ics et déposez-le ou choisissez-le dans Paramètres → Données. Vous choisissez les événements à ajouter ; les événements récurrents sont développés automatiquement. Ils ne comptent pas comme heures travaillées.",de:"Google Kalender (oder einen anderen Kalender) importieren: Exportiere deinen Kalender als .ics-Datei und ziehe sie unter Einstellungen → Daten hinein oder wähle sie aus. Du wählst, welche Termine hinzugefügt werden; wiederkehrende Termine werden automatisch aufgelöst. Sie zählen nicht als Arbeitsstunden.",ro:"Importă Google Calendar (sau alt calendar): exportă calendarul ca fișier .ics și trage-l sau alege-l din Setări → Date. Alegi ce evenimente se adaugă; evenimentele recurente sunt extinse automat. Nu contează ca ore lucrate.",it:"Importa Google Calendar (o un altro calendario): esporta il calendario come file .ics e trascinalo o sceglilo in Impostazioni → Dati. Scegli quali eventi aggiungere; gli eventi ricorrenti vengono espansi automaticamente. Non contano come ore lavorate.",pt:"Importar o Google Agenda (ou outro calendário): exporte o seu calendário como ficheiro .ics e arraste-o ou escolha-o em Definições → Dados. Escolhe quais os eventos a adicionar; os eventos recorrentes são expandidos automaticamente. Não contam como horas trabalhadas."},
+    {type:'new',nl:"Reiskostenvergoeding per voertuig: in Zuid-Amerika kun je nu een aparte vergoeding voor auto en motor gebruiken (bijv. Colombia 650 en 300 COP per km). De tarieven zijn per valuta voorgesteld en aan te passen onder Instellingen; kies bij het registreren of je met auto of motor reisde.",en:"Travel reimbursement per vehicle: in South America you can now use a separate rate for car and motorbike (e.g. Colombia 650 and 300 COP per km). Rates are suggested per currency and can be changed under Settings; choose car or motorbike when you log a trip.",es:"Reembolso de viaje por vehículo: en Sudamérica ahora puedes usar una tarifa distinta para coche y moto (p. ej. Colombia 650 y 300 COP por km). Las tarifas se sugieren por moneda y se pueden cambiar en Ajustes; elige coche o moto al registrar un viaje.",fr:"Remboursement des déplacements par véhicule : en Amérique du Sud, vous pouvez maintenant utiliser un tarif distinct pour la voiture et la moto (p. ex. Colombie 650 et 300 COP par km). Les tarifs sont proposés par devise et modifiables dans Réglages ; choisissez voiture ou moto lors de l’enregistrement d’un trajet.",de:"Fahrtkostenerstattung pro Fahrzeug: In Südamerika kannst du jetzt einen eigenen Satz für Auto und Motorrad verwenden (z. B. Kolumbien 650 und 300 COP pro km). Die Sätze werden pro Währung vorgeschlagen und lassen sich unter Einstellungen ändern; wähle beim Erfassen einer Fahrt Auto oder Motorrad.",ro:"Decontarea deplasărilor pe vehicul: în America de Sud poți folosi acum o taxă separată pentru mașină și motocicletă (de ex. Columbia 650 și 300 COP pe km). Taxele sunt sugerate pe monedă și pot fi modificate în Setări; alege mașină sau motocicletă când înregistrezi o deplasare.",it:"Rimborso viaggi per veicolo: in Sud America ora puoi usare una tariffa separata per auto e moto (es. Colombia 650 e 300 COP al km). Le tariffe sono suggerite per valuta e modificabili in Impostazioni; scegli auto o moto quando registri uno spostamento.",pt:"Reembolso de viagens por veículo: na América do Sul pode agora usar uma tarifa separada para carro e mota (p. ex. Colômbia 650 e 300 COP por km). As tarifas são sugeridas por moeda e podem ser alteradas em Definições; escolha carro ou mota ao registar uma viagem."},
+    {type:'fix',nl:"Je gekozen taal en de keuze \"Uren bijhouden\" blijven nu behouden na het bijwerken van de app.",en:"Your chosen language and the \"Track hours\" choice are now kept after updating the app.",es:"El idioma elegido y la opción \"Registrar horas\" ahora se conservan tras actualizar la app.",fr:"La langue choisie et l’option « Suivre les heures » sont désormais conservées après la mise à jour de l’app.",de:"Die gewählte Sprache und die Option „Stunden erfassen“ bleiben nach dem Aktualisieren der App jetzt erhalten.",ro:"Limba aleasă și opțiunea „Urmărește orele” se păstrează acum după actualizarea aplicației.",it:"La lingua scelta e l’opzione «Registra le ore» vengono ora mantenute dopo l’aggiornamento dell’app.",pt:"O idioma escolhido e a opção «Registar horas» são agora mantidos após atualizar a app."},
+    {type:'fix',nl:"Rapport: de dagkaart in het Dagoverzicht werd afgekapt en is nu volledig zichtbaar. Colombiaanse import: namen worden niet meer in Notities gekopieerd.",en:"Report: the day card in the Day overview was cut off and is now fully visible. Colombian import: names are no longer copied into Notes.",es:"Informe: la tarjeta del día en el Resumen diario se cortaba y ahora se ve completa. Importación de Colombia: los nombres ya no se copian a Notas.",fr:"Rapport : la carte du jour dans l’aperçu journalier était coupée et s’affiche maintenant en entier. Import Colombie : les noms ne sont plus copiés dans les Notes.",de:"Bericht: Die Tageskarte in der Tagesübersicht war abgeschnitten und wird jetzt vollständig angezeigt. Kolumbien-Import: Namen werden nicht mehr in die Notizen kopiert.",ro:"Raport: cardul zilei din Privirea zilnică era tăiat și acum este afișat complet. Import Columbia: numele nu mai sunt copiate în Notițe.",it:"Rapporto: la scheda del giorno nella panoramica giornaliera era tagliata e ora è visibile per intero. Import Colombia: i nomi non vengono più copiati nelle Note.",pt:"Relatório: o cartão do dia na Visão geral diária estava cortado e agora aparece por completo. Importação da Colômbia: os nomes já não são copiados para as Notas."},
+  ]},
   {date:'2026-10-15',items:[
     {type:'new',nl:'Excel-bestanden (.xlsx) kunnen nu rechtstreeks worden geïmporteerd, ook de Nederlandse en Franse urenlijsten — opslaan als CSV is niet meer nodig. Alleen het eerste tabblad van het bestand wordt gelezen.',en:'Excel files (.xlsx) can now be imported directly, including the Dutch and French hour sheets — no need to save as CSV first. Only the first sheet of the file is read.',es:'Ahora se pueden importar archivos de Excel (.xlsx) directamente, también las hojas de horas neerlandesas y francesas; ya no hace falta guardarlos como CSV. Solo se lee la primera hoja del archivo.',fr:'Les fichiers Excel (.xlsx) peuvent désormais être importés directement, y compris les feuilles d\'heures néerlandaises et françaises — plus besoin de les enregistrer en CSV. Seule la première feuille du fichier est lue.',de:'Excel-Dateien (.xlsx) lassen sich jetzt direkt importieren, auch die niederländischen und französischen Stundenlisten — Speichern als CSV ist nicht mehr nötig. Nur das erste Tabellenblatt der Datei wird gelesen.',it:'I file Excel (.xlsx) ora si possono importare direttamente, anche i fogli ore olandesi e francesi: non serve più salvare prima in CSV. Viene letto solo il primo foglio del file.'},
     {type:'new',nl:'Het Colombiaanse maandrapport "Informe de Gestión Contractual" (.xlsx) wordt herkend: de aantallen per kolom (CM, EB, CB, VM, P, CC, SC, R, OA) worden als activiteiten geïmporteerd, zonder uren, en de reiskosten worden verdeeld over lokaal, tussen steden en overig.',en:'The Colombian monthly report "Informe de Gestión Contractual" (.xlsx) is now recognized: the counts per column (CM, EB, CB, VM, P, CC, SC, R, OA) are imported as activities, without hours, and the travel expenses are split into local, intercity and other.',es:'Ahora se reconoce el informe mensual colombiano "Informe de Gestión Contractual" (.xlsx): los conteos por columna (CM, EB, CB, VM, P, CC, SC, R, OA) se importan como actividades, sin horas, y los gastos de viaje se dividen en urbanos, interurbanos y otros.',fr:'Le rapport mensuel colombien « Informe de Gestión Contractual » (.xlsx) est désormais reconnu : les nombres par colonne (CM, EB, CB, VM, P, CC, SC, R, OA) sont importés comme activités, sans heures, et les frais de déplacement sont répartis en local, interurbain et autre.',de:'Der kolumbianische Monatsbericht „Informe de Gestión Contractual" (.xlsx) wird jetzt erkannt: die Anzahlen pro Spalte (CM, EB, CB, VM, P, CC, SC, R, OA) werden als Aktivitäten ohne Stunden importiert, und die Reisekosten werden in lokal, zwischen Städten und sonstige aufgeteilt.',it:'Il rapporto mensile colombiano «Informe de Gestión Contractual» (.xlsx) viene ora riconosciuto: i conteggi per colonna (CM, EB, CB, VM, P, CC, SC, R, OA) sono importati come attività, senza ore, e le spese di viaggio sono suddivise in locali, interurbane e altre.'},
@@ -6464,6 +6470,7 @@ const UPDATE_LBL_MAP={nl:'Update',en:'Update',es:'Actualización',fr:'Mise à jo
 // the actual current UI wording, since a tip describing a button that no
 // longer says what the tip claims is worse than no tip at all.
 const TIPS=[
+  {nl:"Wist je dat je je Google Agenda kunt importeren? Exporteer hem als .ics-bestand en kies dat bestand bij Instellingen → Gegevens.",en:"Did you know? You can import your Google Calendar — export it as an .ics file and pick that file under Settings → Data.",es:"¿Sabías que puedes importar tu Google Calendar? Expórtalo como archivo .ics y elige ese archivo en Ajustes → Datos.",fr:"Le saviez-vous ? Vous pouvez importer votre Google Agenda : exportez-le en fichier .ics et choisissez ce fichier dans Paramètres → Données.",de:"Wusstest du schon? Du kannst deinen Google Kalender importieren: Exportiere ihn als .ics-Datei und wähle diese Datei unter Einstellungen → Daten aus.",ro:"Știai că poți importa Google Calendar? Exportă-l ca fișier .ics și alege acel fișier din Setări → Date.",it:"Lo sapevi? Puoi importare il tuo Google Calendar: esportalo come file .ics e scegli quel file in Impostazioni → Dati.",pt:"Sabia que pode importar o seu Google Agenda? Exporte-o como ficheiro .ics e escolha esse ficheiro em Definições → Dados.",explanation:{nl:"Open Google Agenda op een computer → Instellingen → Importeren en exporteren → Exporteren. Je krijgt een zip met een .ics-bestand per agenda. Pak die uit en kies het .ics-bestand in de app bij Instellingen → Gegevens (of sleep het erin). Je ziet een lijst met afspraken: vink aan wat je wilt toevoegen en kies per afspraak of hij op de kalenderdag staat (Dag) of alleen als info onder de maand (Voetnoot). Terugkerende afspraken staan gegroepeerd. Het telt niet mee als gewerkte uren, en opnieuw importeren voegt geen dubbele afspraken toe.",en:"Open Google Calendar on a computer → Settings → Import & export → Export. You get a zip with one .ics file per calendar. Unzip it and pick the .ics file in the app under Settings → Data (or drag it in). You see a list of events: check what you want to add and choose for each whether it shows on the calendar day (Day) or only as info under the month (Footnote). Recurring events are grouped. It does not count as worked hours, and importing again does not add duplicates.",es:"Abre Google Calendar en un ordenador → Configuración → Importar y exportar → Exportar. Recibes un zip con un archivo .ics por calendario. Descomprímelo y elige el archivo .ics en la app, en Ajustes → Datos (o arrástralo). Verás una lista de eventos: marca lo que quieras añadir y elige para cada uno si aparece en el día del calendario (Día) o solo como información bajo el mes (Nota). Los eventos recurrentes están agrupados. No cuenta como horas trabajadas y volver a importar no añade duplicados.",fr:"Ouvrez Google Agenda sur un ordinateur → Paramètres → Importer et exporter → Exporter. Vous obtenez un zip avec un fichier .ics par calendrier. Décompressez-le et choisissez le fichier .ics dans l’app, sous Paramètres → Données (ou glissez-le). Vous voyez une liste d’événements : cochez ce que vous voulez ajouter et choisissez pour chacun s’il apparaît le jour du calendrier (Jour) ou seulement comme information sous le mois (Note). Les événements récurrents sont regroupés. Cela ne compte pas comme heures travaillées et réimporter n’ajoute pas de doublons.",de:"Öffne Google Kalender am Computer → Einstellungen → Importieren & Exportieren → Exportieren. Du erhältst eine Zip-Datei mit einer .ics-Datei pro Kalender. Entpacke sie und wähle die .ics-Datei in der App unter Einstellungen → Daten aus (oder ziehe sie hinein). Du siehst eine Liste der Termine: Wähle aus, was hinzugefügt werden soll, und lege für jeden fest, ob er am Kalendertag erscheint (Tag) oder nur als Info unter dem Monat (Fußnote). Wiederkehrende Termine sind gruppiert. Das zählt nicht als Arbeitsstunden, und ein erneuter Import fügt keine Duplikate hinzu.",ro:"Deschide Google Calendar pe un computer → Setări → Import și export → Export. Primești un zip cu un fișier .ics pentru fiecare calendar. Dezarhivează-l și alege fișierul .ics în aplicație, la Setări → Date (sau trage-l acolo). Vezi o listă de evenimente: bifează ce vrei să adaugi și alege pentru fiecare dacă apare în ziua din calendar (Zi) sau doar ca informație sub lună (Notă). Evenimentele recurente sunt grupate. Nu contează ca ore lucrate, iar reimportarea nu adaugă dubluri.",it:"Apri Google Calendar su un computer → Impostazioni → Importa ed esporta → Esporta. Ottieni uno zip con un file .ics per calendario. Decomprimilo e scegli il file .ics nell’app, in Impostazioni → Dati (o trascinalo). Vedi un elenco di eventi: seleziona cosa vuoi aggiungere e scegli per ciascuno se appare nel giorno del calendario (Giorno) o solo come informazione sotto il mese (Nota). Gli eventi ricorrenti sono raggruppati. Non conta come ore lavorate e reimportare non aggiunge duplicati.",pt:"Abra o Google Agenda num computador → Definições → Importar e exportar → Exportar. Recebe um zip com um ficheiro .ics por calendário. Descompacte-o e escolha o ficheiro .ics na app, em Definições → Dados (ou arraste-o). Vê uma lista de eventos: marque o que quer adicionar e escolha para cada um se aparece no dia do calendário (Dia) ou apenas como informação sob o mês (Nota). Os eventos recorrentes estão agrupados. Não conta como horas trabalhadas e importar novamente não adiciona duplicados."}},
   {nl:'Wist je dat je in het Rapport-tabblad, bij Vakantie & Verlof, op het +-tekentje naast een categorie kunt tikken om meteen een hele periode vrije dagen toe te voegen?',en:'Did you know? In the Report tab, under Vacation & Leave, you can tap the + next to a category to add a whole date range of days off at once.',es:'¿Sabías que en la pestaña Informe, en Vacaciones y permisos, puedes tocar el + junto a una categoría para añadir de una vez todo un rango de días libres?',fr:'Le saviez-vous ? Dans l\'onglet Rapport, sous Vacances et congés, vous pouvez appuyer sur le + à côté d\'une catégorie pour ajouter d\'un coup toute une période de jours de congé.',de:'Wussten Sie schon? Im Bericht-Tab können Sie unter Urlaub & Verlof auf das + neben einer Kategorie tippen, um gleich einen ganzen Zeitraum freier Tage hinzuzufügen.',ro:'Știai că în fila Raport, la Concediu și zile libere, poți atinge + de lângă o categorie pentru a adăuga dintr-o dată un întreg interval de zile libere?',it:'Lo sapevi? Nella scheda Report, in Ferie e permessi, puoi toccare il + accanto a una categoria per aggiungere subito un intero periodo di giorni liberi.',pt:'Sabia que na aba Relatório, em Férias e licenças, pode tocar no + ao lado de uma categoria para adicionar de uma vez todo um período de dias de folga?',explanation:{nl:'Tik op het +-tekentje, kies een begin- en einddatum, en de app vult automatisch elke dag in dat bereik in als vrije dag — je hoeft ze niet één voor één toe te voegen.',en:'Tap the +, pick a start and end date, and the app automatically fills in every day in that range as a day off — no need to add them one by one.',es:'Toca el +, elige una fecha de inicio y fin, y la app rellena automáticamente cada día de ese rango como día libre — no hace falta añadirlos uno por uno.',fr:'Touchez le +, choisissez une date de début et de fin, et l\'app remplit automatiquement chaque jour de cette période comme jour de congé — pas besoin de les ajouter un par un.',de:'Tippen Sie auf das +, wählen Sie ein Start- und Enddatum, und die App trägt automatisch jeden Tag in diesem Zeitraum als freien Tag ein — Sie müssen sie nicht einzeln hinzufügen.',ro:'Atinge semnul +, alege o dată de început și de sfârșit, iar aplicația completează automat fiecare zi din acel interval ca zi liberă — nu trebuie să le adaugi una câte una.',it:'Tocca il +, scegli una data di inizio e fine, e l\'app inserisce automaticamente ogni giorno di quel periodo come giorno libero — non serve aggiungerli uno per uno.',pt:'Toque no +, escolha uma data de início e fim, e a app preenche automaticamente cada dia desse período como dia de folga — não é preciso adicioná-los um a um.'}},
   {nl:'Wist je dat je een to-do-taak kunt verplaatsen tussen persoonlijk en gemeente door op het gekleurde bolletje naast het vinkje te tikken?',en:'Did you know? You can move a to-do task between personal and church by tapping the colored dot next to its checkbox.',es:'¿Sabías que puedes mover una tarea entre personal e iglesia tocando el puntito de color junto a su casilla?',fr:'Le saviez-vous ? Vous pouvez déplacer une tâche entre personnel et église en appuyant sur le petit point coloré à côté de sa case à cocher.',de:'Wussten Sie schon? Sie können eine Aufgabe zwischen persönlich und Gemeinde verschieben, indem Sie auf den farbigen Punkt neben dem Kästchen tippen.',ro:'Știai că poți muta o sarcină între personal și biserică atingând punctul colorat de lângă căsuța ei?',it:'Lo sapevi? Puoi spostare un\'attività tra personale e chiesa toccando il puntino colorato accanto alla sua casella.',pt:'Sabia que pode mover uma tarefa entre pessoal e igreja tocando no pontinho colorido ao lado da caixa de seleção?',explanation:{nl:'Het gekleurde bolletje naast het vinkje toont of een taak persoonlijk of gemeente is. Tik erop om te wisselen, zonder de taak te hoeven verwijderen en opnieuw aan te maken.',en:'The colored dot next to the checkbox shows whether a task is personal or church. Tap it to switch, without deleting and re-creating the task.',es:'El punto de color junto a la casilla muestra si una tarea es personal o de la iglesia. Tócalo para cambiarlo, sin tener que borrar la tarea y crearla de nuevo.',fr:'Le point coloré à côté de la case à cocher indique si une tâche est personnelle ou liée à l\'église. Touchez-le pour changer, sans avoir à supprimer et recréer la tâche.',de:'Der farbige Punkt neben dem Häkchen zeigt, ob eine Aufgabe persönlich oder gemeindebezogen ist. Tippen Sie darauf, um zu wechseln, ohne die Aufgabe löschen und neu anlegen zu müssen.',ro:'Punctul colorat de lângă bifă arată dacă o sarcină este personală sau de biserică. Atinge-l pentru a schimba, fără să fie nevoie să ștergi și să recreezi sarcina.',it:'Il pallino colorato accanto alla casella mostra se un compito è personale o di chiesa. Toccalo per cambiare, senza dover eliminare e ricreare il compito.',pt:'O ponto colorido junto à caixa de seleção mostra se uma tarefa é pessoal ou da igreja. Toque nele para alternar, sem precisar de eliminar e recriar a tarefa.'}},
   {nl:'Wist je dat je bij het registreren van een bijbelstudie "Meerdere studenten" kunt aanvinken om ook andere aanwezigen bij diezelfde studie toe te voegen?',en:'Did you know? When logging a Bible study, you can check "Multiple students" to add other people who were present at that same study too.',es:'¿Sabías que al registrar un estudio bíblico puedes marcar "Varios estudiantes" para añadir también a otras personas presentes en ese mismo estudio?',fr:'Le saviez-vous ? Lors de l\'enregistrement d\'une étude biblique, vous pouvez cocher « Plusieurs étudiants » pour ajouter aussi d\'autres personnes présentes à cette même étude.',de:'Wussten Sie schon? Beim Erfassen eines Bibelstudiums können Sie „Mehrere Studenten" ankreuzen, um auch andere bei diesem Studium anwesende Personen hinzuzufügen.',ro:'Știai că, atunci când înregistrezi un studiu biblic, poți bifa „Mai mulți studenți” pentru a adăuga și alte persoane prezente la același studiu?',it:'Lo sapevi? Quando registri uno studio biblico puoi selezionare "Più studenti" per aggiungere anche altre persone presenti a quello stesso studio.',pt:'Sabia que ao registar um estudo bíblico pode marcar "Vários estudantes" para adicionar também outras pessoas presentes nesse mesmo estudo?',notKantoor:true,explanation:{nl:'Vink \\\'Meerdere studenten\\\' aan en er verschijnt een zoekveld om extra aanwezigen toe te voegen. De studie wordt dan voor iedereen los in hun eigen geschiedenis geregistreerd, met dezelfde datum en hetzelfde thema.',en:'Check \\\'Multiple students\\\' and a search field appears to add other people who were present. The study is then logged separately in each person\\\'s own history, with the same date and topic.',es:'Marca "Varios estudiantes" y aparecerá un campo de búsqueda para añadir a otras personas presentes. El estudio se registra entonces por separado en el historial de cada uno, con la misma fecha y el mismo tema.',fr:'Cochez « Plusieurs étudiants » et un champ de recherche apparaît pour ajouter d\'autres personnes présentes. L\'étude est alors enregistrée séparément dans l\'historique de chacun, avec la même date et le même sujet.',de:'Aktivieren Sie „Mehrere Studenten" und es erscheint ein Suchfeld, um weitere anwesende Personen hinzuzufügen. Das Studium wird dann separat im eigenen Verlauf jeder Person erfasst, mit demselben Datum und Thema.',ro:'Bifează „Mai mulți studenți” și apare un câmp de căutare pentru a adăuga alte persoane prezente. Studiul este apoi înregistrat separat în istoricul fiecăreia, cu aceeași dată și același subiect.',it:'Seleziona "Più studenti" e apparirà un campo di ricerca per aggiungere altre persone presenti. Lo studio viene quindi registrato separatamente nella cronologia di ciascuno, con la stessa data e lo stesso argomento.',pt:'Marque "Vários alunos" e aparece um campo de pesquisa para adicionar outras pessoas presentes. O estudo é então registado em separado no histórico de cada pessoa, com a mesma data e o mesmo tema.'}},
@@ -6965,7 +6972,7 @@ var TRANSLATIONS = {
     cat_manage:'Categorieën beheren',
     cat_add:'+ Voeg toe',new_cat_ph:'Naam nieuwe categorie...',
     import_hint:'Sleep een CSV-, Excel-, JSON- of PDF-bestand hierin.',
-    import_btn:'Klik of sleep bestand',import_formats:'CSV, Excel, JSON of PDF',
+    import_btn:'Klik of sleep bestand',import_formats:'CSV, Excel, JSON, PDF of ICS',
     approval_card:'Goedkeuring',
     approval_hint:'Geen code meer nodig — importeer het antwoordbestand van je voorzitter hieronder en het wordt automatisch toegepast.',
     approval_code_lbl:'Gedeelde goedkeuringscode',
@@ -7316,7 +7323,7 @@ var TRANSLATIONS = {
     cat_manage:'Manage categories',
     cat_add:'+ Add',new_cat_ph:'New category name...',
     import_hint:'Drag a CSV, Excel, JSON or PDF file here.',
-    import_btn:'Click or drag file',import_formats:'CSV, Excel, JSON or PDF',
+    import_btn:'Click or drag file',import_formats:'CSV, Excel, JSON, PDF or ICS',
     approval_card:'Approval',
     approval_hint:'No code needed — import the response file from your president below and it is applied automatically.',
     approval_code_lbl:'Shared approval code',
@@ -7734,7 +7741,7 @@ var TRANSLATIONS = {
     cat_manage:'Gestionar categorías',
     cat_add:'+ Añadir',new_cat_ph:'Nombre nueva categoría...',
     import_hint:'Arrastra un archivo CSV, Excel, JSON o PDF aqu\u00ed.',
-    import_btn:'Clic o arrastra archivo',import_formats:'CSV, Excel, JSON o PDF',
+    import_btn:'Clic o arrastra archivo',import_formats:'CSV, Excel, JSON, PDF o ICS',
     approval_card:'Aprobaci\u00f3n',
     approval_hint:'Ya no hace falta c\u00f3digo \u2014 importa abajo el archivo de respuesta de tu presidente y se aplicar\u00e1 autom\u00e1ticamente.',
     approval_code_lbl:'C\u00f3digo de aprobaci\u00f3n compartido',
@@ -7946,7 +7953,7 @@ var TRANSLATIONS = {
     cursisten_tab:"Contacts", leden_tab:"Membres", sort_grouped:'Par type',
     import_card:"Importer des données",
     cat_manage:"Gérer les catégories",
-    cat_add:"+ Ajouter",new_cat_ph:"Nom nouvelle catégorie...",import_hint:"Faites glisser un fichier CSV, Excel, JSON ou PDF ici.",import_btn:"Cliquez ou déposez un fichier",import_formats:"CSV, Excel, JSON ou PDF",
+    cat_add:"+ Ajouter",new_cat_ph:"Nom nouvelle catégorie...",import_hint:"Faites glisser un fichier CSV, Excel, JSON ou PDF ici.",import_btn:"Cliquez ou déposez un fichier",import_formats:"CSV, Excel, JSON, PDF ou ICS",
     approval_card:'Approbation',
     approval_hint:'Plus besoin de code — importez le fichier de réponse de votre président ci-dessous, il est appliqué automatiquement.',
     approval_code_lbl:'Code d\'approbation partagé',
@@ -8073,7 +8080,7 @@ var TRANSLATIONS = {
     cursisten_tab:'Kontakte', leden_tab:'Mitglieder', sort_grouped:'Nach Typ',
     import_card:'Daten importieren',
     cat_manage:'Kategorien verwalten',
-    cat_add:'+ Hinzufügen',new_cat_ph:'Name neue Kategorie...',import_hint:'CSV-, Excel-, JSON- oder PDF-Datei hier ablegen.',import_btn:'Datei klicken oder ablegen',import_formats:'CSV, Excel, JSON oder PDF',
+    cat_add:'+ Hinzufügen',new_cat_ph:'Name neue Kategorie...',import_hint:'CSV-, Excel-, JSON- oder PDF-Datei hier ablegen.',import_btn:'Datei klicken oder ablegen',import_formats:'CSV, Excel, JSON, PDF oder ICS',
     approval_card:'Genehmigung',
     approval_hint:'Kein Code mehr nötig — importieren Sie unten die Antwortdatei Ihres Vorsitzenden, sie wird automatisch angewendet.',
     approval_code_lbl:'Gemeinsamer Genehmigungscode',
@@ -8225,7 +8232,7 @@ var TRANSLATIONS = {
     cursisten_tab:'Contacte', leden_tab:'Membri', sort_grouped:'După tip',
     import_card:'Importă date',
     cat_manage:'Gestionează categorii',
-    cat_add:'+ Adaugă',new_cat_ph:'Nume categorie nouă...',import_hint:'Trage un fișier CSV, Excel, JSON sau PDF aici.',import_btn:'Faceți clic sau trageți fișierul',import_formats:'CSV, Excel, JSON sau PDF',
+    cat_add:'+ Adaugă',new_cat_ph:'Nume categorie nouă...',import_hint:'Trage un fișier CSV, Excel, JSON sau PDF aici.',import_btn:'Faceți clic sau trageți fișierul',import_formats:'CSV, Excel, JSON, PDF sau ICS',
     approval_card:'Aprobare',
     approval_hint:'Nu mai este nevoie de cod — importă mai jos fișierul de răspuns de la președintele tău și se aplică automat.',
     approval_code_lbl:'Cod de aprobare comun',
@@ -8409,7 +8416,7 @@ var TRANSLATIONS = {
     worktype_card:'Tipo di lavoro', worktype_sub:'Adatta cosa vedi nell\'app', worktype_bijbelwerker:'Pastore / Operatore biblico', worktype_kantoor:'Ufficio / Segreteria', church_role_lbl:'Ruolo ecclesiastico', church_role_hint:'Condiviso con il presidente (ad es. per il rapporto GC) - lascia vuoto se nessuna di queste opzioni ti riguarda.', church_role_none:'Nessuno', church_role_predikant:'Pastore', church_role_ouderling:'Anziano', church_role_kantoorwerker:'Impiegato d\'ufficio', church_role_bijbelwerker:'Operatore biblico / Evangelista', wizard_new_gemeente:'+ Nuova chiesa...',
     import_card:'Importa dati',
     cat_manage:'Gestisci categorie',
-    cat_add:'+ Aggiungi',new_cat_ph:'Nome nuova categoria...',import_hint:'Trascina un file CSV, Excel, JSON o PDF qui.',import_btn:'Clicca o trascina file',import_formats:'CSV, Excel, JSON o PDF',
+    cat_add:'+ Aggiungi',new_cat_ph:'Nome nuova categoria...',import_hint:'Trascina un file CSV, Excel, JSON o PDF qui.',import_btn:'Clicca o trascina file',import_formats:'CSV, Excel, JSON, PDF o ICS',
     approval_card:'Approvazione',
     approval_hint:'Non serve più alcun codice — importa qui sotto il file di risposta del tuo presidente e verrà applicato automaticamente.',
     approval_code_lbl:'Codice di approvazione condiviso',
@@ -8541,7 +8548,7 @@ var TRANSLATIONS = {
     worktype_card:'Tipo de trabalho', worktype_sub:'Ajusta o que você vê no app', worktype_bijbelwerker:'Pastor / Obreiro bíblico', worktype_kantoor:'Escritório / Secretaria', church_role_lbl:'Função eclesiástica', church_role_hint:'Compartilhado com o presidente (por ex. para o relatório da CG) - deixe em branco se nenhuma delas se aplicar a você.', church_role_none:'Nenhuma', church_role_predikant:'Pastor', church_role_ouderling:'Ancião', church_role_kantoorwerker:'Funcionário de escritório', church_role_bijbelwerker:'Obreiro bíblico / Evangelista', wizard_new_gemeente:'+ Nova igreja...',
     import_card:'Importar dados',
     cat_manage:'Gerenciar categorias',
-    cat_add:'+ Adicionar',new_cat_ph:'Nome nova categoria...',import_hint:'Arraste um arquivo CSV, Excel, JSON ou PDF aqui.',import_btn:'Clique ou arraste o arquivo',import_formats:'CSV, Excel, JSON ou PDF',
+    cat_add:'+ Adicionar',new_cat_ph:'Nome nova categoria...',import_hint:'Arraste um arquivo CSV, Excel, JSON ou PDF aqui.',import_btn:'Clique ou arraste o arquivo',import_formats:'CSV, Excel, JSON, PDF ou ICS',
     approval_card:'Aprovação',
     approval_hint:'Já não é necessário nenhum código — importe abaixo o ficheiro de resposta do seu presidente e será aplicado automaticamente.',
     approval_code_lbl:'Código de aprovação partilhado',
@@ -22336,7 +22343,7 @@ function renderCursistenSummary(){
   // flex-basis, which pushed it outside the row/card entirely instead of
   // wrapping onto its own line.
   h+='<button class="btn sm" onclick="handleImportClick()" style="font-size:11px;flex-shrink:0;display:flex;align-items:center;gap:5px;cursor:pointer;margin:0"><svg width="12" height="12"><use href="#ico-import"/></svg>'+tMap({nl:'Importeren',en:'Import',es:'Importar',fr:'Importer',de:'Importieren',ro:'Importă',it:'Importa',pt:'Importar'})+'</button>';
-  h+='<input type="file" id="cursist-import-file" accept=".csv,.json,.pdf,.xlsx" multiple style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;z-index:-1" onchange="handleImportFile(event);this.value=\'\'">';
+  h+='<input type="file" id="cursist-import-file" accept=".csv,.json,.pdf,.xlsx,.ics" multiple style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;z-index:-1" onchange="handleImportFile(event);this.value=\'\'">';
   h+='<button class="btn sm" onclick="openBulkSharePicker()" style="font-size:11px;flex-shrink:0;display:flex;align-items:center;gap:5px"><svg width="12" height="12"><use href="#ico-share-ios"/></svg>'+tMap({nl:'Delen',en:'Share',es:'Compartir',fr:'Partager',de:'Teilen',ro:'Distribuie',it:'Condividi',pt:'Partilhar'})+'</button>';
   // Kantoor/secretariaat only: a secretary's Contacts tab doubles as the
   // church-membership database she maintains directly (addresses/phone
@@ -27013,8 +27020,8 @@ function processImportFileList(files){
     processImportFile(files[0]);
     return;
   }
-  var textFiles=files.filter(function(f){return !/\.(pdf|xlsx)$/i.test(f.name);});
-  var otherFiles=files.filter(function(f){return /\.(pdf|xlsx)$/i.test(f.name);});
+  var textFiles=files.filter(function(f){return !/\.(pdf|xlsx|ics)$/i.test(f.name);});
+  var otherFiles=files.filter(function(f){return /\.(pdf|xlsx|ics)$/i.test(f.name);});
   Promise.all(textFiles.map(function(file){
     return new Promise(function(resolve){
       var reader=new FileReader();
@@ -27782,6 +27789,7 @@ function processImportFile(file){
   // they get their own extraction path (pdf.js, loaded lazily) instead of
   // falling into the CSV/JSON text branch below. See processPdfImportFile.
   if(file.name.toLowerCase().endsWith('.pdf')){processPdfImportFile(file);return;}
+  if(/\.(ics|ical|ifb|icalendar)$/i.test(file.name)){processIcsImportFile(file);return;}
   const reader=new FileReader();
   reader.onload=ev=>{
     // Read as raw bytes and auto-detect encoding instead of forcing UTF-8:
@@ -28369,7 +28377,7 @@ function openMemberListImportReview(items){
   h+='</div>';
   h+='<div style="display:flex;gap:8px;margin-top:16px">';
   h+='<button class="btn" onclick="closeModals()" style="flex:1">'+t('cancel_btn')+'</button>';
-  h+='<button class="btn primary" onclick="confirmMemberListImportReview()" style="flex:1">'+tMap({nl:'Toevoegen',en:'Add',it:'Aggiungi',es:'Añadir'})+'</button>';
+  h+='<button class="btn primary" onclick="confirmMemberListImportReview()" style="flex:1">'+tMap({nl:'Toevoegen',en:'Add',it:'Aggiungi',es:'Añadir',fr:'Ajouter',de:'Hinzufügen',ro:'Adaugă',pt:'Adicionar'})+'</button>';
   h+='</div>';
   showModal(h);
 }
@@ -28647,6 +28655,232 @@ function triggerGemeentePlanningPdfExport(items,from,to){
   w.document.close();
   _gcArmPrintFrameCleanupWorker(_printFrame);
 }
+// ---------------------------------------------------------------------------
+// .ics (iCalendar) import - Google Calendar / Outlook / Apple Calendar export.
+// Events become gemeentePlanning items ("calendar info", not worked hours) and
+// go through the same review screen as the church-planning PDF import. Only a
+// bounded window is expanded (from 1 Jan of this year to 2 years ahead, max
+// ICS_MAX_ITEMS rows) so a calendar with 15 years of weekly events can't
+// flood the app.
+// ---------------------------------------------------------------------------
+var ICS_MAX_ITEMS=1500;
+function _icsUnfold(text){
+  return String(text||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\n[ \t]/g,'').split('\n');
+}
+function _icsUnescape(s){
+  return String(s||'').replace(/\\n/gi,' ').replace(/\\([,;\\])/g,'$1').trim();
+}
+// "DTSTART;TZID=Europe/Amsterdam:20260105T190000" -> {name,params,value}
+function _icsParseLine(line){
+  var i=line.indexOf(':');
+  if(i<0)return null;
+  var left=line.slice(0,i),value=line.slice(i+1);
+  var parts=left.split(';'),name=parts.shift().toUpperCase(),params={};
+  parts.forEach(function(p){var k=p.indexOf('=');if(k>0)params[p.slice(0,k).toUpperCase()]=p.slice(k+1);});
+  return {name:name,params:params,value:value};
+}
+function _icsPad(n){return (n<10?'0':'')+n;}
+function _icsYmd(d){return d.getFullYear()+'-'+_icsPad(d.getMonth()+1)+'-'+_icsPad(d.getDate());}
+// Parses a DTSTART/DTEND/EXDATE value. Returns {date:Date(local, noon for
+// all-day), allDay:bool, h,m} or null. UTC ("Z") times are converted to the
+// device's local time; TZID/floating times are taken as local wall-clock.
+function _icsParseDate(value,params){
+  var m=/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?(Z)?)?$/.exec(String(value||'').trim());
+  if(!m)return null;
+  var y=+m[1],mo=+m[2]-1,d=+m[3];
+  if(m[4]===undefined||(params&&params.VALUE==='DATE'))return {date:new Date(y,mo,d,12,0,0),allDay:true};
+  var h=+m[4],mi=+m[5];
+  var dt=m[7]?new Date(Date.UTC(y,mo,d,h,mi,+(m[6]||0))):new Date(y,mo,d,h,mi,0);
+  return {date:dt,allDay:false};
+}
+var _ICS_DAYS=['SU','MO','TU','WE','TH','FR','SA'];
+function _icsParseRrule(str){
+  var r={};
+  String(str||'').split(';').forEach(function(p){var k=p.indexOf('=');if(k>0)r[p.slice(0,k).toUpperCase()]=p.slice(k+1);});
+  return r;
+}
+function _icsAddDays(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n,12,0,0);}
+// n-th (1..5 or -1) weekday (0=Sun) of a month, or null
+function _icsNthWeekday(y,mo,wd,n){
+  if(n>0){
+    var first=new Date(y,mo,1,12),off=(wd-first.getDay()+7)%7,day=1+off+(n-1)*7;
+    return day<=new Date(y,mo+1,0).getDate()?new Date(y,mo,day,12):null;
+  }
+  var last=new Date(y,mo+1,0,12),back=(last.getDay()-wd+7)%7,dd=last.getDate()-back+(n+1)*7;
+  return dd>=1?new Date(y,mo,dd,12):null;
+}
+// Occurrence start days (local noon Dates) of a recurring event, from its
+// first day until `limit` (inclusive), honoring INTERVAL/COUNT/UNTIL/BYDAY/BYMONTHDAY.
+function _icsExpand(startDay,rule,limit){
+  var out=[],freq=rule.FREQ,iv=Math.max(1,parseInt(rule.INTERVAL,10)||1);
+  var count=rule.COUNT?parseInt(rule.COUNT,10):0;
+  var until=null;
+  if(rule.UNTIL){var u=_icsParseDate(rule.UNTIL,{});if(u)until=new Date(u.date.getFullYear(),u.date.getMonth(),u.date.getDate(),23,59,59);}
+  var hardEnd=until&&until<limit?until:limit;
+  function push(d){
+    if(d<startDay)return true;
+    if(d>hardEnd)return false;
+    out.push(d);
+    return !(count&&out.length>=count);
+  }
+  var byday=rule.BYDAY?rule.BYDAY.split(',').map(function(s){var m=/^([+-]?\d)?(SU|MO|TU|WE|TH|FR|SA)$/.exec(s.trim());return m?{n:m[1]?parseInt(m[1],10):0,wd:_ICS_DAYS.indexOf(m[2])}:null;}).filter(Boolean):[];
+  var bymd=rule.BYMONTHDAY?rule.BYMONTHDAY.split(',').map(function(x){return parseInt(x,10);}).filter(function(x){return x;}):[];
+  var guard=0;
+  if(freq==='DAILY'){
+    for(var d=startDay;guard++<4000;d=_icsAddDays(d,iv)){if(!push(d))break;if(d>hardEnd)break;}
+  }else if(freq==='WEEKLY'){
+    var wds=byday.length?byday.map(function(b){return b.wd;}).sort():[startDay.getDay()];
+    var wkStart=_icsAddDays(startDay,-startDay.getDay()); // week = Sun..Sat (WKST nuance ignored)
+    for(var w=wkStart;guard++<2000&&w<=hardEnd;w=_icsAddDays(w,7*iv)){
+      var stop=false;
+      for(var k=0;k<wds.length;k++){if(!push(_icsAddDays(w,wds[k]))){stop=true;break;}}
+      if(stop)break;
+    }
+  }else if(freq==='MONTHLY'){
+    for(var mo=0;guard++<1200;mo+=iv){
+      var y=startDay.getFullYear(),mm=startDay.getMonth()+mo;
+      var base=new Date(y,mm,1,12);
+      if(base>hardEnd)break;
+      var days=[];
+      if(byday.length){
+        byday.forEach(function(b){
+          if(b.n){var x=_icsNthWeekday(base.getFullYear(),base.getMonth(),b.wd,b.n);if(x)days.push(x);}
+          else{for(var dd=1;dd<=31;dd++){var c=new Date(base.getFullYear(),base.getMonth(),dd,12);if(c.getMonth()!==base.getMonth())break;if(c.getDay()===b.wd)days.push(c);}}
+        });
+      }else if(bymd.length){
+        var dim=new Date(base.getFullYear(),base.getMonth()+1,0).getDate();
+        bymd.forEach(function(n){var dn=n>0?n:dim+n+1;if(dn>=1&&dn<=dim)days.push(new Date(base.getFullYear(),base.getMonth(),dn,12));});
+      }else{
+        var c2=new Date(base.getFullYear(),base.getMonth(),startDay.getDate(),12);
+        if(c2.getMonth()===base.getMonth())days.push(c2);
+      }
+      days.sort(function(a,b){return a-b;});
+      var stop2=false;
+      for(var j=0;j<days.length;j++){if(!push(days[j])){stop2=true;break;}}
+      if(stop2)break;
+    }
+  }else if(freq==='YEARLY'){
+    for(var yy=0;guard++<200;yy+=iv){
+      var cy=new Date(startDay.getFullYear()+yy,startDay.getMonth(),startDay.getDate(),12);
+      if(cy.getMonth()!==startDay.getMonth())continue;
+      if(!push(cy))break;
+      if(cy>hardEnd)break;
+    }
+  }else{
+    push(startDay);
+  }
+  return out;
+}
+// Main entry: ICS text -> array of {titel,datumStart,datumEind,tijd,verantwoordelijke,onduidelijkeDatum}
+// plus {truncated:bool}. `now` is injectable for tests.
+function parseIcsToPlanningItems(text,now){
+  now=now||new Date();
+  var winStart=new Date(now.getFullYear(),0,1,0,0,0);
+  var winEnd=new Date(now.getFullYear()+2,11,31,23,59,59);
+  var lines=_icsUnfold(text),events=[],cur=null,depth=0;
+  lines.forEach(function(line){
+    if(!line)return;
+    var up=line.toUpperCase();
+    if(up==='BEGIN:VEVENT'){cur={ex:{}};depth=1;return;}
+    if(up==='END:VEVENT'){if(cur)events.push(cur);cur=null;depth=0;return;}
+    if(!cur)return;
+    if(up.indexOf('BEGIN:')===0){depth++;return;}   // VALARM etc. - ignore inside
+    if(up.indexOf('END:')===0){depth--;return;}
+    if(depth>1)return;
+    var p=_icsParseLine(line);
+    if(!p)return;
+    if(p.name==='SUMMARY')cur.summary=_icsUnescape(p.value);
+    else if(p.name==='UID')cur.uid=p.value.trim();
+    else if(p.name==='STATUS')cur.status=p.value.trim().toUpperCase();
+    else if(p.name==='DTSTART')cur.start=_icsParseDate(p.value,p.params);
+    else if(p.name==='DTEND')cur.end=_icsParseDate(p.value,p.params);
+    else if(p.name==='RRULE')cur.rrule=_icsParseRrule(p.value);
+    else if(p.name==='RECURRENCE-ID')cur.recId=_icsParseDate(p.value,p.params);
+    else if(p.name==='EXDATE'){p.value.split(',').forEach(function(v){var d=_icsParseDate(v,p.params);if(d)cur.ex[_icsYmd(d.date)]=true;});}
+  });
+  var items=[],truncated=false;
+  // Moved/edited single occurrences of a recurring series: their original
+  // day is dropped from the series and they're emitted as their own event.
+  var overrides={};
+  events.forEach(function(e){if(e.uid&&e.recId)overrides[e.uid+'|'+_icsYmd(e.recId.date)]=true;});
+  function emit(title,s,eDay,sDay){
+    if(items.length>=ICS_MAX_ITEMS){truncated=true;return;}
+    var last=eDay<sDay?sDay:eDay;
+    if(last<winStart||sDay>winEnd)return;
+    items.push({
+      titel:title||'(?)',
+      datumStart:_icsYmd(sDay),
+      datumEind:_icsYmd(last),
+      tijd:s.allDay?'':(_icsPad(s.date.getHours())+':'+_icsPad(s.date.getMinutes())),
+      verantwoordelijke:'',
+      onduidelijkeDatum:false
+    });
+  }
+  events.forEach(function(e){
+    if(!e.start||e.status==='CANCELLED')return;
+    var s=e.start,sDay=new Date(s.date.getFullYear(),s.date.getMonth(),s.date.getDate(),12);
+    // length in whole days (all-day DTEND is exclusive)
+    var spanDays=0;
+    if(e.end){
+      var eDay0=new Date(e.end.date.getFullYear(),e.end.date.getMonth(),e.end.date.getDate(),12);
+      spanDays=Math.round((eDay0-sDay)/86400000);
+      if(s.allDay)spanDays=Math.max(0,spanDays-1);
+      else if(spanDays>0&&e.end.date.getHours()===0&&e.end.date.getMinutes()===0)spanDays--; // ends exactly at midnight
+      if(spanDays<0)spanDays=0;
+    }
+    var title=e.summary||'';
+    if(e.rrule&&!e.recId){
+      _icsExpand(sDay,e.rrule,winEnd).forEach(function(d){
+        var ymd=_icsYmd(d);
+        if(e.ex[ymd])return;
+        if(e.uid&&overrides[e.uid+'|'+ymd])return;
+        emit(title,s,_icsAddDays(d,spanDays),d);
+      });
+    }else{
+      emit(title,s,_icsAddDays(sDay,spanDays),sDay);
+    }
+  });
+  items.sort(function(a,b){return a.datumStart<b.datumStart?-1:a.datumStart>b.datumStart?1:(a.tijd<b.tijd?-1:a.tijd>b.tijd?1:0);});
+  return {items:items,truncated:truncated};
+}
+function processIcsImportFile(file){
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var text;
+    try{text=new TextDecoder('utf-8',{fatal:true}).decode(ev.target.result);}
+    catch(_e){text=new TextDecoder('windows-1252').decode(ev.target.result);}
+    var res;
+    try{res=parseIcsToPlanningItems(text);}catch(err){res=null;}
+    if(!res||!res.items.length){
+      showImportResult(tMap({
+        nl:'Geen agenda-afspraken gevonden in dit bestand (alleen afspraken vanaf dit jaar worden meegenomen).',
+        en:'No calendar events found in this file (only events from this year onward are included).',
+        es:'No se encontraron eventos de calendario en este archivo (solo se incluyen eventos de este año en adelante).',
+        fr:'Aucun événement de calendrier trouvé dans ce fichier (seuls les événements de cette année et suivantes sont inclus).',
+        de:'Keine Kalendertermine in dieser Datei gefunden (nur Termine ab diesem Jahr werden berücksichtigt).',
+        ro:'Nu s-au găsit evenimente de calendar în acest fișier (sunt incluse doar evenimentele din acest an încolo).',
+        it:'Nessun evento di calendario trovato in questo file (sono inclusi solo gli eventi da quest’anno in poi).',
+        pt:'Nenhum evento de calendário encontrado neste arquivo (apenas eventos deste ano em diante são incluídos).'
+      }),true);
+      return;
+    }
+    if(res.truncated){
+      alert(tMap({
+        nl:'Dit bestand bevat erg veel afspraken. Alleen de eerste '+ICS_MAX_ITEMS+' worden getoond.',
+        en:'This file contains a very large number of events. Only the first '+ICS_MAX_ITEMS+' are shown.',
+        es:'Este archivo contiene muchísimos eventos. Solo se muestran los primeros '+ICS_MAX_ITEMS+'.',
+        fr:'Ce fichier contient un très grand nombre d’événements. Seuls les '+ICS_MAX_ITEMS+' premiers sont affichés.',
+        de:'Diese Datei enthält sehr viele Termine. Es werden nur die ersten '+ICS_MAX_ITEMS+' angezeigt.',
+        ro:'Acest fișier conține foarte multe evenimente. Sunt afișate doar primele '+ICS_MAX_ITEMS+'.',
+        it:'Questo file contiene moltissimi eventi. Vengono mostrati solo i primi '+ICS_MAX_ITEMS+'.',
+        pt:'Este arquivo contém um número muito grande de eventos. Apenas os primeiros '+ICS_MAX_ITEMS+' são exibidos.'
+      }));
+    }
+    openGemeentePlanningImportReview(res.items,'ics');
+  };
+  reader.readAsArrayBuffer(file);
+}
+var _gpReviewSource='pdf';
 var _gpReviewItems=null;
 // Review step: same "checkbox per candidate row, already-imported rows
 // disabled" pattern as openPdfImportReview (member-roster import) above -
@@ -28702,18 +28936,18 @@ function gpBuildReviewGroups(items){
 function gpReviewRowHtml(item,i,already){
   var dateTxt=gpFormatRange(item);
   var showInDays=_gpReviewShowInDays[i];
-  var dayLbl=tMap({nl:'Dag',en:'Day',it:'Giorno',es:'Día'});
-  var footLbl=tMap({nl:'Voetnoot',en:'Footnote',it:'Nota',es:'Nota'});
-  var editLbl=tMap({nl:'Bewerken',en:'Edit',it:'Modifica',es:'Editar'});
-  var splitLbl=tMap({nl:'Splitsen - 2 gebeurtenissen samengevoegd?',en:'Split - two events merged?',it:'Dividi: due eventi uniti?',es:'Dividir - ¿dos eventos combinados?'});
+  var dayLbl=tMap({nl:'Dag',en:'Day',it:'Giorno',es:'Día',fr:'Jour',de:'Tag',ro:'Zi',pt:'Dia'});
+  var footLbl=tMap({nl:'Voetnoot',en:'Footnote',it:'Nota',es:'Nota',fr:'Note',de:'Fußnote',ro:'Notă',pt:'Nota'});
+  var editLbl=tMap({nl:'Bewerken',en:'Edit',it:'Modifica',es:'Editar',fr:'Modifier',de:'Bearbeiten',ro:'Editează',pt:'Editar'});
+  var splitLbl=tMap({nl:'Splitsen - 2 gebeurtenissen samengevoegd?',en:'Split - two events merged?',it:'Dividi: due eventi uniti?',es:'Dividir - ¿dos eventos combinados?',fr:'Scinder - deux événements fusionnés ?',de:'Teilen - zwei Termine zusammengeführt?',ro:'Împarte - două evenimente combinate?',pt:'Dividir - dois eventos combinados?'});
   var h='<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0">';
   h+='<label style="display:flex;align-items:flex-start;gap:8px;flex:1;min-width:0;cursor:'+(already?'default':'pointer')+';opacity:'+(already?'.5':'1')+'">'
     +'<input type="checkbox" class="gp-import-chk" data-idx="'+i+'" '+(already?'disabled':'checked')+' style="width:16px;height:16px;flex-shrink:0;margin-top:2px">'
     +'<span style="font-size:13px;flex:1;min-width:0">'
     +'<span style="font-weight:600">'+escapeHtml(item.titel)+'</span>'
-    +(item.onduidelijkeDatum?' <span style="font-size:10px;background:var(--amber);color:#fff;border-radius:8px;padding:1px 6px;margin-left:4px">'+tMap({nl:'onduidelijk',en:'unclear',it:'poco chiaro',es:'no claro'})+'</span>':'')
+    +(item.onduidelijkeDatum?' <span style="font-size:10px;background:var(--amber);color:#fff;border-radius:8px;padding:1px 6px;margin-left:4px">'+tMap({nl:'onduidelijk',en:'unclear',it:'poco chiaro',es:'no claro',fr:'peu clair',de:'unklar',ro:'neclar',pt:'pouco claro'})+'</span>':'')
     +'<br><span style="color:var(--text3);font-size:12px">'+escapeHtml(dateTxt)+(item.tijd?' · '+item.tijd:'')+(item.verantwoordelijke?' · '+escapeHtml(item.verantwoordelijke):'')+'</span>'
-    +(already?' <span style="color:var(--text3)">&middot; '+tMap({nl:'al toegevoegd',en:'already added',it:'già aggiunto',es:'ya añadido'})+'</span>':'')
+    +(already?' <span style="color:var(--text3)">&middot; '+tMap({nl:'al toegevoegd',en:'already added',it:'già aggiunto',es:'ya añadido',fr:'déjà ajouté',de:'bereits hinzugefügt',ro:'deja adăugat',pt:'já adicionado'})+'</span>':'')
     +'</span></label>';
   if(!already){
     h+='<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;margin-top:2px">';
@@ -28734,9 +28968,10 @@ function gpReviewRowHtml(item,i,already){
 // array (stable within one render pass), reset fresh each time the review
 // screen is opened for a new import.
 var _gpReviewOpenGroups={};
-function openGemeentePlanningImportReview(items){
+function openGemeentePlanningImportReview(items,source){
   _gpReviewItems=items;
-  _gpReviewShowInDays=items.map(function(item){return !gpIsAbsence(item);});
+  _gpReviewSource=source||'pdf';
+  _gpReviewShowInDays=items.map(function(item){return source==='ics'?true:!gpIsAbsence(item);});
   _gpReviewOpenGroups={};
   gpRenderReviewModal();
 }
@@ -28745,13 +28980,26 @@ function gpRenderReviewModal(){
   var existing={};
   (db.gemeentePlanning||[]).forEach(function(g){existing[gpDedupKey(g)]=true;});
   var groups=gpBuildReviewGroups(items);
-  var titleLbl=tMap({nl:'Gemeente-planning gevonden',en:'Church schedule found',it:'Programma della chiesa trovato',es:'Cronograma de iglesia encontrado'});
+  var titleLbl=tMap({nl:'Gemeente-planning gevonden',en:'Church schedule found',it:'Programma della chiesa trovato',es:'Cronograma de iglesia encontrado',fr:'Programme de l’église trouvé',de:'Gemeindeplanung gefunden',ro:'Program al bisericii găsit',pt:'Cronograma da igreja encontrado'});
   var subLbl=tMap({nl:items.length+' regel(s) gevonden. Vink aan wat je wilt toevoegen, en kies per regel Dag (op de kalenderdag) of Voetnoot (alleen als info onder de maand). Terugkerende activiteiten staan gegroepeerd - tik om te openen. Zijn 2 gebeurtenissen per ongeluk samengevoegd in 1 regel? Bewerk (potlood) of splits (kopieer) de regel. Dit telt niet mee als gewerkte uren.',en:items.length+' row(s) found. Check what you want to add, and pick Day (shown on the calendar day) or Footnote (info only, listed under the month) for each row. Recurring activities are grouped - tap to open. Did two events accidentally merge into one row? Edit (pencil) or split (copy) the row. This does not count as worked hours.',it:items.length+' riga/righe trovata/e. Controlla cosa vuoi aggiungere e scegli per ogni riga Giorno (mostrato nel giorno del calendario) o Nota (solo informazione, elencata sotto il mese). Le attività ricorrenti sono raggruppate: tocca per aprire. Due eventi si sono uniti per errore in una sola riga? Modifica (matita) o dividi (copia) la riga. Non conta come ore lavorate.',es:items.length+' fila(s) encontradas. Marca lo que quieras añadir, y elige Día (se muestra en el día del calendario) o Nota (solo información, debajo del mes) para cada fila. Las actividades recurrentes están agrupadas - toca para abrir. ¿Se combinaron 2 eventos por error en una fila? Edita (lápiz) o divide (copiar) la fila. Esto no cuenta como horas trabajadas.'});
-  var selAllLbl=tMap({nl:'Alles',en:'All',it:'Tutto',es:'Todo'});
-  var selFutureLbl=tMap({nl:'Alleen toekomstige',en:'Only upcoming',it:'Solo i prossimi',es:'Solo futuros'});
-  var dayLbl=tMap({nl:'Dag',en:'Day',it:'Giorno',es:'Día'});
-  var footLbl=tMap({nl:'Voetnoot',en:'Footnote',it:'Nota',es:'Nota'});
-  var groupLbl=tMap({nl:'Groep:',en:'Group:',it:'Gruppo:',es:'Grupo:'});
+  if(_gpReviewSource==='ics'){
+    titleLbl=tMap({nl:'Agenda-afspraken gevonden',en:'Calendar events found',es:'Eventos de calendario encontrados',fr:'Événements de calendrier trouvés',de:'Kalendertermine gefunden',ro:'Evenimente de calendar găsite',it:'Eventi di calendario trovati',pt:'Eventos de calendário encontrados'});
+    subLbl=tMap({
+      nl:items.length+' afspraak/afspraken gevonden. Vink aan wat je wilt toevoegen aan je kalender, en kies per afspraak Dag (op de kalenderdag) of Voetnoot (alleen als info onder de maand). Terugkerende afspraken staan gegroepeerd - tik om te openen. Dit telt niet mee als gewerkte uren.',
+      en:items.length+' event(s) found. Check what you want to add to your calendar, and pick Day (shown on the calendar day) or Footnote (info only, listed under the month) for each. Recurring events are grouped - tap to open. This does not count as worked hours.',
+      es:items.length+' evento(s) encontrado(s). Marca lo que quieras añadir a tu calendario y elige Día (se muestra en el día del calendario) o Nota (solo información, debajo del mes) para cada uno. Los eventos recurrentes están agrupados - toca para abrir. Esto no cuenta como horas trabajadas.',
+      fr:items.length+' événement(s) trouvé(s). Cochez ce que vous voulez ajouter à votre calendrier et choisissez pour chacun Jour (affiché le jour du calendrier) ou Note (information seule, sous le mois). Les événements récurrents sont regroupés - touchez pour ouvrir. Cela ne compte pas comme heures travaillées.',
+      de:items.length+' Termin(e) gefunden. Wähle aus, was du zu deinem Kalender hinzufügen möchtest, und wähle für jeden Tag (am Kalendertag angezeigt) oder Fußnote (nur Info, unter dem Monat aufgelistet). Wiederkehrende Termine sind gruppiert - zum Öffnen antippen. Das zählt nicht als Arbeitsstunden.',
+      ro:items.length+' eveniment(e) găsit(e). Bifează ce vrei să adaugi în calendar și alege pentru fiecare Zi (afișat în ziua din calendar) sau Notă (doar informație, sub lună). Evenimentele recurente sunt grupate - atinge pentru a deschide. Nu contează ca ore lucrate.',
+      it:items.length+' evento/i trovato/i. Seleziona cosa vuoi aggiungere al calendario e scegli per ciascuno Giorno (mostrato nel giorno del calendario) o Nota (solo informazione, sotto il mese). Gli eventi ricorrenti sono raggruppati: tocca per aprire. Non conta come ore lavorate.',
+      pt:items.length+' evento(s) encontrado(s). Marque o que deseja adicionar ao calendário e escolha para cada um Dia (exibido no dia do calendário) ou Nota (apenas informação, abaixo do mês). Eventos recorrentes estão agrupados - toque para abrir. Isso não conta como horas trabalhadas.'
+    });
+  }
+  var selAllLbl=tMap({nl:'Alles',en:'All',it:'Tutto',es:'Todo',fr:'Tout',de:'Alle',ro:'Toate',pt:'Tudo'});
+  var selFutureLbl=tMap({nl:'Alleen toekomstige',en:'Only upcoming',it:'Solo i prossimi',es:'Solo futuros',fr:'Seulement à venir',de:'Nur kommende',ro:'Doar viitoare',pt:'Apenas futuros'});
+  var dayLbl=tMap({nl:'Dag',en:'Day',it:'Giorno',es:'Día',fr:'Jour',de:'Tag',ro:'Zi',pt:'Dia'});
+  var footLbl=tMap({nl:'Voetnoot',en:'Footnote',it:'Nota',es:'Nota',fr:'Note',de:'Fußnote',ro:'Notă',pt:'Nota'});
+  var groupLbl=tMap({nl:'Groep:',en:'Group:',it:'Gruppo:',es:'Grupo:',fr:'Groupe :',de:'Gruppe:',ro:'Grup:',pt:'Grupo:'});
   var h='<div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>';
   h+='<div style="font-size:15px;font-weight:700;margin-bottom:4px">'+titleLbl+'</div>';
   h+='<div style="font-size:12px;color:var(--text2);margin-bottom:10px">'+subLbl+'</div>';
@@ -28791,7 +29039,7 @@ function gpRenderReviewModal(){
   h+='</div>';
   h+='<div style="display:flex;gap:8px;margin-top:16px">';
   h+='<button class="btn" onclick="closeModals()" style="flex:1">'+t('cancel_btn')+'</button>';
-  h+='<button class="btn primary" onclick="confirmGemeentePlanningImportReview()" style="flex:1">'+tMap({nl:'Toevoegen',en:'Add',it:'Aggiungi',es:'Añadir'})+'</button>';
+  h+='<button class="btn primary" onclick="confirmGemeentePlanningImportReview()" style="flex:1">'+tMap({nl:'Toevoegen',en:'Add',it:'Aggiungi',es:'Añadir',fr:'Ajouter',de:'Hinzufügen',ro:'Adaugă',pt:'Adicionar'})+'</button>';
   h+='</div>';
   showModal(h);
   if(_gpReviewScroll){
@@ -28971,7 +29219,7 @@ function confirmGemeentePlanningImportReview(){
       tijd:item.tijd,
       onduidelijkeDatum:!!item.onduidelijkeDatum,
       showInDays:(_gpReviewShowInDays&&_gpReviewShowInDays[i]===false)?false:true,
-      bron:'pdf-import'
+      bron:(_gpReviewSource==='ics'?'ics-import':'pdf-import')
     };
     touch(rec);
     db.gemeentePlanning.push(rec);
@@ -28980,7 +29228,7 @@ function confirmGemeentePlanningImportReview(){
   _gpReviewItems=null;
   _gpReviewShowInDays=null;
   save();
-  showImportResult('✓ '+added+' '+tMap({nl:'planningsregel(s) toegevoegd aan de kalender!',en:'schedule row(s) added to the calendar!',it:'riga/righe di programma aggiunta/e al calendario!',es:'fila(s) de cronograma añadidas al calendario!'}));
+  showImportResult('✓ '+added+' '+tMap({nl:'planningsregel(s) toegevoegd aan de kalender!',en:'schedule row(s) added to the calendar!',it:'riga/righe di programma aggiunta/e al calendario!',es:'fila(s) de cronograma añadidas al calendario!',fr:'ligne(s) de programme ajoutée(s) au calendrier !',de:'Planungszeile(n) zum Kalender hinzugefügt!',ro:'rând(uri) de program adăugat(e) în calendar!',pt:'linha(s) de cronograma adicionada(s) ao calendário!'}));
 }
 // Applies the two global display toggles (show gemeente planning at all,
 // and within that, show colleagues' absence rows) to the raw
@@ -29317,7 +29565,7 @@ function openPdfImportReview(candidates){
   h+='</div>';
   h+='<div style="display:flex;gap:8px;margin-top:16px">';
   h+='<button class="btn" onclick="closeModals()" style="flex:1">'+t('cancel_btn')+'</button>';
-  h+='<button class="btn primary" onclick="confirmPdfImportReview()" style="flex:1">'+tMap({nl:'Toevoegen',en:'Add',it:'Aggiungi',es:'Añadir'})+'</button>';
+  h+='<button class="btn primary" onclick="confirmPdfImportReview()" style="flex:1">'+tMap({nl:'Toevoegen',en:'Add',it:'Aggiungi',es:'Añadir',fr:'Ajouter',de:'Hinzufügen',ro:'Adaugă',pt:'Adicionar'})+'</button>';
   h+='</div>';
   showModal(h);
 }
@@ -29551,7 +29799,7 @@ function openCursistenRosterImportReview(candidates){
   h+='</div>';
   h+='<div style="display:flex;gap:8px;margin-top:16px">';
   h+='<button class="btn" onclick="closeModals()" style="flex:1">'+t('cancel_btn')+'</button>';
-  h+='<button class="btn primary" onclick="confirmCursistenRosterImportReview()" style="flex:1">'+tMap({nl:'Toevoegen',en:'Add',it:'Aggiungi',es:'Añadir'})+'</button>';
+  h+='<button class="btn primary" onclick="confirmCursistenRosterImportReview()" style="flex:1">'+tMap({nl:'Toevoegen',en:'Add',it:'Aggiungi',es:'Añadir',fr:'Ajouter',de:'Hinzufügen',ro:'Adaugă',pt:'Adicionar'})+'</button>';
   h+='</div>';
   showModal(h);
 }
