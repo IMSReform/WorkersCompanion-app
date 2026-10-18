@@ -31668,6 +31668,9 @@ function getCatLabel(label){
   return (CAT_TRANS[LANG]&&CAT_TRANS[LANG][label])||label;
 }
 // Returns translated display text for a stored thema string like "ES thema 1 - Rijk zonder het te weten"
+// Translated label for the built-in "Vrij onderwerp" (free topic) THEMAS entry,
+// whose raw title in THEMAS is Dutch-only ("Vrij onderwerp (zelf invullen)").
+function freeThemaLabel(){return tMap({nl:'Vrij onderwerp (zelf invullen)',en:'Free topic (write your own)',es:'Tema libre (escribir el tuyo)',fr:'Thème libre (à saisir)',de:'Freies Thema (selbst eingeben)',ro:'Temă liberă (scrie-o tu)',it:'Argomento libero (scrivilo tu)',pt:'Tema livre (escreva o seu)'});}
 function getThemaDisplay(thema){
   // Handbook lessons ("BS 1".."BS 51") store their base thema string in
   // English, with full per-language titles living in STUDIE_TRANS[lang]
@@ -31675,6 +31678,7 @@ function getThemaDisplay(thema){
   // the Bijbelstudies screen, in every language including nl (previously nl
   // returned the raw, still-English string unchanged).
   if(!thema)return thema;
+  if(thema==='Vrij onderwerp - Vrij onderwerp (zelf invullen)')return freeThemaLabel();
   var dash=thema.indexOf(' - ');
   if(dash<0)return thema;
   var code=thema.substring(0,dash);
@@ -31686,6 +31690,7 @@ function getThemaDisplay(thema){
 // Just the translated title for a thema code, no code prefix — for tooltips
 // and other spots that show the lesson name on its own.
 function getThemaTitle(code,rawTitle){
+  if(code==='Vrij onderwerp')return freeThemaLabel();
   var les=STUDIE_DATA.find(function(l){return l.code===code;});
   if(les){
     var t_les=getLesTranslation(les);
@@ -31697,6 +31702,7 @@ function getThemaTitle(code,rawTitle){
 // THEMAS pair (code + its base English title) instead of a stored "code -
 // title" string — used everywhere THEMAS itself is rendered as a picker list.
 function getThemaOptLabel(code,rawTitle){
+  if(code==='Vrij onderwerp')return freeThemaLabel();
   return code+' - '+getThemaTitle(code,rawTitle);
 }
 // Priority order of `aard` groups for the Kantoor/secretariaat role: admin
