@@ -38372,7 +38372,7 @@ function openCourseLesson(code){
     sec.entries.forEach(function(){h+=courseQuestionHtml(les,qi);qi++;});
     h+='</div>';
   });
-  h+='<div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary sm" onclick="closeModals();openPresenter(event,\''+code+'\')">&#9654; '+t('presenter_btn')+'</button><button class="btn sm" onclick="exportStudyPdf(this)">&#8681; '+tMap({nl:'Exporteren als PDF',en:'Export as PDF',es:'Exportar como PDF',fr:'Exporter en PDF',de:'Als PDF exportieren',ro:'Exportă ca PDF',it:'Esporta come PDF',pt:'Exportar como PDF'})+'</button></div>';
+  h+='<div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary sm" onclick="closeModals();openPresenter(event,\''+code+'\')">&#9654; '+t('presenter_btn')+'</button><button class="btn sm" onclick="exportStudyPdf(this)">&#8681; '+tMap({nl:'Exporteren als PDF',en:'Export as PDF',es:'Exportar como PDF',fr:'Exporter en PDF',de:'Als PDF exportieren',ro:'Exportă ca PDF',it:'Esporta come PDF',pt:'Exportar como PDF'})+'</button><button class="btn sm" style="background:var(--surface2);color:var(--text)" onclick="closeModals()">'+t('close_btn')+'</button></div>';
   h+='</div>';
   showModal(h);
   var bx=document.querySelector('#plan-modal-overlay .modal-sheet-box');
