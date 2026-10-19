@@ -1402,7 +1402,13 @@ function hideBootSplash(){
 }
 // Failsafe: if startup throws before hideBootSplash() runs, this fixed
 // full-screen overlay would stay on top and swallow every scroll/tap.
-setTimeout(function(){ try{hideBootSplash();}catch(e){} },8000);
+// On slow connections the ~18 MB file is still downloading after 8s; keep the
+// splash (with its spinner) until the page has fully loaded, then fail safe.
+(function(){
+  function fs(){ try{hideBootSplash();}catch(e){} }
+  if(document.readyState==='complete') setTimeout(fs,8000);
+  else window.addEventListener('load',function(){ setTimeout(fs,8000); });
+})();
 </script>
 
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
