@@ -37775,6 +37775,37 @@ async function reorganizeStudyQuotes(studyId){
 // read-only popup: title, references, tags and the full text, with
 // buttons to open Presenter mode, jump into editing if they actually want
 // to change something, or just close it.
+// Export the study currently shown in a popup (course lesson / custom study) as
+// a PDF: clones the popup content without its buttons and prints it through
+// the same hidden print frame the reports use ("Save as PDF" in the dialog).
+function exportStudyPdf(btn){
+  var box=btn&&btn.closest?(btn.closest('.modal-sheet-box')||btn.closest('.pmc-box')):null;
+  if(!box)return;
+  var clone=box.cloneNode(true);
+  clone.querySelectorAll('button,.btn-row,[data-nopdf]').forEach(function(el){if(el.parentNode)el.parentNode.removeChild(el);});
+  clone.style.cssText='';
+  var titleEl=clone.querySelector('div[style*="font-weight:700"]');
+  var title=(box.querySelector('div[style*="font-size:18px"],div[style*="font-size:17px"]')||{}).textContent||'';
+  title=title.trim()||'Bijbelstudie';
+  var style='@page{size:A4;margin:16mm}*{box-sizing:border-box}'
+    +'*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;max-height:none!important;overflow:visible!important}'
+    +':root{--brand:#335781;--brand-mid:#335781;--text:#1a2733;--text2:#3d4b59;--text3:#778;--border:#dfe5ea;--surface:#fff;--surface2:#f3f6f9;--brand-light:#eaf0f5}'
+    +agenorFontFaceCss()
+    +'body{font-family:Roboto,Arial,Helvetica,sans-serif;color:#1a2733;margin:0;font-size:10.5pt}'
+    +'.page-wrap{max-width:182mm;margin:0 auto;padding:0 4mm}'
+    +'.print-btn{margin-top:8mm;padding:7px 16px;background:#335781;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:11px}'
+    +'@media print{.print-btn{display:none}}';
+  var f=_gcCreatePrintFrameWorker();
+  var w=f.contentWindow;
+  w.document.write('<html><head><title>'+escapeHtml(title)+'</title><style>'+style+'</style></head><body><div class="page-wrap">');
+  w.document.write(orgHeaderHtml(11));
+  w.document.write(clone.innerHTML);
+  w.document.write('<br><button class="print-btn" onclick="window.print()">'+t('print_btn')+'</button>');
+  w.document.write('<script>(function(){setTimeout(function(){try{window.print();}catch(e){}},200);})();<\/script>');
+  w.document.write('</div></body></html>');
+  w.document.close();
+  _gcArmPrintFrameCleanupWorker(f);
+}
 function openStudyViewModal(id){
   var s=(db.customStudies||[]).find(function(x){return x.id==id;});
   if(!s)return;
@@ -37787,6 +37818,7 @@ function openStudyViewModal(id){
   if(s.secties&&s.secties.length){
     box+='<button class="btn primary" onclick="closeModals();openPresenter(event,\'CS-'+s.id+'\')">▶ '+t('presenter_btn')+'</button>';
   }
+  box+='<button class="btn" onclick="exportStudyPdf(this)">&#8681; '+tMap({nl:'Exporteren als PDF',en:'Export as PDF',es:'Exportar como PDF',fr:'Exporter en PDF',de:'Als PDF exportieren',ro:'Exportă ca PDF',it:'Esporta come PDF',pt:'Exportar como PDF'})+'</button>';
   box+='<button class="btn" onclick="openCustomStudyForm('+s.id+')">'+t('edit_btn')+'</button>';
   box+='<button class="btn" style="background:var(--surface2);color:var(--text)" onclick="closeModals()">'+t('close_btn')+'</button>';
   box+='</div>';
@@ -38340,7 +38372,7 @@ function openCourseLesson(code){
     sec.entries.forEach(function(){h+=courseQuestionHtml(les,qi);qi++;});
     h+='</div>';
   });
-  h+='<div style="margin-top:16px"><button class="btn primary sm" onclick="closeModals();openPresenter(event,\''+code+'\')">&#9654; '+t('presenter_btn')+'</button></div>';
+  h+='<div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary sm" onclick="closeModals();openPresenter(event,\''+code+'\')">&#9654; '+t('presenter_btn')+'</button><button class="btn sm" onclick="exportStudyPdf(this)">&#8681; '+tMap({nl:'Exporteren als PDF',en:'Export as PDF',es:'Exportar como PDF',fr:'Exporter en PDF',de:'Als PDF exportieren',ro:'Exportă ca PDF',it:'Esporta come PDF',pt:'Exportar como PDF'})+'</button></div>';
   h+='</div>';
   showModal(h);
   var bx=document.querySelector('#plan-modal-overlay .modal-sheet-box');
