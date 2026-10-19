@@ -20810,11 +20810,8 @@ function quickLogContact(cuId){
   // Same tap-to-edit date pattern as the quick-repeat popup - "Vandaag" by
   // default, one tap to pick a different date, instead of an always-open
   // date input for what's almost always today.
-  h+='<div id="qc-date-label" onclick="qcEditDate()" style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:10px">'
-    +'<span id="qc-date-text">'+todayLbl+'</span>'
-    +' <svg width="12" height="12" style="opacity:.5;flex-shrink:0"><use href="#ico-chevron-down"/></svg>'
-    +'</div>';
-  h+='<input type="date" id="qc-datum" value="'+ymdLocal()+'" onchange="qcDateChanged()" style="display:none;margin-bottom:10px">';
+  h+='<span class="form-label">'+tMap({nl:'Datum',en:'Date',es:'Fecha',fr:'Date',de:'Datum',ro:'Dată',it:'Data',pt:'Data'})+'</span>';
+  h+='<input type="date" id="qc-datum" value="'+ymdLocal()+'" style="width:100%;margin-bottom:10px">';
   h+='<div style="display:flex;gap:8px;margin-bottom:8px">';
   h+='<div style="flex:1"><span class="form-label hrs">'+t('wizard_hours')+'</span><select id="qc-uren" class="hour-picker hrs" style="width:100%">'+buildHourOptions(0.25)+'</select></div>';
   // A call/WhatsApp check-in is almost always logged the moment it happens,
