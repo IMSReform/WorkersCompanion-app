@@ -21529,7 +21529,7 @@ function openQuickRepeatModal(last, prefillDate){
   // always plain numbers, which happened to survive unquoted).
   h+='<button class="btn primary" onclick="saveQuickRepeat('+ssIdArg(last.id)+')" style="flex:1">'+t('save_btn')+'</button>';
   h+='</div></div>';
-  showModalCentered(h);
+  showModalCentered(h,{wide:true});
 }
 // Checked: fills the time picker with the current time (rounded to the
 // nearest quarter hour). Unchecked: previously this also cleared the picker
