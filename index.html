@@ -255,8 +255,13 @@ body{font-family:'Roboto','Segoe UI',system-ui,sans-serif;background:var(--bg);c
   flex:0 0 auto;min-width:60px;height:30px;
   padding:0 10px;font-size:12px;font-family:inherit;line-height:1;
   border:1.5px solid rgba(255,255,255,.25);border-radius:8px;box-sizing:border-box;
-  background:rgba(255,255,255,.12);color:#fff;outline:none;
+  background-color:rgba(255,255,255,.12);color:#fff;outline:none;
   appearance:none;-webkit-appearance:none;
+  /* appearance:none removes the native arrow (invisible on Windows Chrome),
+     so draw a small white up/down chevron ourselves. */
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='14' viewBox='0 0 10 14' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M2 5l3-3 3 3M2 9l3 3 3-3'/></svg>");
+  background-repeat:no-repeat;background-position:right 8px center;background-size:10px 14px;
+  padding-right:26px;
   cursor:pointer;width:auto;
 }
 .g-subbar select option{background:var(--brand);color:#fff}
@@ -18989,9 +18994,28 @@ function fabAction(){
     showAddCursist();
   } else if(currentScreen==='bijbelstudies'){
     openCustomStudyForm();
+  } else if(currentScreen==='log'){
+    openNewEntryForm();
   } else {
     startWizard();
   }
+}
+
+// Logboek's big + opens the full entry form (same form as editing an entry)
+// instead of the step-by-step wizard. A blank draft entry is created so the
+// form can edit it like any other entry; it is only kept if the user saves
+// (saveEditEntry clears _newDraft) and is dropped again on cancel/close.
+function dropNewEntryDrafts(){
+  var before=db.entries.length;
+  db.entries=db.entries.filter(function(x){return !(x&&x._newDraft);});
+  return db.entries.length!==before;
+}
+function openNewEntryForm(prefillDate){
+  dropNewEntryDrafts();
+  var e={id:genEntryId(),datum:prefillDate||ymdLocal(),categorie:'',omschrijving:'',thema:'',uren:0,km:0,_newDraft:true};
+  touch(e);
+  db.entries.push(e);
+  openEditEntryModal(e.id,true);
 }
 
 // skipGate: true when the caller already asked "repeat or new?" itself
@@ -34475,7 +34499,7 @@ function showModal(content){
   // in the stylesheet overrides them on wider screens to center the dialog
   // and let it grow close to the app's own height instead of a fixed 92vh.
   overlay.innerHTML = '<div class="modal-sheet-box" style="background:var(--surface);border-radius:16px 16px 0 0;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:20px">' + content + '</div>';
-  overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+  overlay.onclick = function(e){ if(e.target===overlay){ overlay.remove(); if(typeof dropNewEntryDrafts==='function')dropNewEntryDrafts(); } };
   document.body.appendChild(overlay);
 }
 // Same overlay id/close behavior as showModal (so closeModals() and the
@@ -34509,7 +34533,7 @@ function showModalCentered(content,opts){
   // keeps; those users still get the click-away convenience, only the
   // message wizard requires the explicit X button (see renderMsgWizardHtml).
   if(!(opts&&opts.noOutsideClose)){
-    overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+    overlay.onclick = function(e){ if(e.target===overlay){ overlay.remove(); if(typeof dropNewEntryDrafts==='function')dropNewEntryDrafts(); } };
   }
   document.body.appendChild(overlay);
 }
@@ -34518,6 +34542,7 @@ function closeModals(){
   document.querySelectorAll('.modal-bg').forEach(function(m){m.classList.remove('show');});
   var el=document.getElementById('plan-modal-overlay');
   if(el)el.remove();
+  if(typeof dropNewEntryDrafts==='function')dropNewEntryDrafts();
 }
 // Dismisses only the topmost showModal()/showModalCentered() overlay
 // (#plan-modal-overlay), leaving any .modal-bg screen underneath (e.g.
@@ -34532,7 +34557,7 @@ function closeModals(){
 // stays safe to use anywhere closeModals() was used before.
 function closeTopModal(){
   var el=document.getElementById('plan-modal-overlay');
-  if(el){el.remove();return;}
+  if(el){el.remove();if(typeof dropNewEntryDrafts==='function')dropNewEntryDrafts();return;}
   closeModals();
 }
 
@@ -42130,6 +42155,7 @@ function saveEditEntry(entryId){
   if(!e)return;
   if(!guardApprovedMonthEdit(e.datum))return;
   ssPushUndo();
+  delete e._newDraft;
   var datum=document.getElementById('ee-datum');
   var tijd=document.getElementById('ee-tijd');
   var uren=document.getElementById('ee-uren');
