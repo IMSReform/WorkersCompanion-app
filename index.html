@@ -768,7 +768,7 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
 .cal-day.today.cal-day-selected .cal-day-num{background:var(--brand);color:#fff}
 .cal-dots{display:flex;gap:2px;justify-content:center;flex-wrap:wrap;max-width:30px;min-height:6px}
 .cal-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
-.cal-day-panel{background:var(--surface);border-radius:var(--r);padding:14px;margin-top:8px;box-shadow:var(--shadow)}
+.cal-day-panel{background:var(--surface);border-radius:var(--r);padding:14px;margin-top:8px;box-shadow:var(--shadow);scroll-margin-bottom:110px}
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .cal-nav-btn{border:none;background:transparent;font-size:20px;cursor:pointer;padding:2px 10px;border-radius:6px;color:var(--brand)}
 .cal-nav-btn:active{opacity:.6}
@@ -20687,7 +20687,16 @@ function toggleVacationDay(dateStr){
   renderCalendar();
 }
 
-function calSelectDay(d){calSelectedDay=calSelectedDay===d?null:d;renderCalendar();}
+// After tapping a day, bring the day panel (with its Register / plan button at
+// the bottom) into view; otherwise it can sit below the fold and go unnoticed.
+function calRevealDayPanel(){
+  requestAnimationFrame(function(){
+    var ps=document.querySelectorAll('.cal-day-panel');
+    if(!ps.length||calSelectedDay===null)return;
+    try{ps[ps.length-1].scrollIntoView({block:'nearest',behavior:'smooth'});}catch(e){}
+  });
+}
+function calSelectDay(d){calSelectedDay=calSelectedDay===d?null:d;renderCalendar();calRevealDayPanel();}
 function calToggleCompact(){
   calCompact=!calCompact;
   try{localStorage.setItem('_calCompact',calCompact?'1':'0');}catch(e){}
@@ -32750,7 +32759,7 @@ function renderHomeCalendar(){
       }
     });
     if(plans.length) dots+='<div class="cal-dot" style="background:var(--amber)"></div>';
-    h+='<div class="cal-day'+(isToday?' today':'')+(isSel?' cal-day-selected':'')+'" onclick="calSelectDay('+d+');renderHomeCalendar()">';
+    h+='<div class="cal-day'+(isToday?' today':'')+(isSel?' cal-day-selected':'')+'" onclick="calSelectDay('+d+');renderHomeCalendar();calRevealDayPanel()">';
     h+='<div class="cal-day-num">'+d+'</div>';
     h+='<div class="cal-dots">'+dots+'</div>';
     h+='</div>';
