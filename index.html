@@ -19376,7 +19376,7 @@ function renderWiz(){
     // button, unchanged) keeps reading it exactly like it read the old
     // select's value.
     const wSelCu=draft.cursistId?db.cursisten.find(cu=>String(cu.id)===String(draft.cursistId)):null;
-    const wFieldLabel=wSelCu?wSelCu.naam:t('wizard_no_contact');
+    const wFieldLabel=wSelCu?wSelCu.naam:selContactLbl();
     // "Meerdere studenten"/"Meerdere contacten" (multiple contacts): offered
     // for Bijbelstudie geven plus any other MULTI_CONTACT_CATS category
     // (Bezoek, Pastoraal contact, Pastoraal werk - task #959) - a home
@@ -19689,7 +19689,7 @@ function selectWCursist(id){
   var cu=db.cursisten.find(function(c){return String(c.id)===String(id);});
   var fieldLbl=document.getElementById('w-cursist-field-label');
   if(fieldLbl){
-    fieldLbl.textContent=cu?cu.naam:t('wizard_no_contact');
+    fieldLbl.textContent=cu?cu.naam:selContactLbl();
     fieldLbl.style.color=cu?'var(--text)':'var(--text3)';
   }
   closeWCursistPicker();
@@ -20248,6 +20248,8 @@ function populateLogMonths(){
   sel.innerHTML='<option value="">'+t('all_months')+'</option>'+months.map(function(m){return '<option value="'+m+'">'+formatMonth(m)+'</option>';}).join('');
 }
 
+// Placeholder for an empty contact field: tells the user what to do instead of "none".
+function selContactLbl(){return tMap({nl:'— kies cursist —',en:'— select contact —',es:'— seleccionar contacto —',fr:'— choisir un contact —',de:'— Kontakt auswählen —',ro:'— selectează contact —',it:'— seleziona contatto —',pt:'— selecionar contato —'});}
 function activityTitle(e){
   // Smart title: person name, location, or description
   if(e.cursistNaam)return e.cursistNaam;
@@ -33826,7 +33828,7 @@ function renderSpSuggestions(){
   h+='<span class="form-label">'+t('wizard_cat')+'</span>';
   h+='<select id="sp-cat" onchange="_spGuess.cat=this.value" style="margin-bottom:8px"><option value="">'+(t('wizard_choose_cat')||'Kies categorie...')+'</option>'+catOpts+'</select>';
   h+='<span class="form-label">'+t('plan_contact')+'</span>';
-  h+='<select id="sp-cursist" onchange="_spGuess.cursistId=this.value" style="margin-bottom:8px"><option value="">'+(t('wizard_no_contact')||'— geen —')+'</option>'+cursistenOpts+'</select>';
+  h+='<select id="sp-cursist" onchange="_spGuess.cursistId=this.value" style="margin-bottom:8px"><option value="">'+selContactLbl()+'</option>'+cursistenOpts+'</select>';
   h+='<span class="form-label">'+t('wizard_date')+'</span>';
   h+='<input type="date" id="sp-datum" value="'+_spGuess.datum+'" onchange="_spGuess.datum=this.value">';
   box.innerHTML=h;
@@ -33949,7 +33951,7 @@ function openPlanModal(planId, prefillDate){
   h += '<span class="form-label">'+t('wizard_cat')+'</span>';
   h += '<select id="plan-cat" onchange="onPlanCatChange()" style="margin-bottom:8px"><option value="">'+( t('wizard_choose_cat')||'Kies categorie...')+'</option>'+catOpts+'</select>';
   h += '<span class="form-label">'+t('plan_contact')+'</span>';
-  h += '<select id="plan-cursist" onchange="onPlanCursistChange()" style="margin-bottom:8px"><option value="">'+( t('wizard_no_contact')||'— geen —')+'</option>'+cursistenOpts+'</select>';
+  h += '<select id="plan-cursist" onchange="onPlanCursistChange()" style="margin-bottom:8px"><option value="">'+selContactLbl()+'</option>'+cursistenOpts+'</select>';
   h += '<span class="form-label hrs">'+t('wizard_hours')+'</span><select id="plan-uren" class="hour-picker hrs" style="width:100%;margin-bottom:8px">'+(buildHourOptions(p&&p.uren?p.uren:''))+'</select>';
   // Everything below is secondary detail (description, km, notes, and —
   // for new items — repeat/calendar options) that most plans don't need to
@@ -41688,7 +41690,7 @@ function openEditEntryModal(entryId,skipSummary){
       var label=getThemaDisplay(th[0]+' - '+th[1]);
       return '<option value="'+th[0]+'" '+sel+'>'+label+'</option>';
     }).join('');
-  var cursistOpts='<option value="">'+t('wizard_no_contact')+'</option>'
+  var cursistOpts='<option value="">'+selContactLbl()+'</option>'
     +'<option value="__new__">'+t('add_cursist')+'</option>'
     +buildCursistOptgroups(db.cursisten,function(c){
       return '<option value="'+c.id+'"'+(e.cursistId==c.id?' selected':'')+'>'+c.naam+'</option>';
