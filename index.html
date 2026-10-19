@@ -20273,6 +20273,8 @@ function populateLogMonths(){
 }
 
 // Placeholder for an empty contact field: tells the user what to do instead of "none".
+// Placeholder for an empty topic select: tells the user what to do.
+function selThemaLbl(){return tMap({nl:'— kies thema —',en:'— choose topic —',es:'— elegir tema —',fr:'— choisir un sujet —',de:'— Thema wählen —',ro:'— alege tema —',it:'— scegli argomento —',pt:'— escolher tema —'});}
 function selContactLbl(){return tMap({nl:'— kies cursist —',en:'— select contact —',es:'— seleccionar contacto —',fr:'— choisir un contact —',de:'— Kontakt auswählen —',ro:'— selectează contact —',it:'— seleziona contatto —',pt:'— selecionar contato —'});}
 function activityTitle(e){
   // Smart title: person name, location, or description
@@ -21409,7 +21411,7 @@ function openQuickRepeatModal(last, prefillDate){
     themaBlock='<div id="qr-thema-section" style="display:'+(last.categorie==='Bijbelstudie geven'?'block':'none')+'">'
       +'<span class="form-label">'+t('wizard_theme')+'</span>'
       +'<select id="qr-thema" style="margin-bottom:8px" onchange="toggleQrVrij()">'
-      +'<option value="">— '+t('no_topic')+' —</option>'
+      +'<option value="">'+selThemaLbl()+'</option>'
       // Same fix as w-thema/cs-thema - Vrij onderwerp moved right after
       // "no topic" instead of buried after the whole BS-lesson list, so
       // it's actually visible when repeating a custom-topic entry.
@@ -23777,7 +23779,7 @@ function openCursistDetail(id){
     +'</select></div>'
     +'<div><span class="form-label">'+t('wizard_theme')+'</span>'
     +'<select id="cs-thema" style="width:100%;margin-bottom:8px" onchange="toggleCsVrij()">'
-    +'<option value="">— '+t('no_topic')+'—</option>'
+    +'<option value="">'+selThemaLbl()+'</option>'
     // Vrij onderwerp used to sit as the very last option, after the entire
     // fixed BS-lesson list (~50 entries) - easy to never scroll down to, so
     // logging a session about a topic outside that fixed list silently left
@@ -24087,7 +24089,7 @@ function openLidDetail(id){
     +'</select></div>'
     +'<div><span class="form-label">'+t('wizard_theme')+'</span>'
     +'<select id="cs-thema" style="width:100%;margin-bottom:8px" onchange="toggleCsVrij()">'
-    +'<option value="">— '+t('no_topic')+' —</option>'
+    +'<option value="">'+selThemaLbl()+'</option>'
     // Same fix as the other "+ Studie toevoegen" form (Lid detail view) -
     // Vrij onderwerp used to sit last, after the whole fixed BS-lesson list,
     // so it was easy to miss and studies saved with a blank thema, which
@@ -33910,7 +33912,7 @@ function openPlanModal(planId, prefillDate){
   // planned Bible study had no way to show or change its topic, and (see
   // savePlanModal) saving through this modal silently dropped whatever
   // thema/themacode the wizard had originally set on the plan.
-  var planThemaOpts='<option value="">— '+t('no_topic')+' —</option>'
+  var planThemaOpts='<option value="">'+selThemaLbl()+'</option>'
     +THEMAS.map(function(th){
       var sel=(p&&(p.themacode===th[0]||p.thema===th[0]+' - '+th[1]||p.thema===th[0]))?'selected':'';
       var label=getThemaDisplay(th[0]+' - '+th[1]);
@@ -41714,7 +41716,7 @@ function openEditEntryModal(entryId,skipSummary){
   // below still showed the real custom text - saveEditEntry then read the
   // select's blank value and wiped e.thema/e.themacode to empty on the very
   // next save, even if thema was never touched.
-  var themaOpts='<option value="">— '+t('no_topic')+' —</option>'
+  var themaOpts='<option value="">'+selThemaLbl()+'</option>'
     +'<option value="Vrij onderwerp" '+(e.themacode==='Vrij onderwerp'?'selected':'')+'>'+t('wizard_free_topic')+'</option>'
     +THEMAS.filter(function(th){return th[0]!=='Vrij onderwerp';}).map(function(th){
       var sel=(e.themacode===th[0]||e.thema===th[0]+' - '+th[1]||e.thema===th[0])?'selected':'';
