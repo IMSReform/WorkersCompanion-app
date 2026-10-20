@@ -801,6 +801,7 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
 @keyframes presenterPing{0%{transform:translate(-50%,-50%) scale(.3);opacity:.9}70%{opacity:.5}100%{transform:translate(-50%,-50%) scale(2.4);opacity:0}}
 
 /* ═══ TOGGLE ═══ */
+.calx-off .calx-opt{display:none!important}
 .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border)}
 .toggle-row:last-child{border-bottom:none}
 .toggle-label{font-size:14px;font-weight:500}
@@ -1784,6 +1785,7 @@ function hideBootSplash(){
             <button id="th-warm"  onclick="setAppTheme('warm')"  title="Blauw+Groen"  style="width:30px;height:30px;flex-shrink:0;border-radius:50%;border:2px solid transparent;background:linear-gradient(135deg,#335781,#4A7C59);cursor:pointer;transition:all .15s"></button>
           </div>
         </div>
+        <div id="cal-export-toggle-wrap" style="margin-top:14px"></div>
         <div style="margin-top:14px">
           <span class="form-label" data-i18n="time_format_lbl">Tijdnotatie</span>
           <select id="setting-time-format" onchange="saveSettings();refreshAllTimeDisplays()" style="width:100%;padding:8px;border:none;border-radius:8px;font-size:13px;background:var(--surface2);color:var(--text);font-family:inherit">
@@ -14333,6 +14335,7 @@ function applySettings(){const s=db.settings;
   var _orgLbl=document.getElementById('lbl-orgsplit-card');if(_orgLbl)_orgLbl.textContent=orgSplitLbl('mode_lbl');
   buildChurchRoleSelect(s.churchRoles&&s.churchRoles.length?s.churchRoles:(s.churchRole?[s.churchRole]:[]));
   renderGpDisplaySettings();
+  renderCalExportToggle();
   updateAiKeyStatus();
   var kmRateEl=document.getElementById('goal-km-rate');
   try{applyMotoSettingsUi(true);}catch(e){}
@@ -19481,7 +19484,7 @@ function renderWiz(){
     var calCbHtml='';
     if(showCalCb){
       var wCalLbl=tMap({nl:'Ook toevoegen aan agenda-app (Apple/Google/Windows) met herinnering 30 min. van tevoren',en:'Also add to Calendar app (Apple/Google/Windows) with a 30-min reminder',es:'También añadir a la app de calendario (Apple/Google/Windows) con recordatorio 30 min. antes',fr:'Ajouter aussi à l\'app calendrier (Apple/Google/Windows) avec rappel 30 min. avant',de:'Auch zur Kalender-App hinzufügen (Apple/Google/Windows) mit Erinnerung 30 Min. vorher',ro:'Adaugă și în aplicația de calendar (Apple/Google/Windows) cu memento cu 30 min. înainte',it:'Aggiungi anche all\'app calendario (Apple/Google/Windows) con promemoria 30 min. prima',pt:'Também adicionar à app de calendário (Apple/Google/Windows) com lembrete 30 min. antes'});
-      calCbHtml='<label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;margin-top:10px;line-height:1.4"><input type="checkbox" id="w-add-to-cal" '+(getCalExportPref()?'checked':'')+' style="width:16px;height:16px;flex-shrink:0;margin-top:1px">'+wCalLbl+'</label>';
+      calCbHtml='<label class="calx-opt" style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;margin-top:10px;line-height:1.4"><input type="checkbox" id="w-add-to-cal" '+(getCalExportPref()?'checked':'')+' style="width:16px;height:16px;flex-shrink:0;margin-top:1px">'+wCalLbl+'</label>';
     }
     // Repeat (weekly/every-2-weeks/monthly) for a planned (future-dated)
     // activity - this already existed in the standalone "+ Activiteit
@@ -21549,7 +21552,7 @@ function openQuickRepeatModal(last, prefillDate){
   // logged as usual and this is a no-op. Same checkbox/pref pattern as the
   // main plan modal so behavior/wording stays consistent app-wide.
   var qrCalLbl=tMap({nl:'Ook toevoegen aan agenda-app (Apple/Google/Windows) met herinnering 30 min. van tevoren',en:'Also add to Calendar app (Apple/Google/Windows) with a 30-min reminder',es:'También añadir a la app de calendario (Apple/Google/Windows) con recordatorio 30 min. antes',fr:'Ajouter aussi à l\'app calendrier (Apple/Google/Windows) avec rappel 30 min. avant',de:'Auch zur Kalender-App hinzufügen (Apple/Google/Windows) mit Erinnerung 30 Min. vorher',ro:'Adaugă și în aplicația de calendar (Apple/Google/Windows) cu memento cu 30 min. înainte',it:'Aggiungi anche all\'app calendario (Apple/Google/Windows) con promemoria 30 min. prima',pt:'Também adicionar à app de calendário (Apple/Google/Windows) com lembrete 30 min. antes'});
-  h+='<label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text3);cursor:pointer;margin-top:10px;line-height:1.4"><input type="checkbox" id="qr-add-to-cal" '+(getCalExportPref()?'checked':'')+' style="width:16px;height:16px;flex-shrink:0;margin-top:1px">'+qrCalLbl+'</label>';
+  h+='<label class="calx-opt" style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text3);cursor:pointer;margin-top:10px;line-height:1.4"><input type="checkbox" id="qr-add-to-cal" '+(getCalExportPref()?'checked':'')+' style="width:16px;height:16px;flex-shrink:0;margin-top:1px">'+qrCalLbl+'</label>';
   h+='<div style="display:flex;gap:8px;margin-top:14px">';
   h+='<button class="btn" onclick="closeModals()" style="flex:1">'+t('cancel_btn')+'</button>';
   // ssIdArg (not a raw +last.id+) - imported/legacy entries often have
@@ -33689,7 +33692,35 @@ function openDayView(dateStr){
 // the checkbox on the plan form starts checked/unchecked the way the user
 // last left it, instead of resetting to "on" every single time.
 var CAL_EXPORT_PREF_KEY='zda_cal_export_pref';
+// Master switch (Settings > Weergave), OFF by default: older / less digital
+// users don't know what to do with the downloaded .ics file, so none of the
+// "add to calendar" checkboxes / prompts show until someone turns this on.
+// Per device (localStorage), like the other device-level view preferences.
+var CAL_EXPORT_ON_KEY='zda_cal_export_on';
+function isCalExportEnabled(){
+  try{ return localStorage.getItem(CAL_EXPORT_ON_KEY)==='1'; }catch(e){ return false; }
+}
+function applyCalExportVisibility(){
+  if(document.body)document.body.classList.toggle('calx-off',!isCalExportEnabled());
+}
+if(document.body)applyCalExportVisibility();else document.addEventListener('DOMContentLoaded',applyCalExportVisibility);
+function setCalExportEnabled(on){
+  try{ localStorage.setItem(CAL_EXPORT_ON_KEY,on?'1':'0'); }catch(e){}
+  applyCalExportVisibility();
+}
+function renderCalExportToggle(){
+  var wrap=document.getElementById('cal-export-toggle-wrap');
+  if(!wrap)return;
+  var on=isCalExportEnabled();
+  var h='<div class="toggle-row">';
+  h+='<div><div class="toggle-label">'+tMap({nl:'Planning naar agenda-app downloaden',en:'Download planning to calendar app',es:'Descargar la planificación al calendario',fr:'Télécharger la planification vers le calendrier',de:'Planung in Kalender-App herunterladen',ro:'Descarcă planificarea în aplicația de calendar',it:'Scarica la pianificazione nel calendario',pt:'Descarregar o planeamento para o calendário'})+'</div>';
+  h+='<div class="toggle-sub">'+tMap({nl:'Voor Apple/Google Agenda. Maakt een klein .ics-bestand dat je in je agenda-app opent. Staat standaard uit.',en:'For Apple/Google Calendar. Creates a small .ics file you open in your calendar app. Off by default.',es:'Para Apple/Google Calendar. Crea un pequeño archivo .ics que abres en tu app de calendario. Desactivado por defecto.',fr:"Pour Apple/Google Agenda. Crée un petit fichier .ics à ouvrir dans votre application de calendrier. Désactivé par défaut.",de:'Für Apple/Google Kalender. Erstellt eine kleine .ics-Datei, die du in deiner Kalender-App öffnest. Standardmäßig aus.',ro:'Pentru Apple/Google Calendar. Creează un mic fișier .ics pe care îl deschizi în aplicația de calendar. Dezactivat implicit.',it:"Per Apple/Google Calendar. Crea un piccolo file .ics da aprire nell'app del calendario. Disattivato di default.",pt:'Para Apple/Google Calendar. Cria um pequeno ficheiro .ics que abre na app de calendário. Desativado por defeito.'})+'</div></div>';
+  h+='<label class="toggle"><input type="checkbox" '+(on?'checked':'')+' onchange="setCalExportEnabled(this.checked)"><span class="toggle-slider"></span></label>';
+  h+='</div>';
+  wrap.innerHTML=h;
+}
 function getCalExportPref(){
+  if(!isCalExportEnabled())return false;
   try{ var v=localStorage.getItem(CAL_EXPORT_PREF_KEY); return v===null?true:v==='1'; }catch(e){ return true; }
 }
 function setCalExportPref(on){
@@ -33977,7 +34008,7 @@ function openPlanModal(planId, prefillDate){
     h += '<input type="number" id="plan-edit-repeat-count" value="8" min="2" max="52" style="width:100%">';
     h += '</div>';
     h += '<div id="plan-edit-repeat-cal-wrap" style="display:none;margin-bottom:8px">';
-    h += '<label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;line-height:1.4"><input type="checkbox" id="plan-edit-repeat-cal" '+(getCalExportPref()?'checked':'')+' style="width:16px;height:16px;flex-shrink:0;margin-top:1px">'+editRepeatCalLbl+'</label>';
+    h += '<label class="calx-opt" style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;line-height:1.4"><input type="checkbox" id="plan-edit-repeat-cal" '+(getCalExportPref()?'checked':'')+' style="width:16px;height:16px;flex-shrink:0;margin-top:1px">'+editRepeatCalLbl+'</label>';
     h += '</div>';
   }
   h += '<span class="form-label">'+t('wizard_cat')+'</span>';
@@ -34040,7 +34071,7 @@ function openPlanModal(planId, prefillDate){
     // Checked by default (remembers the user's last choice) - saving then
     // opens the .ics handoff immediately instead of a separate "add it?"
     // popup, since ticking this box already IS that confirmation.
-    h += '<label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;margin-top:10px;line-height:1.4"><input type="checkbox" id="plan-add-to-cal" '+(getCalExportPref()?'checked':'')+' style="width:16px;height:16px;flex-shrink:0;margin-top:1px">'+calLbl+'</label>';
+    h += '<label class="calx-opt" style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;margin-top:10px;line-height:1.4"><input type="checkbox" id="plan-add-to-cal" '+(getCalExportPref()?'checked':'')+' style="width:16px;height:16px;flex-shrink:0;margin-top:1px">'+calLbl+'</label>';
   }
   // Editing an existing plan's own Herhalen section now renders right after
   // the Time field above (see the "herhalen is not close to/after the time"
@@ -34060,7 +34091,7 @@ function openPlanModal(planId, prefillDate){
     // was deleted from the calendar app afterward), and it can be re-sent
     // by ticking again.
     var calSentLbl=tMap({nl:'Toegevoegd aan agenda-app (Apple/Google/Windows)',en:'Added to Calendar app (Apple/Google/Windows)',es:'Añadido a la app de calendario (Apple/Google/Windows)',fr:"Ajouté à l'app calendrier (Apple/Google/Windows)",de:'Zur Kalender-App hinzugefügt (Apple/Google/Windows)',ro:'Adăugat în aplicația de calendar (Apple/Google/Windows)',it:"Aggiunto all'app calendario (Apple/Google/Windows)",pt:'Adicionado à app de calendário (Apple/Google/Windows)'});
-    h += '<label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;margin:10px 0 4px;line-height:1.4"><input type="checkbox" id="plan-cal-sent" '+(p.calExported?'checked':'')+' onchange="togglePlanCalExport('+ssIdArg(p.id)+',this)" style="width:16px;height:16px;flex-shrink:0;margin-top:1px">'+calSentLbl+'</label>';
+    h += '<label class="calx-opt" style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;margin:10px 0 4px;line-height:1.4"><input type="checkbox" id="plan-cal-sent" '+(p.calExported?'checked':'')+' onchange="togglePlanCalExport('+ssIdArg(p.id)+',this)" style="width:16px;height:16px;flex-shrink:0;margin-top:1px">'+calSentLbl+'</label>';
   }
   h += '<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">';
   if(p){
@@ -34975,6 +35006,7 @@ function buildIcsForPlannedEntries(items){
 }
 function exportPlannedToIcs(items){
   if(!items||!items.length)return false;
+  if(!isCalExportEnabled())return false;
   // Everything here used to run with no error handling at all: if Blob
   // construction, URL.createObjectURL, or the navigation itself failed for
   // any reason (storage/memory pressure, a content blocker intercepting the
@@ -35194,7 +35226,7 @@ function savePlanModal(planId){
       savePlanned();
       exportPlannedToIcs(createdEntries);
     }
-  } else if(oldPlan && oldPlan.calExported){
+  } else if(oldPlan && oldPlan.calExported && isCalExportEnabled()){
     var calDateChanged = oldPlan.datum!==entry.datum;
     var calTimeChanged = oldPlan.time!==entry.time;
     // Previously this prompt ONLY fired for a date/time change, so editing
@@ -35704,7 +35736,7 @@ function agendaFollowUpReschedule(planId){
   // savePlanModal): ticking it exports the rescheduled plan straight to the
   // OS calendar on save, no separate "add it?" popup needed. Defaults to the
   // user's last remembered preference via getCalExportPref().
-  h+='<label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;margin-bottom:14px;line-height:1.4"><input type="checkbox" id="resched-add-to-cal" '+(getCalExportPref()?'checked':'')+' style="width:16px;height:16px;flex-shrink:0;margin-top:1px">'+calLbl+'</label>';
+  h+='<label class="calx-opt" style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;margin-bottom:14px;line-height:1.4"><input type="checkbox" id="resched-add-to-cal" '+(getCalExportPref()?'checked':'')+' style="width:16px;height:16px;flex-shrink:0;margin-top:1px">'+calLbl+'</label>';
   h+='<button class="btn primary" style="width:100%" onclick="agendaFollowUpReschedSave('+planId+')">'+t('save_btn')+'</button>';
   h+='</div>';
   showModal(h);
