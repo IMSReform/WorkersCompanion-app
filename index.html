@@ -38673,7 +38673,7 @@ function openBsPerson(key){
     totalSess+=ss.length||1;
     var last=it.approx?it.year:it.datum;
     rows+='<div style="padding:8px 0;border-bottom:1px solid var(--border)">';
-    rows+='<div onclick="closeModals();openStudieContactHistoryModal(decodeURIComponent(\''+encodeURIComponent(it.code)+'\'),decodeURIComponent(\''+encodeURIComponent(it.cursistKey)+'\'))" style="display:flex;justify-content:space-between;gap:10px;font-size:13px;cursor:pointer"><span>'+(it.status==='voltooid'?'&#10003; ':'&#128336; ')+escapeHtml(it.code+' – '+it.titel)+(ss.length>1?' <span style="background:var(--brand-light);color:var(--brand);font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;white-space:nowrap">'+ss.length+' '+sessLbl+'</span>':'')+'</span>'+(ss.length>1?'':'<span style="color:var(--text3);white-space:nowrap">'+escapeHtml(last||'')+'</span>')+'</div>';
+    rows+='<div onclick="closeModals();openStudieContactHistoryModal(decodeURIComponent(\''+encodeURIComponent(it.code)+'\'),decodeURIComponent(\''+encodeURIComponent(it.cursistKey)+'\'),false,decodeURIComponent(\''+encodeURIComponent(key)+'\'))" style="display:flex;justify-content:space-between;gap:10px;font-size:13px;cursor:pointer"><span>'+(it.status==='voltooid'?'&#10003; ':'&#128336; ')+escapeHtml(it.code+' – '+it.titel)+(ss.length>1?' <span style="background:var(--brand-light);color:var(--brand);font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;white-space:nowrap">'+ss.length+' '+sessLbl+'</span>':'')+'</span>'+(ss.length>1?'':'<span style="color:var(--text3);white-space:nowrap">'+escapeHtml(last||'')+'</span>')+'</div>';
     if(ss.length>1||(ss[0]&&ss[0].opmerking)){
       ss.forEach(function(e,i){
         rows+='<div style="display:flex;gap:8px;padding:3px 0 0 4px;font-size:12px;color:var(--text2)"><span style="color:var(--text3);min-width:16px">'+(i+1)+'.</span><span style="flex:1"><span>'+escapeHtml(e.approxDate?(e.datum||'').slice(0,4):formatDate(e.datum))+'</span>'+(hoursOn()&&parseFloat(e.uren)>0?' <span style="color:var(--text3)">· '+parseFloat(e.uren)+t('hours_abbr')+'</span>':'')+((e.omschrijving||e.opmerking)?'<div style="color:var(--text3);white-space:pre-wrap">'+escapeHtml(e.opmerking||e.omschrijving)+'</div>':'')+'</span></div>';
@@ -38983,9 +38983,9 @@ var _entryDetailReopen = null;
 // state survives the rebuild instead of snapping back to latest.
 var _studyHistOpenId = null;
 var _studyHistCtx = null;
-function openStudieContactHistoryModal(lesCode, cursistKey, preserveOpen) {
-  _studyHistCtx = {lesCode:lesCode, cursistKey:cursistKey};
-  _entryDetailReopen = function(){ openStudieContactHistoryModal(lesCode, cursistKey, true); };
+function openStudieContactHistoryModal(lesCode, cursistKey, preserveOpen, backKey) {
+  _studyHistCtx = {lesCode:lesCode, cursistKey:cursistKey, backKey:backKey};
+  _entryDetailReopen = function(){ openStudieContactHistoryModal(lesCode, cursistKey, true, backKey); };
   var relevant = db.entries.filter(function(e) {
     if (!e.cursistNaam) return false;
     var key = e.cursistId||e.cursistNaam;
@@ -39016,6 +39016,10 @@ function openStudieContactHistoryModal(lesCode, cursistKey, preserveOpen) {
   var openEntry = (_studyHistOpenId!=null && sorted.find(function(s){ return String(s.id)===String(_studyHistOpenId); })) || latest;
 
   var h = '<div style="padding:16px">';
+  if (backKey != null && backKey !== '') {
+    var backLbl = tMap({nl:'Terug',en:'Back',es:'Atrás',fr:'Retour',de:'Zurück',ro:'Înapoi',it:'Indietro',pt:'Voltar'});
+    h += '<div onclick="_entryDetailReopen=null;_studyHistOpenId=null;_studyHistCtx=null;closeModals();openBsPerson(decodeURIComponent(\''+encodeURIComponent(String(backKey))+'\'))" style="cursor:pointer;color:var(--brand);font-size:13px;font-weight:600;margin-bottom:6px">&larr; '+escapeHtml(backLbl)+'</div>';
+  }
   h += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:2px">';
   h += '<div style="font-size:16px;font-weight:700">'+titleTxt+'</div>';
   h += '<button onclick="_entryDetailReopen=null;_studyHistOpenId=null;_studyHistCtx=null;closeModals()" style="border:none;background:none;font-size:20px;color:var(--text3);cursor:pointer;line-height:1;padding:0 2px">&times;</button>';
@@ -39065,7 +39069,7 @@ function openStudieContactHistoryModal(lesCode, cursistKey, preserveOpen) {
 function toggleStudyHistSession(entryId) {
   if (!_studyHistCtx) return;
   _studyHistOpenId = (String(_studyHistOpenId)===String(entryId)) ? null : entryId;
-  openStudieContactHistoryModal(_studyHistCtx.lesCode, _studyHistCtx.cursistKey, true);
+  openStudieContactHistoryModal(_studyHistCtx.lesCode, _studyHistCtx.cursistKey, true, _studyHistCtx.backKey);
 }
 
 // Bulk-add contacts already known to have received a given Bible study
