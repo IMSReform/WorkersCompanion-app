@@ -6290,6 +6290,9 @@ const DRIVE_FILE_NAME='ZDA_Urenregistratie_'+new Date().getFullYear()+'.json';
 // Keep entries short and in plain language (what changed / where to find
 // it), not commit messages.
 const CHANGELOG=[
+  {date:'2026-10-21',items:[
+    {type:'fix',nl:"AI-toelichting en AI-berichten worden niet meer halverwege een zin afgebroken (zichtbaar op sommige telefoons, o.a. iPhone). Als het antwoord te lang wordt, vraagt de app het automatisch opnieuw met meer ruimte.",en:"AI commentary and AI messages are no longer cut off mid-sentence (seen on some phones, including iPhone). If a reply runs too long, the app automatically asks again with more room.",es:"Los comentarios y mensajes de IA ya no se cortan a mitad de frase (visto en algunos teléfonos, como el iPhone). Si la respuesta es demasiado larga, la app lo vuelve a pedir automáticamente con más espacio.",fr:"Les commentaires et messages IA ne sont plus coupés en pleine phrase (constaté sur certains téléphones, dont l'iPhone). Si la réponse est trop longue, l'application la redemande automatiquement avec plus de place.",de:"KI-Erklärungen und KI-Nachrichten werden nicht mehr mitten im Satz abgebrochen (auf manchen Handys zu sehen, u. a. iPhone). Wird eine Antwort zu lang, fragt die App automatisch noch einmal mit mehr Platz nach.",ro:"Comentariile și mesajele AI nu mai sunt tăiate în mijlocul propoziției (observat pe unele telefoane, inclusiv iPhone). Dacă răspunsul e prea lung, aplicația îl cere automat din nou cu mai mult spațiu.",it:"I commenti e i messaggi IA non vengono più interrotti a metà frase (visto su alcuni telefoni, tra cui iPhone). Se la risposta è troppo lunga, l'app la richiede automaticamente con più spazio.",pt:"Os comentários e mensagens de IA já não são cortados a meio da frase (visto em alguns telemóveis, incluindo o iPhone). Se a resposta for demasiado longa, a app pede-a automaticamente de novo com mais espaço."},
+  ]},
   {date:'2026-10-20',items:[
     {type:'new',nl:"Instellingen → Weergave: nieuwe schakelaar \"Planning naar agenda-app downloaden\". Staat standaard uit, zodat niemand een los .ics-bestand krijgt waar hij niets mee kan. Zet hem aan als je Apple- of Google Agenda wilt gebruiken; de keuze wordt op al je apparaten gesynchroniseerd.",en:"Settings → Display: new switch \"Download planning to calendar app\". Off by default, so nobody gets a loose .ics file they can't use. Turn it on if you want to use Apple or Google Calendar; the choice syncs across all your devices.",es:"Ajustes → Pantalla: nuevo interruptor \"Descargar la planificación al calendario\". Desactivado por defecto, para que nadie reciba un archivo .ics suelto que no sabe usar. Actívalo si quieres usar Apple o Google Calendar; la elección se sincroniza en todos tus dispositivos.",fr:"Paramètres → Affichage : nouvel interrupteur « Télécharger la planification vers le calendrier ». Désactivé par défaut, pour que personne ne reçoive un fichier .ics dont il ne sait que faire. Activez-le pour utiliser Apple ou Google Agenda ; le choix se synchronise sur tous vos appareils.",de:"Einstellungen → Anzeige: neuer Schalter \"Planung in Kalender-App herunterladen\". Standardmäßig aus, damit niemand eine lose .ics-Datei bekommt, mit der er nichts anfangen kann. Schalte ihn ein, wenn du Apple oder Google Kalender nutzen willst; die Wahl wird auf allen Geräten synchronisiert.",ro:"Setări → Afișare: comutator nou „Descarcă planificarea în aplicația de calendar”. Dezactivat implicit, ca nimeni să nu primească un fișier .ics pe care nu știe să-l folosească. Activează-l dacă vrei să folosești Apple sau Google Calendar; alegerea se sincronizează pe toate dispozitivele.",it:"Impostazioni → Schermo: nuovo interruttore \"Scarica la pianificazione nel calendario\". Disattivato di default, così nessuno riceve un file .ics che non sa usare. Attivalo se vuoi usare Apple o Google Calendar; la scelta si sincronizza su tutti i dispositivi.",pt:"Definições → Ecrã: novo interruptor \"Descarregar o planeamento para o calendário\". Desativado por defeito, para que ninguém receba um ficheiro .ics que não sabe usar. Ative-o se quiser usar o Apple ou Google Calendar; a escolha sincroniza em todos os seus dispositivos."},
     {type:'new',nl:"Bijbelstudie als PDF delen: in het cursus-lesvenster en bij eigen studies staat naast Presenteren nu een knop \"Exporteren als PDF\". Er is ook een Sluiten-knop bijgekomen.",en:"Share a Bible study as PDF: the course lesson window and your own studies now have an \"Export as PDF\" button next to Present. A Close button was added too.",es:"Compartir un estudio bíblico en PDF: la ventana de la lección del curso y tus propios estudios tienen ahora un botón \"Exportar como PDF\" junto a Presentar. También se añadió un botón Cerrar.",fr:"Partager une étude biblique en PDF : la fenêtre de leçon du cours et vos propres études ont maintenant un bouton « Exporter en PDF » à côté de Présenter. Un bouton Fermer a aussi été ajouté.",de:"Bibelstudium als PDF teilen: Im Kurs-Lektionsfenster und bei eigenen Studien gibt es neben Präsentieren jetzt die Schaltfläche \"Als PDF exportieren\". Außerdem gibt es eine Schließen-Schaltfläche.",ro:"Distribuie un studiu biblic ca PDF: fereastra lecției din curs și studiile tale au acum butonul „Exportă ca PDF” lângă Prezintă. A fost adăugat și un buton Închide.",it:"Condividere uno studio biblico in PDF: la finestra della lezione del corso e i tuoi studi hanno ora un pulsante \"Esporta come PDF\" accanto a Presenta. È stato aggiunto anche un pulsante Chiudi.",pt:"Partilhar um estudo bíblico em PDF: a janela da lição do curso e os seus estudos têm agora um botão \"Exportar como PDF\" ao lado de Apresentar. Foi também adicionado um botão Fechar."},
@@ -9078,7 +9081,7 @@ function removeAiKey(provider){
 // the next one automatically when Google answers 404 / "no longer available".
 var GEMINI_MODELS=['gemini-3.8-flash','gemini-3.5-flash','gemini-flash-latest','gemini-2.5-flash'];
 var GEMINI_MODEL=GEMINI_MODELS[0];
-async function aiCallProvider(provider,prompt,systemPrompt,maxTokens){
+async function aiCallProvider(provider,prompt,systemPrompt,maxTokens,_retried){
   var key=getAiKey(provider);
   if(!key)throw Object.assign(new Error('No key for '+provider),{noKey:true});
 
@@ -9103,6 +9106,7 @@ async function aiCallProvider(provider,prompt,systemPrompt,maxTokens){
       var isQ=r.status===429||r.status===402||(errObj.code||'').indexOf('quota')>=0||(errObj.code||'').indexOf('rate')>=0||(errObj.message||'').toLowerCase().indexOf('quota')>=0||(errObj.message||'').toLowerCase().indexOf('rate')>=0;
       throw Object.assign(new Error(errObj.message||('OpenAI error ('+r.status+')')),{isQuota:isQ});
     }
+    if(d.choices[0].finish_reason==='length'&&!_retried)return aiCallProvider(provider,prompt,systemPrompt,maxTokens*2+500,true);
     return d.choices[0].message.content;
 
   }else if(provider==='gemini'){
@@ -9110,7 +9114,12 @@ async function aiCallProvider(provider,prompt,systemPrompt,maxTokens){
     var r=null,d=null;
     for(var _gi=0;_gi<_gmList.length;_gi++){
       var _gm=_gmList[_gi];
-      var _genCfg={maxOutputTokens:maxTokens};
+      // Gemini 3.x models "think" by default and thinking tokens count against
+      // maxOutputTokens, so a few-hundred-token budget could be eaten before
+      // the visible answer finished (reply cut off mid-sentence, seen on an
+      // iPhone). Only 2.5 accepts thinkingBudget:0 below, so give the others
+      // extra headroom; a MAX_TOKENS finish is also retried once further down.
+      var _genCfg={maxOutputTokens:maxTokens+(_gm.indexOf('2.5')>=0?0:2000)};
       // thinkingBudget:0 is a Gemini 2.5 setting (see #1241); don't send it to other models.
       if(_gm.indexOf('2.5')>=0)_genCfg.thinkingConfig={thinkingBudget:0};
       r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+_gm+':generateContent?key='+key,{
@@ -9153,6 +9162,7 @@ async function aiCallProvider(provider,prompt,systemPrompt,maxTokens){
     }
     var cand=d.candidates&&d.candidates[0];
     var text=cand&&cand.content&&cand.content.parts&&cand.content.parts[0]&&cand.content.parts[0].text;
+    if(cand&&cand.finishReason==='MAX_TOKENS'&&!_retried)return aiCallProvider(provider,prompt,systemPrompt,maxTokens*3+2000,true);
     if(!text)throw new Error('Gemini: '+((cand&&cand.finishReason)||'no text returned'));
     return text;
   }
