@@ -38421,8 +38421,10 @@ function openCourseLesson(code){
   if(!les)return;
   les=getLesTranslation(les);
   var h='<div style="padding:4px 2px 12px">';
-  h+='<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)">'+courseLbl('lesson')+' '+code.slice(3)+'</div>';
-  h+='<div style="font-size:18px;font-weight:700;line-height:1.25;margin:2px 0 6px">'+escapeHtml(les.titel)+'</div>';
+  // Sticky close (X) in the top-right corner; stays visible while scrolling.
+  h+='<div style="position:sticky;top:0;height:0;z-index:5"><button type="button" aria-label="'+t('close_btn')+'" onclick="closeModals()" style="position:absolute;right:0;top:0;width:34px;height:34px;border-radius:50%;border:none;background:var(--surface2);color:var(--text);font-size:22px;line-height:1;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.18)">&times;</button></div>';
+  h+='<div style="padding-right:42px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)">'+courseLbl('lesson')+' '+code.slice(3)+'</div>';
+  h+='<div style="padding-right:42px;font-size:18px;font-weight:700;line-height:1.25;margin:2px 0 6px">'+escapeHtml(les.titel)+'</div>';
   var qi=0;
   les.secties.forEach(function(sec){
     h+='<div style="margin-top:16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--brand)">'+escapeHtml(sec.naam)+'</div>';
