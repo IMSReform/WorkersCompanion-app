@@ -23778,6 +23778,7 @@ function openCursistDetail(id){
     +makeGrid(esSeries,t('es_series_name'))
     +makeGrid(kubSeries,t('kub_series_name'))
     +'</div>'
+    +(db.settings.workRole==='kantoor'?'':'<div style="margin:0 0 18px">'+baptProgressHtml(String(id),'card')+'<button class="btn" onclick="closeModals();openBaptismCheck(decodeURIComponent(\''+encodeURIComponent(String(id))+'\'))" style="width:100%;margin-top:6px">'+escapeHtml(tMap({nl:'Gereed voor de doop? (vragenlijst)',en:'Ready for baptism? (questionnaire)',es:'¿Listo para el bautismo? (cuestionario)',fr:'Prêt pour le baptême ? (questionnaire)',de:'Bereit für die Taufe? (Fragebogen)',ro:'Pregătit pentru botez? (chestionar)',it:'Pronto per il battesimo? (questionario)',pt:'Pronto para o batismo? (questionário)'}))+'</button></div>')
     // Merged history: studies + calls/WhatsApp + other touchpoints (visits,
     // counseling, pastoral work...) all together in one chronological list,
     // newest first, grouped by month - instead of three separate lists a
@@ -38570,21 +38571,49 @@ function baptGivenCodes(cursistKey){
 }
 function baptPillarState(cursistKey){
   var given=baptGivenCodes(cursistKey);
-  var covered=BAPT_PILLARS.filter(function(p){return p.l.some(function(c){return given[c];});});
-  return {given:given,givenCount:Object.keys(given).length,total:STUDIE_DATA.length,covered:covered};
+  var cu=(db.cursisten||[]).find(function(c){return String(c.id)===String(cursistKey);});
+  var man=(cu&&cu.baptismCheck&&cu.baptismCheck.pillars)||{};
+  // Automatic (a mapped lesson was given) unless manually switched off; or manually switched on.
+  var covered=BAPT_PILLARS.filter(function(p){
+    if(man[p.k]==='on')return true;
+    if(man[p.k]==='off')return false;
+    return p.l.some(function(c){return given[c];});
+  });
+  return {given:given,manual:man,givenCount:Object.keys(given).length,total:STUDIE_DATA.length,covered:covered};
 }
 function baptBar(lbl,n,tot){
   var pct=tot?Math.round(n/tot*100):0;
   return '<div style="margin:8px 0"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="color:var(--text2)">'+escapeHtml(lbl)+'</span><span style="font-weight:700">'+n+' / '+tot+'</span></div><div style="height:8px;border-radius:4px;background:var(--surface2);overflow:hidden"><div style="height:100%;width:'+pct+'%;background:var(--brand);border-radius:4px"></div></div></div>';
 }
-function baptProgressHtml(cursistKey){
+function baptProgressHtml(cursistKey,ctx){
   var st=baptPillarState(cursistKey);
   var lblL=tMap({nl:'Lessen gehad',en:'Lessons received',es:'Lecciones recibidas',fr:'Leçons reçues',de:'Erhaltene Lektionen',ro:'Lecții primite',it:'Lezioni ricevute',pt:'Lições recebidas'});
   var lblP=tMap({nl:'Belangrijke onderwerpen (pijlers)',en:'Key subjects (pillars)',es:'Temas clave (pilares)',fr:'Sujets clés (piliers)',de:'Wichtige Themen (Säulen)',ro:'Subiecte cheie (piloni)',it:'Temi chiave (pilastri)',pt:'Temas-chave (pilares)'});
   var h=baptBar(lblL,st.givenCount,st.total)+baptBar(lblP,st.covered.length,BAPT_PILLARS.length);
   var cov={};st.covered.forEach(function(p){cov[p.k]=1;});
-  h+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 4px">'+BAPT_PILLARS.map(function(p){return '<span style="font-size:10.5px;padding:2px 7px;border-radius:10px;'+(cov[p.k]?'background:#e3f1e6;color:#22863a;font-weight:600':'background:var(--surface2);color:var(--text3)')+'">'+(cov[p.k]?'&#10003; ':'')+escapeHtml(baptL(p.n))+'</span>';}).join('')+'</div>';
-  return h;
+  var isContact=!!(db.cursisten||[]).find(function(c){return String(c.id)===String(cursistKey);});
+  h+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 4px">'+BAPT_PILLARS.map(function(p){
+    var st2=(cov[p.k]?'background:#e3f1e6;color:#22863a;font-weight:600':'background:var(--surface2);color:var(--text3)');
+    var tap=isContact?' onclick="baptTogglePillar(decodeURIComponent(\''+encodeURIComponent(cursistKey)+'\'),\''+p.k+'\',\''+(ctx||'')+'\')" style="cursor:pointer;border:none;font-family:inherit;':' style="';
+    return '<'+(isContact?'button':'span')+tap+'font-size:10.5px;padding:2px 7px;border-radius:10px;'+st2+'">'+(cov[p.k]?'&#10003; ':'')+escapeHtml(baptL(p.n))+'</'+(isContact?'button':'span')+'>';
+  }).join('')+'</div>';
+  if(isContact)h+='<div style="font-size:10.5px;color:var(--text3);margin:0 0 4px">'+escapeHtml(tMap({nl:'Tik op een onderwerp om het zelf aan of uit te vinken.',en:'Tap a subject to tick or untick it yourself.',es:'Toca un tema para marcarlo o desmarcarlo.',fr:'Touchez un sujet pour le cocher ou décocher.',de:'Tippe auf ein Thema, um es selbst zu markieren oder abzuwählen.',ro:'Atinge un subiect pentru a-l bifa sau debifa.',it:'Tocca un tema per spuntarlo o toglierlo.',pt:'Toca num tema para o marcar ou desmarcar.'}))+'</div>';
+  return '<div class="bapt-prog" data-key="'+escapeHtml(String(cursistKey))+'">'+h+'</div>';
+}
+function baptTogglePillar(key,k,ctx){
+  var cu=(db.cursisten||[]).find(function(c){return String(c.id)===String(key);});if(!cu)return;
+  var st=baptPillarState(key);
+  var isOn=st.covered.some(function(p){return p.k===k;});
+  if(!cu.baptismCheck)cu.baptismCheck={answers:{}};
+  if(!cu.baptismCheck.pillars)cu.baptismCheck.pillars={};
+  cu.baptismCheck.pillars[k]=isOn?'off':'on';
+  cu.baptismCheck.date=ymdLocal();
+  save();
+  if(ctx==='check'){_baptCtx=String(key);renderBaptismCheck();return;}
+  var html=baptProgressHtml(key,ctx);
+  document.querySelectorAll('.bapt-prog').forEach(function(el){
+    if(el.getAttribute('data-key')===String(key))el.outerHTML=html;
+  });
 }
 var _baptCtx=null;
 function openBaptismCheck(key){
@@ -38614,7 +38643,7 @@ function renderBaptismCheck(){
   var practL=tMap({nl:'In de praktijk',en:'In practice',es:'En la práctica',fr:'Dans la pratique',de:'In der Praxis',ro:'În practică',it:'Nella pratica',pt:'Na prática'});
   var knowL=tMap({nl:'Kennis',en:'Knowledge',es:'Conocimiento',fr:'Connaissance',de:'Wissen',ro:'Cunoaștere',it:'Conoscenza',pt:'Conhecimento'});
   var h='<div style="padding:4px 2px 12px;max-height:82vh;overflow-y:auto"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div><div style="font-size:18px;font-weight:700">'+escapeHtml(title)+'</div><div style="font-size:13px;color:var(--text2)">'+escapeHtml(cu.naam||'')+'</div></div><button onclick="closeModals()" style="border:none;background:none;font-size:20px;color:var(--text3);cursor:pointer;line-height:1;padding:0 2px">&times;</button></div>';
-  h+='<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text3);margin:14px 0 2px">'+escapeHtml(knowL)+'</div>'+baptProgressHtml(_baptCtx);
+  h+='<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text3);margin:14px 0 2px">'+escapeHtml(knowL)+'</div>'+baptProgressHtml(_baptCtx,'check');
   h+='<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text3);margin:14px 0 6px">'+escapeHtml(practL)+'</div>';
   var open=[];
   BAPT_PRACTICE.forEach(function(q){
@@ -38684,7 +38713,7 @@ function openBsPerson(key){
   var h='<div style="padding:4px 2px 12px;max-height:80vh;overflow-y:auto"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:2px">'+bsPersonTitleHtml(key,p.naam)+'<button onclick="closeModals()" style="border:none;background:none;font-size:20px;color:var(--text3);cursor:pointer;line-height:1;padding:0 2px">&times;</button></div>';
   h+='<div style="font-size:12px;color:var(--text3);margin-bottom:6px">'+p.items.length+' '+escapeHtml(tMap({nl:'lessen',en:'lessons',es:'lecciones',fr:'leçons',de:'Lektionen',ro:'lecții',it:'lezioni',pt:'lições'}))+' · '+totalSess+' '+sessLbl+'</div>';
   var qBtn=tMap({nl:'Gereed voor de doop? (vragenlijst)',en:'Ready for baptism? (questionnaire)',es:'¿Listo para el bautismo? (cuestionario)',fr:'Prêt pour le baptême ? (questionnaire)',de:'Bereit für die Taufe? (Fragebogen)',ro:'Pregătit pentru botez? (chestionar)',it:'Pronto per il battesimo? (questionario)',pt:'Pronto para o batismo? (questionário)'});
-  var prog='<div style="margin:4px 0 8px">'+baptProgressHtml(key)+'<button class="btn" onclick="closeModals();openBaptismCheck(decodeURIComponent(\''+encodeURIComponent(key)+'\'))" style="width:100%;margin-top:6px">'+escapeHtml(qBtn)+'</button></div>';
+  var prog='<div style="margin:4px 0 8px">'+baptProgressHtml(key,'bs')+'<button class="btn" onclick="closeModals();openBaptismCheck(decodeURIComponent(\''+encodeURIComponent(key)+'\'))" style="width:100%;margin-top:6px">'+escapeHtml(qBtn)+'</button></div>';
   h+=prog+rows+'</div>';
   showModal(h);
 }
