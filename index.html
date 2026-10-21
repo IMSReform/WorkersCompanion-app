@@ -13518,7 +13518,43 @@ var RECEIPT_PREFIX='ZDA_Receipt_';
 // leaves the device. Keeps Drive usage and (later) email-attachment size
 // sane without the user having to think about it - a typical 4-8MB phone
 // photo becomes a couple hundred KB.
+// PDF receipts: page 1 is rendered to an image (pdf.js, loaded on demand) so
+// it flows through the exact same photo pipeline (thumb, Drive, PDF report).
+function isPdfFile(f){return !!f&&(f.type==='application/pdf'||/\.pdf$/i.test(f.name||''));}
+function pdfFirstPageDataURL(file,maxDim){
+  return loadPdfJs().then(function(lib){
+    return file.arrayBuffer().then(function(buf){return lib.getDocument({data:buf}).promise;}).then(function(doc){
+      return doc.getPage(1);
+    }).then(function(page){
+      var v1=page.getViewport({scale:1});
+      var sc=Math.min(4,Math.max(0.5,Math.min(maxDim,4096)/Math.max(v1.width,v1.height)));
+      var vp=page.getViewport({scale:sc});
+      var c=document.createElement('canvas');
+      c.width=Math.round(vp.width);c.height=Math.round(vp.height);
+      var ctx=c.getContext('2d');
+      ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);
+      return page.render({canvasContext:ctx,viewport:vp}).promise.then(function(){return c.toDataURL('image/jpeg',0.92);});
+    });
+  });
+}
 function compressImageFile(file,maxDim,quality){
+  if(isPdfFile(file)){
+    return pdfFirstPageDataURL(file,maxDim).then(function(du){
+      return new Promise(function(resolve,reject){
+        var img=new Image();
+        img.onload=function(){
+          var w=img.width,h=img.height;
+          if(w>=h&&w>maxDim){h=Math.round(h*maxDim/w);w=maxDim;}
+          else if(h>w&&h>maxDim){w=Math.round(w*maxDim/h);h=maxDim;}
+          var canvas=document.createElement('canvas');
+          canvas.width=w;canvas.height=h;
+          canvas.getContext('2d').drawImage(img,0,0,w,h);
+          resolve(canvas.toDataURL('image/jpeg',quality));
+        };
+        img.onerror=reject;img.src=du;
+      });
+    });
+  }
   return new Promise(function(resolve,reject){
     var reader=new FileReader();
     reader.onload=function(){
@@ -13715,9 +13751,9 @@ var _pendingReceiptPhotos=[];
 function resetReceiptPhotoWidget(existingPhotos){
   _pendingReceiptPhotos=(existingPhotos||[]).map(function(p){return {thumb:p.thumb,driveFileId:p.driveFileId||null,uploadedAt:p.uploadedAt||null};});
 }
-function receiptPhotoLabel(){return tMap({nl:'Bonnetje / foto',en:'Receipt photo',es:'Foto del recibo',fr:'Photo du reçu',de:'Beleg-Foto',ro:'Foto chitanță',it:'Foto della ricevuta',pt:'Foto do recibo'});}
-function receiptPhotoAddLabel(){return tMap({nl:'Foto toevoegen',en:'Add photo',es:'Añadir foto',fr:'Ajouter une photo',de:'Foto hinzufügen',ro:'Adaugă foto',it:'Aggiungi foto',pt:'Adicionar foto'});}
-function receiptPhotoAddAnotherLabel(){return tMap({nl:'Nog een foto toevoegen',en:'Add another photo',es:'Añadir otra foto',fr:'Ajouter une autre photo',de:'Weiteres Foto hinzufügen',ro:'Adaugă încă o foto',it:'Aggiungi un\'altra foto',pt:'Adicionar outra foto'});}
+function receiptPhotoLabel(){return tMap({nl:'Bonnetje / foto / pdf',en:'Receipt photo / PDF',es:'Foto / PDF del recibo',fr:'Photo / PDF du reçu',de:'Beleg-Foto / PDF',ro:'Foto / PDF chitanță',it:'Foto / PDF della ricevuta',pt:'Foto / PDF do recibo'});}
+function receiptPhotoAddLabel(){return tMap({nl:'Foto/pdf toevoegen',en:'Add photo/PDF',es:'Añadir foto/PDF',fr:'Ajouter photo/PDF',de:'Foto/PDF hinzufügen',ro:'Adaugă foto/PDF',it:'Aggiungi foto/PDF',pt:'Adicionar foto/PDF'});}
+function receiptPhotoAddAnotherLabel(){return tMap({nl:'Nog een foto/pdf toevoegen',en:'Add another photo/PDF',es:'Añadir otra foto/PDF',fr:'Ajouter une autre photo/PDF',de:'Weitere(s) Foto/PDF hinzufügen',ro:'Adaugă încă o foto/PDF',it:'Aggiungi un\'altra foto/PDF',pt:'Adicionar outra foto/PDF'});}
 function receiptPhotoRemoveLabel(){return tMap({nl:'Verwijderen',en:'Remove',es:'Eliminar',fr:'Supprimer',de:'Entfernen',ro:'Elimină',it:'Rimuovi',pt:'Remover'});}
 // widgetId lets the wizard and the edit modal each have their own container
 // to refresh in place without re-rendering the whole form. Reads current
@@ -13771,7 +13807,7 @@ function receiptPhotoFieldHtml(widgetId){
   // gesture triggering the picker programmatically, which every browser
   // (including desktop Safari) honors reliably.
   var inputId=wid+'-input';
-  var pickerInput='<input type="file" id="'+inputId+'" accept="image/*" onchange="onReceiptPhotoPicked(this,\''+wid+'\')" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">';
+  var pickerInput='<input type="file" id="'+inputId+'" accept="image/*,application/pdf,.pdf" onchange="onReceiptPhotoPicked(this,\''+wid+'\')" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">';
   var h='<div id="'+wid+'" style="margin-top:10px;position:relative">';
   h+='<span class="form-label">'+receiptPhotoLabel()+'</span>';
   h+=pickerInput;
