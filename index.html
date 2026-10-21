@@ -39732,6 +39732,7 @@ var presenterFontScale = parseFloat(localStorage.getItem('zda_presenter_font_sca
 // on small screens — see autoFitPresenterText(). Reset to 1 on every
 // re-render so it's recomputed fresh for each slide/screen size.
 var presenterAutoScale = 1;
+var presenterManualSize = localStorage.getItem('zda_presenter_font_manual')==='1'; // user picked a text size: don't auto-shrink, scroll instead
 // Whether the slide-jump strip is visible — off by default so the slide
 // gets the full screen; toggled from the header button, remembered across
 // sessions like the other presenter display prefs.
@@ -40188,7 +40189,7 @@ function autoFitPresenterText(){
   presenterAutoScale=1;
   renderPresenterSlideBody(slide);
   var guard=0;
-  while(area.scrollHeight>area.clientHeight+1 && presenterAutoScale>0.5 && guard<20){
+  while(!presenterManualSize && area.scrollHeight>area.clientHeight+1 && presenterAutoScale>0.5 && guard<20){
     presenterAutoScale=Math.max(0.5,presenterAutoScale-0.05);
     renderPresenterSlideBody(slide);
     guard++;
@@ -40286,7 +40287,7 @@ function renderPresenter(){
     // background-color so nothing looks broken for the instant before/if
     // the image itself hasn't decoded yet, and cover always preserves the
     // image's own aspect ratio (crops overflow, never stretches it).
-    +'<div id="presenter-slide-area" style="position:relative;display:flex;flex-direction:column;padding:24px 36px 32px;box-sizing:border-box;overflow-y:auto;background:#0E1116 url(\''+PRESENTER_BG_URI+'\') center/cover no-repeat;border-radius:12px;box-shadow:0 0 0 1px #22262E">'
+    +'<div id="presenter-slide-area" style="position:relative;display:flex;flex-direction:column;padding:24px 36px 32px;box-sizing:border-box;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;background:#0E1116 url(\''+PRESENTER_BG_URI+'\') center/cover no-repeat;border-radius:12px;box-shadow:0 0 0 1px #22262E">'
     +'<img src="'+PRESENTER_LOGO_URI+'" alt="" style="position:absolute;top:14px;right:16px;width:34px;height:auto;opacity:.55;pointer-events:none;user-select:none">'
     +'<div id="presenter-slide-body" style="flex:1;display:flex;flex-direction:column;min-height:0">'
     +presenterBodyInnerHtml(body)
@@ -40365,6 +40366,7 @@ function presenterSlideClick(ev){
 function adjustPresenterFont(delta){
   presenterFontScale=Math.max(0.5,Math.min(2.5,Math.round((presenterFontScale+delta)*100)/100));
   try{localStorage.setItem('zda_presenter_font_scale',presenterFontScale);}catch(e){}
+  presenterManualSize=true;try{localStorage.setItem('zda_presenter_font_manual','1');}catch(e){}
   renderPresenter();
 }
 
