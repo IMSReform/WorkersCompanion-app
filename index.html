@@ -9161,7 +9161,10 @@ async function aiCallProvider(provider,prompt,systemPrompt,maxTokens,_retried){
       throw Object.assign(new Error(errObj.message||('Gemini error ('+r.status+')')),{isQuota:isQ});
     }
     var cand=d.candidates&&d.candidates[0];
-    var text=cand&&cand.content&&cand.content.parts&&cand.content.parts[0]&&cand.content.parts[0].text;
+    // Newer Gemini models can split one reply over several parts (and add
+    // "thought" parts); reading only parts[0] showed just the first chunk,
+    // i.e. a reply that stops after a few words. Join every non-thought part.
+    var text=cand&&cand.content&&cand.content.parts?cand.content.parts.filter(function(pt){return pt&&pt.text&&!pt.thought;}).map(function(pt){return pt.text;}).join(''):'';
     if(cand&&cand.finishReason==='MAX_TOKENS'&&!_retried)return aiCallProvider(provider,prompt,systemPrompt,maxTokens*3+2000,true);
     if(!text)throw new Error('Gemini: '+((cand&&cand.finishReason)||'no text returned'));
     return text;
