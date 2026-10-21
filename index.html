@@ -1097,6 +1097,8 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
   .rp-attach-grid{display:flex;flex-wrap:wrap;gap:12pt;margin-top:6pt}
   .rp-attach-card{width:170pt;break-inside:avoid}
   .rp-attach-img{max-width:240pt;max-height:300pt;width:auto;height:auto;object-fit:contain;border-radius:3pt;border:.5pt solid #ddd!important;display:block}
+  .rp-attach-card.rp-attach-full{width:100%;break-before:page;page-break-before:always}
+  .rp-attach-card.rp-attach-full .rp-attach-img{max-width:100%;max-height:235mm;margin:0 auto}
   .rp-attach-meta{margin-top:3pt}
   .rp-attach-date{font-size:7.5pt;font-weight:700;color:#335781!important}
   .rp-attach-desc{font-size:7pt;color:#666!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -13753,7 +13755,7 @@ async function downloadReceiptsZipForPeriod(){
 // not yet uploaded ({thumb,full,driveFileId:null}).
 var _pendingReceiptPhotos=[];
 function resetReceiptPhotoWidget(existingPhotos){
-  _pendingReceiptPhotos=(existingPhotos||[]).map(function(p){return {thumb:p.thumb,driveFileId:p.driveFileId||null,uploadedAt:p.uploadedAt||null};});
+  _pendingReceiptPhotos=(existingPhotos||[]).map(function(p){return {thumb:p.thumb,driveFileId:p.driveFileId||null,uploadedAt:p.uploadedAt||null,pdf:p.pdf||false};});
 }
 function receiptPhotoLabel(){return tMap({nl:'Bonnetje / foto / pdf',en:'Receipt photo / PDF',es:'Foto / PDF del recibo',fr:'Photo / PDF du reçu',de:'Beleg-Foto / PDF',ro:'Foto / PDF chitanță',it:'Foto / PDF della ricevuta',pt:'Foto / PDF do recibo'});}
 function receiptPhotoAddLabel(){return tMap({nl:'Foto/pdf toevoegen',en:'Add photo/PDF',es:'Añadir foto/PDF',fr:'Ajouter photo/PDF',de:'Foto/PDF hinzufügen',ro:'Adaugă foto/PDF',it:'Aggiungi foto/PDF',pt:'Adicionar foto/PDF'});}
@@ -13902,7 +13904,7 @@ function rpResConfirm(){
     // to a safe 4096px full copy rather than losing the photo entirely.
     return Promise.all([compressImageFile(file,thumbDim,thumbQ),compressImageFile(file,4096,0.9)]);
   }).then(function(res){
-    _pendingReceiptPhotos.push({thumb:res[0],full:res[1],driveFileId:null,uploadedAt:new Date().toISOString()});
+    _pendingReceiptPhotos.push({thumb:res[0],full:res[1],driveFileId:null,uploadedAt:new Date().toISOString(),pdf:isPdfFile(file)});
     receiptPhotoRerender(widgetId);
   }).catch(function(){});
 }
@@ -20195,7 +20197,7 @@ function wSave(wantsCal){
   // upload in the background once that entry has a real id.
   var _wSaveNewPhotos=[];
   if(_pendingReceiptPhotos.length){
-    draft.fotos=_pendingReceiptPhotos.map(function(p){return {thumb:p.thumb,driveFileId:p.driveFileId||null,uploadedAt:p.uploadedAt||new Date().toISOString()};});
+    draft.fotos=_pendingReceiptPhotos.map(function(p){return {thumb:p.thumb,driveFileId:p.driveFileId||null,uploadedAt:p.uploadedAt||new Date().toISOString(),pdf:p.pdf||false};});
     draft.foto=draft.fotos[0]; // legacy single-photo mirror (President app, older readers)
     _pendingReceiptPhotos.forEach(function(p,i){if(p.full)_wSaveNewPhotos.push({idx:i,full:p.full});});
   }
@@ -21949,7 +21951,7 @@ function saveQuickRepeat(sourceEntryId){
   var qrOldPhotos=entryPhotos(newEntry);
   var qrKeptIds=_pendingReceiptPhotos.map(function(p){return p.driveFileId;}).filter(Boolean);
   qrOldPhotos.forEach(function(p){if(p.driveFileId&&qrKeptIds.indexOf(p.driveFileId)===-1)deleteReceiptPhotoFile(p.driveFileId);});
-  newEntry.fotos=_pendingReceiptPhotos.map(function(p){return {thumb:p.thumb,driveFileId:p.driveFileId||null,uploadedAt:p.uploadedAt||new Date().toISOString()};});
+  newEntry.fotos=_pendingReceiptPhotos.map(function(p){return {thumb:p.thumb,driveFileId:p.driveFileId||null,uploadedAt:p.uploadedAt||new Date().toISOString(),pdf:p.pdf||false};});
   newEntry.foto=newEntry.fotos[0]||null;
   _pendingReceiptPhotos.forEach(function(p,idx){
     if(p.full){
@@ -26039,7 +26041,7 @@ ${(function(){
       // needing to become async just for this one appendix - see the
       // comment above upgradeAttachmentPhotos for why it's a separate,
       // print-time-only step instead.
-      return '<div class="rp-attach-card">'
+      return '<div class="rp-attach-card'+(p.pdf?' rp-attach-full':'')+'">'
         +'<img src="'+p.thumb+'" data-drive-id="'+(p.driveFileId||'')+'" class="rp-attach-img">'
         +'<div class="rp-attach-meta"><div class="rp-attach-date">'+dateLbl+(amtLbl?' &middot; '+amtLbl:'')+'</div><div class="rp-attach-desc">'+descLbl+'</div></div>'
         +'</div>';
@@ -42577,7 +42579,7 @@ function saveEditEntry(entryId){
   var eeOldPhotos=entryPhotos(e);
   var eeKeptIds=_pendingReceiptPhotos.map(function(p){return p.driveFileId;}).filter(Boolean);
   eeOldPhotos.forEach(function(p){if(p.driveFileId&&eeKeptIds.indexOf(p.driveFileId)===-1)deleteReceiptPhotoFile(p.driveFileId);});
-  e.fotos=_pendingReceiptPhotos.map(function(p){return {thumb:p.thumb,driveFileId:p.driveFileId||null,uploadedAt:p.uploadedAt||new Date().toISOString()};});
+  e.fotos=_pendingReceiptPhotos.map(function(p){return {thumb:p.thumb,driveFileId:p.driveFileId||null,uploadedAt:p.uploadedAt||new Date().toISOString(),pdf:p.pdf||false};});
   e.foto=e.fotos[0]||null; // legacy single-photo mirror (President app, older readers)
   _pendingReceiptPhotos.forEach(function(p,idx){
     if(p.full){
