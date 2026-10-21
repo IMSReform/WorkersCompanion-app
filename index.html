@@ -40162,16 +40162,20 @@ function presenterApplyImg(slide){
   var area=document.getElementById('presenter-slide-area');
   var body=document.getElementById('presenter-slide-body');
   if(!area||!body)return;
-  var el=document.getElementById('presenter-slide-img');
+  var el=document.getElementById('presenter-slide-img');var wrap=document.getElementById('presenter-slide-img-wrap');
   var src=(slide&&slide.img&&!slide.right)?slide.img:'';
-  if(!src){if(el)el.remove();body.style.paddingRight='';return;}
+  if(!src){if(wrap)wrap.remove();body.style.paddingRight='';return;}
   // Picture is shown complete and unmodified (images are 4:5): full slide
   // height, width = height*0.8, pinned right. Story slides keep their text
   // clear of it; question slides let text sit over the picture.
   var ph=area.clientHeight,pw=Math.min(Math.round(ph*0.8),Math.round(area.clientWidth*0.6));
-  if(!el){el=document.createElement('div');el.id='presenter-slide-img';area.insertBefore(el,area.firstChild);}
+  // sticky zero-height wrapper: the picture stays put while the text scrolls
+  var cs=getComputedStyle(area),pt=parseFloat(cs.paddingTop)||0,pr=parseFloat(cs.paddingRight)||0;
+  if(!wrap){wrap=document.createElement('div');wrap.id='presenter-slide-img-wrap';area.insertBefore(wrap,area.firstChild);}
+  wrap.style.cssText='position:sticky;top:0;height:0;flex:none;margin:-'+pt+'px 0 '+pt+'px;z-index:0;pointer-events:none';
+  if(!el){el=document.createElement('div');el.id='presenter-slide-img';wrap.appendChild(el);}
   var g='linear-gradient(to right,transparent 0,#000 6%)';
-  el.style.cssText='position:absolute;top:0;right:0;bottom:0;width:'+pw+'px;background:url("img/'+encodeURI(src)+'") right center/contain no-repeat;pointer-events:none;z-index:0;-webkit-mask-image:'+g+';mask-image:'+g;
+  el.style.cssText='position:absolute;top:0;right:-'+pr+'px;height:'+(ph+0)+'px;width:'+pw+'px;background:url("img/'+encodeURI(src)+'") right center/contain no-repeat;pointer-events:none;z-index:0;-webkit-mask-image:'+g+';mask-image:'+g;
   body.style.position='relative';body.style.zIndex='1';
   body.style.paddingRight=slide.course?'':Math.round(pw*0.85)+'px';
   try{var nx=presenterSlides[presenterIdx+1];if(nx&&nx.img){var pi=new Image();pi.src='img/'+encodeURI(nx.img);}}catch(e){}
