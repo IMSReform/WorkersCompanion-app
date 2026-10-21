@@ -25365,7 +25365,7 @@ function _buildRapportInner(){
         // been for pastoral work / missions / visits / preaching" is answered
         // right here instead of needing a second, separately-tracked section.
         const rowId='rp-km-cat-'+rpKmIdx;
-        const kmEntries=(byCatKmEntries[cat]||[]).slice().sort((a,b)=>(b.datum||'').localeCompare(a.datum||''));
+        const kmEntries=(byCatKmEntries[cat]||[]).slice().sort((a,b)=>(a.datum||'').localeCompare(b.datum||''));
         const subRows=kmEntries.map(e=>{
           const dp=(e.datum||'').split('-');
           const dateStr=dp.length===3?(dp[2]+'-'+dp[1]+'-'+dp[0]):(e.datum||'');
@@ -25523,7 +25523,7 @@ function _buildRapportInner(){
         const key=loc.replace(/[^a-z0-9]/gi,'_')+'-'+v.entries.length;
         const accKey='preken-detail-'+key;
         const isOpen=getAccState(accKey)===true;
-        const detailRows=v.entries.slice().sort((a,b)=>(b.datum||'').localeCompare(a.datum||'')).map(e=>{
+        const detailRows=v.entries.slice().sort((a,b)=>(a.datum||'').localeCompare(b.datum||'')).map(e=>{
           const dp=(e.datum||'').split('-');
           const dateStr=dp.length===3?(dp[2]+'-'+dp[1]+'-'+dp[0]):(e.datum||'');
           return '<div onclick="event.stopPropagation();goalJumpToDay(\''+(e.datum||'')+'\')" style="display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:5px 0;cursor:pointer;color:var(--text2)">'
@@ -25552,7 +25552,7 @@ function _buildRapportInner(){
   <div class="${Object.keys(byCursist).length>1?'rp-bs-2col':''}" id="rp-bijbelstudies-list">
     ${Object.entries(byCursist).map(([naam,ses])=>{
       const totalU=ses.reduce((t,e)=>t+entryUren(e),0);
-      const sorted=[...ses].sort((a,b)=>b.datum>a.datum?1:-1);
+      const sorted=[...ses].sort((a,b)=>a.datum>b.datum?1:-1);
       // Each student is its own card now (was one shared card split into grid
       // columns — on desktop that put a bare column-gap between students with
       // no visual separation, so two unrelated study lists looked glued
@@ -32039,7 +32039,7 @@ function populateRpCatList(byAard,totalUren,totalKm,allData){
   Object.entries(byAard).sort(function(a,b){return b[1].uren-a[1].uren;}).filter(function(x){return x[1].uren>0;}).forEach(function(item,idx){
     var aard=item[0],v=item[1],p=totalUren>0?Math.round(v.uren/totalUren*100):0,col=AARDEN_COLORS[aard]||'#9AA5B4';
     var rowId='rp-cat-sub-'+idx;
-    var entries=(byAardEntries[aard]||[]).slice().sort(function(a,b){return(b.datum||'').localeCompare(a.datum||'');});
+    var entries=(byAardEntries[aard]||[]).slice().sort(function(a,b){return(a.datum||'').localeCompare(b.datum||'');});
     var subRows=entries.map(function(e){
       // One line per entry - date · category · contact/theme name, hours
       // right-aligned - exactly matching the president app's own per-worker
@@ -32113,7 +32113,7 @@ function buildOrgLevelCardHtml(entries,label,idPrefix){
   Object.entries(byAard).sort(function(a,b){return b[1].uren-a[1].uren;}).filter(function(x){return x[1].uren>0;}).forEach(function(item,idx){
     var aard=item[0],v=item[1],p=totalUren>0?Math.round(v.uren/totalUren*100):0,col=AARDEN_COLORS[aard]||'#9AA5B4';
     var rowId=idPrefix+'-cat-'+idx;
-    var rowEntries=(byAardEntries[aard]||[]).slice().sort(function(a,b){return(b.datum||'').localeCompare(a.datum||'');});
+    var rowEntries=(byAardEntries[aard]||[]).slice().sort(function(a,b){return(a.datum||'').localeCompare(b.datum||'');});
     var subRows=rowEntries.map(function(e){
       var dp=(e.datum||'').split('-');
       var dateStr=dp.length===3?(dp[2]+'-'+dp[1]+'-'+dp[0]):(e.datum||'');
