@@ -40165,12 +40165,15 @@ function presenterApplyImg(slide){
   var el=document.getElementById('presenter-slide-img');
   var src=(slide&&slide.img&&!slide.right)?slide.img:'';
   if(!src){if(el)el.remove();body.style.paddingRight='';return;}
-  var w=42,full=!!slide.course;
-  if(full)w=48; // question slides: whole picture visible, text may sit over it
+  // Picture is shown complete and unmodified (images are 4:5): full slide
+  // height, width = height*0.8, pinned right. Story slides keep their text
+  // clear of it; question slides let text sit over the picture.
+  var ph=area.clientHeight,pw=Math.min(Math.round(ph*0.8),Math.round(area.clientWidth*0.6));
   if(!el){el=document.createElement('div');el.id='presenter-slide-img';area.insertBefore(el,area.firstChild);}
-  var g=full?'linear-gradient(to right,transparent 0,#000 8%)':'linear-gradient(to right,transparent 0,#000 45%)';
-  el.style.cssText='position:absolute;top:0;right:0;bottom:0;width:'+w+'%;background:url("img/'+encodeURI(src)+'") '+(full?'right center/contain':'center/cover')+' no-repeat;pointer-events:none;z-index:0;-webkit-mask-image:'+g+';mask-image:'+g;
-  body.style.position='relative';body.style.zIndex='1';body.style.paddingRight=full?'':(w-8)+'%';
+  var g='linear-gradient(to right,transparent 0,#000 6%)';
+  el.style.cssText='position:absolute;top:0;right:0;bottom:0;width:'+pw+'px;background:url("img/'+encodeURI(src)+'") right center/contain no-repeat;pointer-events:none;z-index:0;-webkit-mask-image:'+g+';mask-image:'+g;
+  body.style.position='relative';body.style.zIndex='1';
+  body.style.paddingRight=slide.course?'':Math.round(pw*0.85)+'px';
   try{var nx=presenterSlides[presenterIdx+1];if(nx&&nx.img){var pi=new Image();pi.src='img/'+encodeURI(nx.img);}}catch(e){}
 }
 function renderPresenterSlideBody(slide){
