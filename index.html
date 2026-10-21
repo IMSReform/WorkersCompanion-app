@@ -39542,6 +39542,13 @@ function loadPresenterCustomPlan(code){
     var raw=localStorage.getItem(presenterCustomKey(code));
     if(!raw)return presenterIdentityPlan();
     var saved=JSON.parse(raw);
+    // New format {n:slideCount,plan:[...]}: ignore a plan made for a different
+    // number of slides (the lesson itself changed since). Old plain arrays of
+    // course lessons (MA n) are dropped for the same reason.
+    if(saved&&!Array.isArray(saved)&&Array.isArray(saved.plan)){
+      if(saved.n!==presenterOriginalSlides.length)return presenterIdentityPlan();
+      saved=saved.plan;
+    }else if(/^MA /.test(code||''))return presenterIdentityPlan();
     if(!Array.isArray(saved)||!saved.length)return presenterIdentityPlan();
     // Guard against a saved plan referencing slide indices that no longer
     // exist (e.g. the study itself was updated/shortened since saving) -
@@ -39560,7 +39567,7 @@ function applyPresenterPlan(){
 }
 function savePresenterPlan(){
   if(!presenterCurrentCode)return;
-  try{ localStorage.setItem(presenterCustomKey(presenterCurrentCode),JSON.stringify(_pcPlan)); }catch(e){}
+  try{ localStorage.setItem(presenterCustomKey(presenterCurrentCode),JSON.stringify({n:presenterOriginalSlides.length,plan:_pcPlan})); }catch(e){}
 }
 function resetPresenterPlan(){
   if(presenterCurrentCode){ try{ localStorage.removeItem(presenterCustomKey(presenterCurrentCode)); }catch(e){} }
