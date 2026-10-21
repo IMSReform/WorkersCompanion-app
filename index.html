@@ -40303,7 +40303,7 @@ function renderPresenter(){
     // the image itself hasn't decoded yet, and cover always preserves the
     // image's own aspect ratio (crops overflow, never stretches it).
     +'<div id="presenter-slide-area" style="position:relative;display:flex;flex-direction:column;padding:24px 36px 32px;box-sizing:border-box;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;background:#0E1116 url(\''+PRESENTER_BG_URI+'\') center/cover no-repeat;border-radius:12px;box-shadow:0 0 0 1px #22262E">'
-    +'<img src="'+PRESENTER_LOGO_URI+'" alt="" style="position:absolute;top:14px;right:16px;width:34px;height:auto;opacity:.55;pointer-events:none;user-select:none">'
+    +'<img src="'+PRESENTER_LOGO_URI+'" alt="" style="z-index:3;position:absolute;top:14px;right:16px;width:34px;height:auto;opacity:.55;pointer-events:none;user-select:none">'
     +'<div id="presenter-slide-body" style="flex:1;display:flex;flex-direction:column;min-height:0">'
     +presenterBodyInnerHtml(body)
     +'</div>'
