@@ -897,6 +897,14 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
   .rp-tile-ico,.rp-bs-avatar,
   .rp-day-accent,.day-card-chevron{display:none!important}
 
+  /* Printing an open popup (e.g. a course lesson): let it flow over several
+     pages instead of one clipped fixed box, and don't leave white gaps by
+     refusing to split blocks across pages. */
+  #plan-modal-overlay{position:static!important;display:block!important;background:#fff!important;inset:auto!important}
+  #plan-modal-overlay .modal-sheet-box{position:static!important;overflow:visible!important;box-shadow:none!important;padding:0!important}
+  #plan-modal-overlay [style*="break-inside"]{break-inside:auto!important;-webkit-column-break-inside:auto!important}
+  #plan-modal-overlay [style*="column-width"]{column-width:auto!important;display:block!important}
+  #plan-modal-overlay button[aria-label]{display:none!important}
   .screen{display:none!important;padding:0!important}
   #s-rapport{display:block!important;padding:0 12mm!important}
   #rapport-content>*:not(#rp-print-version){display:none!important}
@@ -34548,6 +34556,23 @@ function openRegisterOrPlanChoice(){
   h+='</button>';
   showModal(h);
 }
+// Inline max-height/width set on some popups would clip them when printed.
+window.addEventListener('beforeprint',function(){
+  var b=document.querySelector('#plan-modal-overlay .modal-sheet-box');
+  if(!b)return;
+  b._ps={mh:b.style.getPropertyValue('max-height'),w:b.style.getPropertyValue('width'),mw:b.style.getPropertyValue('max-width')};
+  b.style.setProperty('max-height','none','important');
+  b.style.setProperty('width','100%','important');
+  b.style.setProperty('max-width','none','important');
+});
+window.addEventListener('afterprint',function(){
+  var b=document.querySelector('#plan-modal-overlay .modal-sheet-box');
+  if(!b||!b._ps)return;
+  b.style.setProperty('max-height',b._ps.mh||'calc(100vh - 32px)','important');
+  b.style.setProperty('width',b._ps.w||'calc(100vw - 32px)','important');
+  b.style.setProperty('max-width',b._ps.mw||'none','important');
+  b._ps=null;
+});
 function showModal(content){
   var existing = document.getElementById('plan-modal-overlay');
   if(existing) existing.remove();
