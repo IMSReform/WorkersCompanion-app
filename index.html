@@ -38480,7 +38480,10 @@ function openCourseLesson(code){
   var qi=0;
   les.secties.forEach(function(sec){
     h+='<div style="margin-top:16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--brand)">'+escapeHtml(sec.naam)+'</div>';
-    h+='<div style="column-width:480px;column-gap:36px">';
+    // Lessons with story text read top-to-bottom in ONE column (two flowing
+    // columns made it hard to follow where a section continues).
+    var _hasStory=sec.entries.some(function(e){return e.story;})||les.secties.some(function(s2){return s2.entries.some(function(e){return e.story;});});
+    h+=_hasStory?'<div style="max-width:820px;margin-bottom:26px">':'<div style="column-width:480px;column-gap:36px">';
     sec.entries.forEach(function(en){
       if(en.story){h+='<div style="padding:12px 0;border-bottom:1px solid var(--border);font-size:14px;line-height:1.6;color:var(--text2);break-inside:avoid;-webkit-column-break-inside:avoid">'+escapeHtml(en.text)+'</div>';return;}
       h+=courseQuestionHtml(les,qi);qi++;
