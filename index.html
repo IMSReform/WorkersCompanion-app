@@ -2053,24 +2053,6 @@ function hideBootSplash(){
           </div>
         </div>
         <div style="margin-top:14px" id="receipts-section"></div>
-        <!-- #1271 Gabriel: "the eerder gegenereerde AI comments should appear
-             here in the Google drive.. as another closed accordion called
-             'AI Generated Comments'" - reuses the same synced db.dailyVerseAi
-             records already browsable from the Daily Verse card's own
-             history (see renderDailyVerseAiHistory), just surfaced a second
-             time here next to the other sync-related accordions
-             (Opslaggeschiedenis/Back-ups), using this card's simpler
-             arrow-swap toggle pattern (rather than the SVG-chevron pattern
-             used inside the Daily Verse card) so it matches its siblings. -->
-        <div style="margin-top:14px">
-          <div onclick="var f=document.getElementById('ai-comments-body');var a=document.getElementById('ai-comments-arrow');var wasOpen=f.style.display!=='none';f.style.display=wasOpen?'none':'block';a.textContent=wasOpen?'▶':'▼';if(!wasOpen)renderAiCommentsSettingsHistory();" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;margin-bottom:2px">
-            <span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)" data-i18n="ai_comments_settings_title">AI-gegenereerde toelichtingen</span>
-            <span id="ai-comments-arrow" style="font-size:11px;color:var(--text3)">▶</span>
-          </div>
-          <div id="ai-comments-body" style="display:none">
-            <div id="ai-comments-list"></div>
-          </div>
-        </div>
         </div>
       </div>
 
@@ -6291,6 +6273,7 @@ const DRIVE_FILE_NAME='ZDA_Urenregistratie_'+new Date().getFullYear()+'.json';
 // it), not commit messages.
 const CHANGELOG=[
   {date:'2026-10-21',items:[
+    {type:'new',nl:"AI-toelichtingen staan nu onder Bijbelstudies (\"AI-gegenereerde toelichtingen\") in plaats van bij Instellingen, en je kunt ze per stuk verwijderen. Een verwijdering geldt ook op je andere apparaten.",en:"AI commentaries now live under Bible studies (\"AI-generated commentaries\") instead of Settings, and you can delete them one by one. A deletion also applies on your other devices.",es:"Los comentarios de IA ahora están en Estudios bíblicos (\"Comentarios generados con IA\") en vez de Ajustes, y puedes eliminarlos uno a uno. Una eliminación también vale en tus otros dispositivos.",fr:"Les commentaires IA se trouvent maintenant sous Études bibliques (« Commentaires générés par IA ») et non plus dans Paramètres, et vous pouvez les supprimer un par un. Une suppression vaut aussi sur vos autres appareils.",de:"KI-Erklärungen findest du jetzt unter Bibelstudien (\"KI-generierte Erklärungen\") statt in den Einstellungen und kannst sie einzeln löschen. Eine Löschung gilt auch auf deinen anderen Geräten.",ro:"Comentariile AI sunt acum la Studii biblice („Comentarii generate cu AI”), nu în Setări, și le poți șterge pe rând. O ștergere se aplică și pe celelalte dispozitive.",it:"I commenti IA ora si trovano in Studi biblici (\"Commenti generati con IA\") invece che in Impostazioni e puoi eliminarli uno per uno. Un'eliminazione vale anche sugli altri dispositivi.",pt:"Os comentários de IA estão agora em Estudos bíblicos (\"Comentários gerados por IA\") em vez de Definições, e pode eliminá-los um a um. Uma eliminação também vale nos outros dispositivos."},
     {type:'fix',nl:"AI-toelichting en AI-berichten worden niet meer halverwege een zin afgebroken (zichtbaar op sommige telefoons, o.a. iPhone). Als het antwoord te lang wordt, vraagt de app het automatisch opnieuw met meer ruimte.",en:"AI commentary and AI messages are no longer cut off mid-sentence (seen on some phones, including iPhone). If a reply runs too long, the app automatically asks again with more room.",es:"Los comentarios y mensajes de IA ya no se cortan a mitad de frase (visto en algunos teléfonos, como el iPhone). Si la respuesta es demasiado larga, la app lo vuelve a pedir automáticamente con más espacio.",fr:"Les commentaires et messages IA ne sont plus coupés en pleine phrase (constaté sur certains téléphones, dont l'iPhone). Si la réponse est trop longue, l'application la redemande automatiquement avec plus de place.",de:"KI-Erklärungen und KI-Nachrichten werden nicht mehr mitten im Satz abgebrochen (auf manchen Handys zu sehen, u. a. iPhone). Wird eine Antwort zu lang, fragt die App automatisch noch einmal mit mehr Platz nach.",ro:"Comentariile și mesajele AI nu mai sunt tăiate în mijlocul propoziției (observat pe unele telefoane, inclusiv iPhone). Dacă răspunsul e prea lung, aplicația îl cere automat din nou cu mai mult spațiu.",it:"I commenti e i messaggi IA non vengono più interrotti a metà frase (visto su alcuni telefoni, tra cui iPhone). Se la risposta è troppo lunga, l'app la richiede automaticamente con più spazio.",pt:"Os comentários e mensagens de IA já não são cortados a meio da frase (visto em alguns telemóveis, incluindo o iPhone). Se a resposta for demasiado longa, a app pede-a automaticamente de novo com mais espaço."},
   ]},
   {date:'2026-10-20',items:[
@@ -13158,7 +13141,7 @@ async function syncToDrive(forceOverwrite){if(!useGoogleDrive||!accessToken){sav
       // pruned by age in generateDailyVerseAi), so this passes an empty
       // tomb map rather than adding a whole new tombIdsFor()/#1105 tracking
       // lane for a feature that has no delete action.
-      db.dailyVerseAi=mergeArraysById(db.dailyVerseAi||[],rdata.dailyVerseAi||[],{});
+      db.dailyVerseAi=mergeArraysById(db.dailyVerseAi||[],rdata.dailyVerseAi||[],tombIdsFor('dailyVerseAi',db.tombstones));
       db.courseProgress=mergeArraysById(db.courseProgress||[],rdata.courseProgress||[],{});
       if(rdata.settings){var _ldm=db.settings.darkMode,_lat=db.settings.appTheme,_lts=db.settings.textSize,_cc=db.settings.customCategories,_clo=db.settings.categoryLabelOverrides,_nm=db.settings.naam,_gm=db.settings.gemeente,_em=db.settings.email,_tl=db.settings.tel,_gb=db.settings.geboortedatum,_ad=db.settings.myAdres,_adp=db.settings.myAdresPostcode,_adc=db.settings.myAdresCity,_adco=db.settings.myAdresCountry,_lg=db.settings.lang,_gf=db.settings.groupFrequency,_ddg=db.settings.dismissedDupeGroups,_wr=db.settings.workRole,_wrT=!!db.settings.workRoleTouched,_gci=db.settings.gcInfra,_cr=db.settings.churchRole,_crs=db.settings.churchRoles,_gvd=db.settings.goalVacationDays,_csm=db.settings.cursistSortMode,_aie=db.settings.aiEnabled;var _kl1=_snapKeepLocal();Object.assign(db.settings,rdata.settings);_restoreKeepLocal(_kl1);if(_ldm!==undefined)db.settings.darkMode=_ldm;if(_lat!==undefined)db.settings.appTheme=_lat;if(_lts!==undefined)db.settings.textSize=_lts;
       // #1286 Gabriel: "I see the problem.. the toggle doesn't stay off" -
@@ -13266,7 +13249,7 @@ async function syncToDrive(forceOverwrite){if(!useGoogleDrive||!accessToken){sav
   }const body=await serializeDb(db);if(driveFileId){await driveUploadBody(driveFileId,body);}else{const m=await gapi.client.drive.files.create({resource:{name:DRIVE_FILE_NAME,parents:['appDataFolder']},fields:'id'});driveFileId=m.result.id;await driveUploadBody(driveFileId,body);}lastSyncTime=new Date();setSyncStatus('ok',(LANG==='en'?'Saved to Drive · ':LANG==='es'?'Guardado en Drive · ':LANG==='fr'?'Enregistré dans Drive · ':LANG==='de'?'In Drive gespeichert · ':LANG==='it'?'Salvato su Drive · ':'Opgeslagen in Drive · ')+lastSyncTime.toLocaleTimeString(getLocale(),{hour:'2-digit',minute:'2-digit'}));maybeCreateDailySnapshot();}catch(e){if(isDriveAuthError(e)){accessToken=null;}saveLocal();setSyncStatus('err',LANG==='en'?'Drive error — saved locally':LANG==='es'?'Error Drive — guardado local':LANG==='fr'?'Erreur Drive — sauvegarde locale':LANG==='de'?'Drive-Fehler — lokal gespeichert':LANG==='it'?'Errore di Drive — salvato in locale':'Drive fout — lokaal opgeslagen');}}
 async function loadFromDrive(){setSyncStatus('info',LANG==='en'?'Loading from Drive…':LANG==='es'?'Cargando de Drive…':LANG==='fr'?'Chargement Drive…':LANG==='de'?'Laden von Drive…':LANG==='it'?'Caricamento da Drive…':'Laden van Drive…',true);try{await pullEncMetaFromDrive();const l=await gapi.client.drive.files.list({spaces:'appDataFolder',q:`name='${DRIVE_FILE_NAME}'`,fields:'files(id)'});const f=l.result.files;if(f&&f.length){driveFileId=f[0].id;const res=await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,{headers:{'Authorization':'Bearer '+accessToken}});if(!res.ok){var _e=new Error('Drive load failed: '+res.status);_e.driveStatus=res.status;throw _e;}const data=await deserializeDb(await res.text());if(data.entries){db.tombstones=mergeTombstones(db.tombstones,data.tombstones||[]);var _tE2=tombIdsFor('entries',db.tombstones),_tP2=tombIdsFor('planned',db.tombstones),_tT2=tombIdsFor('todos',db.tombstones),_tPr2=tombIdsFor('prayers',db.tombstones),_tPj2=tombIdsFor('projects',db.tombstones),_tCs2=tombIdsFor('customStudies',db.tombstones),_tCu2=tombIdsFor('cursisten',db.tombstones),_tGp2=tombIdsFor('gemeentePlanning',db.tombstones),_tCc2=tombIdsFor('customCategories',db.tombstones);db.entries=mergeArraysById(db.entries,data.entries,_tE2);db.cursisten=mergeArraysById(db.cursisten,data.cursisten||[],_tCu2);db.churches=mergeArraysByValue(db.churches,data.churches||[]);db.planned=mergeArraysById(db.planned,data.planned||[],_tP2);db.vacationDays=mergeArraysByValue(db.vacationDays,data.vacationDays||[]);db.todos=mergeArraysById(db.todos,data.todos||[],_tT2);db.prayers=mergeArraysById(db.prayers,data.prayers||[],_tPr2);db.projects=mergeArraysById(db.projects||[],data.projects||[],_tPj2);db.customStudies=mergeArraysById(db.customStudies,data.customStudies||[],_tCs2);db.approvals=mergeArraysById(db.approvals,data.approvals||[]);db.gemeentePlanning=mergeArraysById(db.gemeentePlanning||[],data.gemeentePlanning||[],_tGp2);
       // #1262: same field as syncToDrive above - see its comment.
-      db.dailyVerseAi=mergeArraysById(db.dailyVerseAi||[],data.dailyVerseAi||[],{});
+      db.dailyVerseAi=mergeArraysById(db.dailyVerseAi||[],data.dailyVerseAi||[],tombIdsFor('dailyVerseAi',db.tombstones));
       db.courseProgress=mergeArraysById(db.courseProgress||[],data.courseProgress||[],{});
       if(data.settings){var _ldm2=db.settings.darkMode,_lat2=db.settings.appTheme,_lts2=db.settings.textSize,_cc2=db.settings.customCategories,_clo2=db.settings.categoryLabelOverrides,_nm2=db.settings.naam,_gm2=db.settings.gemeente,_em2=db.settings.email,_tl2=db.settings.tel,_gb2=db.settings.geboortedatum,_ad2=db.settings.myAdres,_adp2=db.settings.myAdresPostcode,_adc2=db.settings.myAdresCity,_adco2=db.settings.myAdresCountry,_lg2=db.settings.lang,_gf2=db.settings.groupFrequency,_ddg2=db.settings.dismissedDupeGroups,_wr2=db.settings.workRole,_wrT2=!!db.settings.workRoleTouched,_gci2=db.settings.gcInfra,_cr2=db.settings.churchRole,_crs2=db.settings.churchRoles,_gvd2=db.settings.goalVacationDays,_csm2=db.settings.cursistSortMode,_aie2=db.settings.aiEnabled;var _kl2=_snapKeepLocal();Object.assign(db.settings,data.settings);_restoreKeepLocal(_kl2);if(_ldm2!==undefined)db.settings.darkMode=_ldm2;if(_lat2!==undefined)db.settings.appTheme=_lat2;if(_lts2!==undefined)db.settings.textSize=_lts2;
       // #1286: same "keep local" gap as syncToDrive's pre-upload pull above -
@@ -16430,8 +16413,11 @@ function renderDailyVerseAiHistory(){
     byDate[date].forEach(function(r){
       var tp=dailyVerseAiTypes().find(function(x){return x.key===r.type;});
       var label=tp?tp.label:r.type;
-      h+='<div style="margin-bottom:10px">';
-      h+='<div style="font-size:10.5px;font-weight:700;color:var(--brand);margin-bottom:2px">'+escapeHtml(label)+(r.ref?' <span style="color:var(--text3);font-weight:400">— '+escapeHtml(r.ref)+'</span>':'')+'</div>';
+      h+='<div data-airec="'+escapeHtml(String(r.id))+'" style="margin-bottom:10px">';
+      h+='<div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:2px">';
+      h+='<div style="font-size:10.5px;font-weight:700;color:var(--brand)">'+escapeHtml(label)+(r.ref?' <span style="color:var(--text3);font-weight:400">— '+escapeHtml(r.ref)+'</span>':'')+'</div>';
+      h+='<button type="button" onclick="deleteDailyVerseAiRecord(\''+String(r.id).replace(/[^A-Za-z0-9_\-]/g,'')+'\')" style="flex-shrink:0;background:none;border:none;padding:2px 4px;font-size:11px;color:var(--red);cursor:pointer">'+tMap({nl:'Verwijderen',en:'Delete',es:'Eliminar',fr:'Supprimer',de:'Löschen',ro:'Șterge',it:'Elimina',pt:'Eliminar'})+'</button>';
+      h+='</div>';
       h+='<div style="font-size:12.5px;line-height:1.5;color:var(--text)">'+escapeHtml(r.text||'').replace(/\n/g,'<br>')+'</div>';
       // #1272: EGW disclaimer travels with the record in history too, not
       // just on the freshly-generated block.
@@ -16473,16 +16459,14 @@ function toggleDvAiHistDate(key){
 // lazily on first expand (see the onclick in settings-item-drive) rather
 // than on every renderSettings(), matching the "Vernieuwen" lazy-render
 // pattern already used by the Back-ups accordion right above it.
-function renderAiCommentsSettingsHistory(){
-  var wrap=document.getElementById('ai-comments-list');
-  if(!wrap)return;
+function aiCommentsListHtml(prefix){
+  var delLbl=tMap({nl:'Verwijderen',en:'Delete',es:'Eliminar',fr:'Supprimer',de:'Löschen',ro:'Șterge',it:'Elimina',pt:'Eliminar'});
   var recs=(db.dailyVerseAi||[]).slice().sort(function(a,b){
     if(a.date!==b.date)return (b.date||'').localeCompare(a.date||'');
     return (b._upd||0)-(a._upd||0);
   });
   if(!recs.length){
-    wrap.innerHTML='<div style="font-size:11px;color:var(--text3)">'+tMap({nl:'Nog geen AI-toelichtingen gegenereerd.',en:'No AI commentaries generated yet.',es:'Todavía no se han generado comentarios con IA.',fr:'Aucun commentaire IA généré pour l\'instant.',de:'Noch keine KI-Erklärungen erstellt.',ro:'Niciun comentariu AI generat încă.',it:'Nessun commento IA generato finora.',pt:'Ainda nenhum comentário de IA gerado.'})+'</div>';
-    return;
+    return '<div style="font-size:11px;color:var(--text3);padding:8px 2px">'+tMap({nl:'Nog geen AI-toelichtingen gegenereerd.',en:'No AI commentaries generated yet.',es:'Todavía no se han generado comentarios con IA.',fr:'Aucun commentaire IA généré pour le moment.',de:'Noch keine KI-Erklärungen erstellt.',ro:'Încă nu s-au generat comentarii AI.',it:'Nessun commento IA generato finora.',pt:'Ainda não foram gerados comentários de IA.'})+'</div>';
   }
   var byDate={},order=[];
   recs.forEach(function(r){
@@ -16491,7 +16475,7 @@ function renderAiCommentsSettingsHistory(){
   });
   var h='';
   order.forEach(function(date){
-    var key='sc-ai-hd-'+date.replace(/[^0-9]/g,'');
+    var key=prefix+date.replace(/[^0-9]/g,'');
     h+='<div style="margin-bottom:2px">';
     h+='<div onclick="toggleDvAiHistDate(\''+key+'\')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)">';
     h+='<span style="font-size:12px;font-weight:600;color:var(--text)">'+escapeHtml(formatDate(date))+'</span>';
@@ -16501,15 +16485,39 @@ function renderAiCommentsSettingsHistory(){
     byDate[date].forEach(function(r){
       var tp=dailyVerseAiTypes().find(function(x){return x.key===r.type;});
       var label=tp?tp.label:r.type;
-      h+='<div style="margin-bottom:10px">';
-      h+='<div style="font-size:10.5px;font-weight:700;color:var(--brand);margin-bottom:2px">'+escapeHtml(label)+(r.ref?' <span style="color:var(--text3);font-weight:400">— '+escapeHtml(r.ref)+'</span>':'')+'</div>';
+      h+='<div data-airec="'+escapeHtml(String(r.id))+'" style="margin-bottom:10px">';
+      h+='<div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:2px">';
+      h+='<div style="font-size:10.5px;font-weight:700;color:var(--brand)">'+escapeHtml(label)+(r.ref?' <span style="color:var(--text3);font-weight:400">— '+escapeHtml(r.ref)+'</span>':'')+'</div>';
+      h+='<button type="button" onclick="deleteDailyVerseAiRecord(\''+String(r.id).replace(/[^A-Za-z0-9_\-]/g,'')+'\')" style="flex-shrink:0;background:none;border:none;padding:2px 4px;font-size:11px;color:var(--red);cursor:pointer">'+delLbl+'</button>';
+      h+='</div>';
       h+='<div style="font-size:12.5px;line-height:1.5;color:var(--text)">'+escapeHtml(r.text||'').replace(/\n/g,'<br>')+'</div>';
       if(tp&&tp.isEgw)h+='<div style="font-size:10.5px;font-style:italic;color:var(--text3);margin-top:3px">'+escapeHtml(egwAiDisclaimer())+'</div>';
       h+='</div>';
     });
     h+='</div></div>';
   });
-  wrap.innerHTML=h;
+  return h;
+}
+function renderAiCommentsSettingsHistory(){
+  var wrap=document.getElementById('ai-comments-list');
+  if(!wrap)return;
+  wrap.innerHTML=aiCommentsListHtml('sc-ai-hd-');
+}
+// Delete one AI-generated comment. Recorded as a tombstone so the deletion
+// also holds on the user's other devices instead of coming back on sync.
+function deleteDailyVerseAiRecord(id){
+  var rec=(db.dailyVerseAi||[]).find(function(r){return String(r.id).replace(/[^A-Za-z0-9_\-]/g,'')===id;});
+  if(!rec)return;
+  var q=tMap({nl:'Deze AI-toelichting verwijderen?',en:'Delete this AI commentary?',es:'¿Eliminar este comentario de IA?',fr:'Supprimer ce commentaire IA ?',de:'Diese KI-Erklärung löschen?',ro:'Ștergi acest comentariu AI?',it:'Eliminare questo commento IA?',pt:'Eliminar este comentário de IA?'});
+  if(!confirm(q))return;
+  db.dailyVerseAi=(db.dailyVerseAi||[]).filter(function(r){return r!==rec;});
+  recordTombstone('dailyVerseAi',rec.id);
+  save();
+  Array.prototype.forEach.call(document.querySelectorAll('[data-airec]'),function(el){
+    if(el.getAttribute('data-airec')===String(rec.id)&&el.parentNode)el.parentNode.removeChild(el);
+  });
+  var hw=document.getElementById('dv-ai-hist-wrap');
+  if(hw)hw.outerHTML=renderDailyVerseAiHistory();
 }
 
 // Per-contact "how often should I reach out" preference, used to compute
@@ -38453,6 +38461,7 @@ var _bsGroupOpen = {};
 function bsGroupLbl(k){
   var m={
     hb:{nl:'Bijbelstudiehandboek',en:'Bible Study Handbook',es:'Manual de estudios bíblicos',fr:"Manuel d'études bibliques",de:'Bibelstudien-Handbuch',ro:'Manual de studii biblice',it:'Manuale di studi biblici',pt:'Manual de estudos bíblicos'},
+    aicomments:{nl:'AI-gegenereerde toelichtingen',en:'AI-generated commentaries',es:'Comentarios generados con IA',fr:'Commentaires générés par IA',de:'KI-generierte Erklärungen',ro:'Comentarii generate cu AI',it:'Commenti generati con IA',pt:'Comentários gerados por IA'},
     other:{nl:'Andere studies',en:'Other studies',es:'Otros estudios',fr:'Autres études',de:'Andere Studien',ro:'Alte studii',it:'Altri studi',pt:'Outros estudos'},
     people:{nl:'Wie heeft welke lessen gehad',en:'Who has taken which lessons',es:'Quién ha tomado qué lecciones',fr:'Qui a suivi quelles leçons',de:'Wer hat welche Lektionen gehabt',ro:'Cine a parcurs ce lecții',it:'Chi ha seguito quali lezioni',pt:'Quem fez quais lições'},
     none:{nl:'Nog geen lessen gegeven.',en:'No lessons given yet.',es:'Aún no se han dado lecciones.',fr:'Aucune leçon donnée pour le moment.',de:'Noch keine Lektionen gegeben.',ro:'Încă nu s-au dat lecții.',it:'Nessuna lezione ancora.',pt:'Nenhuma lição ainda.'}
@@ -38692,6 +38701,7 @@ function renderBijbelstudies
   h += renderBsGroup('hb', bsGroupLbl('hb'), hb);
   h += renderBsGroup('course', courseName(), courseAvailable()?renderCourseSection():'<div style="font-size:12px;color:var(--text3);line-height:1.5;padding:10px 2px">'+escapeHtml(tMap({nl:'Deze cursus is beschikbaar in het Spaans, Nederlands, Engels, Frans, Duits en Italiaans. Andere talen volgen.',en:'This course is available in Spanish, Dutch, English, French, German and Italian. Other languages are coming.',es:'Este curso está disponible en español, neerlandés, inglés, francés, alemán e italiano.',fr:'Ce cours est disponible en espagnol, néerlandais, anglais, français, allemand et italien. Les autres langues suivront.',de:'Dieser Kurs ist auf Spanisch, Niederländisch, Englisch, Französisch, Deutsch und Italienisch verfügbar. Weitere Sprachen folgen.',it:'Questo corso è disponibile in spagnolo, olandese, inglese, francese, tedesco e italiano. Le altre lingue seguiranno.',ro:'Acest curs este disponibil în spaniolă, olandeză, engleză, franceză, germană și italiană. Celelalte limbi vor urma.',pt:'Este curso está disponível em espanhol, neerlandês, inglês, francês, alemão e italiano. As outras línguas seguirão.'}))+'</div>');
   h += renderBsGroup('other', bsGroupLbl('other'), renderVrijOnderwerpSection()+renderCustomStudiesSection());
+  if(isAiEnabled())h += renderBsGroup('aicomments', bsGroupLbl('aicomments'), aiCommentsListHtml('bs-ai-hd-'));
   h += renderBsPeopleList();
   h += '<div style="text-align:center;padding:18px 16px 8px;font-size:11px;color:var(--text3);line-height:1.6">'+t('study_edit_footer')+' <a href="mailto:mediazdareformatie@gmail.com" style="color:var(--brand);font-weight:600">mediazdareformatie@gmail.com</a></div>';
   h += '</div>';
