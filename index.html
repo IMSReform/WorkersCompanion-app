@@ -38482,6 +38482,9 @@ function courseQuestionHtml(les,qi){
   var en=f.en;
   var h='<div id="cq-'+qi+'" style="padding:12px 0;border-bottom:1px solid var(--border);break-inside:avoid;-webkit-column-break-inside:avoid">';
   h+='<div style="font-size:14px;font-weight:600;line-height:1.4">'+(qi+1)+'. '+escapeHtml(en.q)+'</div>';
+  if(en.o&&en.a>=0&&en.o[en.a]){
+    h+='<div style="margin-top:4px;font-size:14px;line-height:1.45;color:#1E7B46;font-weight:600">&#10003; '+escapeHtml(en.o[en.a])+'</div>';
+  }
   en.refsFull.forEach(function(r,ri){h+=courseVerseHtml(r,ri,qi,les.code);});
   h+='</div>';
   return h;
