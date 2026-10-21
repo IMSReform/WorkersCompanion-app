@@ -40161,7 +40161,13 @@ function presenterApplyImg(slide){
   var el=document.getElementById('presenter-slide-img');
   var src=(slide&&slide.img&&!slide.right)?slide.img:'';
   if(!src){if(el)el.remove();body.style.paddingRight='';return;}
-  var w=slide.course?30:42;
+  var w=42;
+  if(slide.course){
+    // short answer options -> room for a bigger picture; long options -> smaller
+    var ml=0;(slide.opts||[]).forEach(function(o){ml=Math.max(ml,String(o).length);});
+    w=ml<=35?42:ml<=60?36:ml<=90?30:24;
+    if((slide.qtext||'').length>140)w=Math.min(w,30);
+  }
   if(!el){el=document.createElement('div');el.id='presenter-slide-img';area.insertBefore(el,area.firstChild);}
   var g='linear-gradient(to right,transparent 0,#000 45%)';
   el.style.cssText='position:absolute;top:0;right:0;bottom:0;width:'+w+'%;background:url("img/'+encodeURI(src)+'") center/cover no-repeat;pointer-events:none;z-index:0;-webkit-mask-image:'+g+';mask-image:'+g;
