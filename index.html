@@ -40029,7 +40029,7 @@ function buildPresenterSlideBodyHtml(slide){
           if(i===slide.answer){bg='rgba(46,160,67,.28)';bd='#2ea043';mark=' ✓';}
           else if(i===slide.picked){bg='rgba(215,58,73,.28)';bd='#d73a49';mark=' ✗';}
         }
-        return '<button type="button" onclick="event.stopPropagation();presenterCourseAnswer('+i+')" style="display:block;width:100%;text-align:left;margin-bottom:8px;padding:10px 14px;border-radius:12px;border:2px solid '+bd+';background:'+bg+';color:#E6E9EF;font-size:inherit;line-height:1.4;font-family:inherit;cursor:'+(has?'default':'pointer')+'"><span style="font-weight:700;color:#7FB8FF">'+String.fromCharCode(65+i)+'.</span> '+escapeHtml(o)+mark+'</button>';
+        return '<button type="button" onclick="event.stopPropagation();presenterCourseAnswer('+i+')" style="display:block;width:fit-content;max-width:100%;min-width:min(100%,260px);text-align:left;margin-bottom:8px;padding:10px 14px;border-radius:12px;border:2px solid '+bd+';background:'+bg+';color:#E6E9EF;font-size:inherit;line-height:1.4;font-family:inherit;cursor:'+(has?'default':'pointer')+'"><span style="font-weight:700;color:#7FB8FF">'+String.fromCharCode(65+i)+'.</span> '+escapeHtml(o)+mark+'</button>';
       }).join('')+'</div>':'');
     footerHtml='<div style="border-top:1px solid #22262E;padding-top:16px;margin-top:10px;font-size:'+pfs(22)+'px;line-height:1.55;color:#E6E9EF">'
       +(slide.cqRefs||[]).map(function(r){return '<div style="margin-bottom:10px"><span style="font-weight:700;color:#7FB8FF">'+escapeHtml(r.label)+'</span>'+(r.text?' <span>“'+r.text+'”</span>':'')+'</div>';}).join('')+'</div>';
