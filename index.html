@@ -40021,10 +40021,10 @@ function buildPresenterSlideBodyHtml(slide){
     // Bible Course: the QUESTION gets the big top box, the verse(s) go in the
     // lower box (the reverse of a Handbook slide, where verse is on top).
     headerHtml=(slide.section?'<div style="font-size:'+pfs(18)+'px;letter-spacing:.08em;text-transform:uppercase;color:#8A93A6">'+escapeHtml(slide.section)+'</div>'+presenterAccentBar():'');
-    contentHtml='<div style="font-size:'+pfs(36)+'px;line-height:1.35;font-weight:700">'+escapeHtml(slide.qtext||'')+'</div>'
+    contentHtml='<div style="font-size:'+pfs(36)+'px;line-height:1.35;font-weight:700;text-shadow:0 2px 10px #000">'+escapeHtml(slide.qtext||'')+'</div>'
       +((slide.opts&&slide.opts.length)?'<div style="margin-top:18px;font-size:'+pfs(22)+'px;line-height:1.4">'+slide.opts.map(function(o,i){
         var has=slide.picked!==undefined&&slide.picked!==null;
-        var bg='transparent',bd='#2A2F38',mark='';
+        var bg=slide.img?'rgba(14,17,22,.78)':'transparent',bd='#2A2F38',mark='';
         if(has){
           if(i===slide.answer){bg='rgba(46,160,67,.28)';bd='#2ea043';mark=' ✓';}
           else if(i===slide.picked){bg='rgba(215,58,73,.28)';bd='#d73a49';mark=' ✗';}
@@ -40175,7 +40175,7 @@ function presenterApplyImg(slide){
   wrap.style.cssText='position:sticky;top:0;height:0;flex:none;margin:-'+pt+'px 0 '+pt+'px;z-index:0;pointer-events:none';
   if(!el){el=document.createElement('div');el.id='presenter-slide-img';wrap.appendChild(el);}
   var g='linear-gradient(to right,transparent 0,#000 6%)';
-  el.style.cssText='position:absolute;top:0;right:-'+pr+'px;height:'+(ph+0)+'px;width:'+pw+'px;background:url("img/'+encodeURI(src)+'") right center/contain no-repeat;pointer-events:none;z-index:0;-webkit-mask-image:'+g+';mask-image:'+g;
+  el.style.cssText='position:absolute;top:0;right:-'+pr+'px;height:'+(ph+0)+'px;width:'+pw+'px;background:url("img/'+encodeURI(src)+'") right center/contain no-repeat;pointer-events:none;z-index:0;-webkit-mask-image:'+g+';mask-image:'+g+(slide.course?';opacity:.4':'');
   body.style.position='relative';body.style.zIndex='1';
   body.style.paddingRight=slide.course?'':Math.round(pw*0.85)+'px';
   try{var nx=presenterSlides[presenterIdx+1];if(nx&&nx.img){var pi=new Image();pi.src='img/'+encodeURI(nx.img);}}catch(e){}
