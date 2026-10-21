@@ -16416,7 +16416,7 @@ function renderDailyVerseAiHistory(){
       h+='<div data-airec="'+escapeHtml(String(r.id))+'" style="margin-bottom:10px">';
       h+='<div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:2px">';
       h+='<div style="font-size:10.5px;font-weight:700;color:var(--brand)">'+escapeHtml(label)+(r.ref?' <span style="color:var(--text3);font-weight:400">— '+escapeHtml(r.ref)+'</span>':'')+'</div>';
-      h+='<button type="button" onclick="deleteDailyVerseAiRecord(\''+String(r.id).replace(/[^A-Za-z0-9_\-]/g,'')+'\')" style="flex-shrink:0;background:none;border:none;padding:2px 4px;font-size:11px;color:var(--red);cursor:pointer">'+tMap({nl:'Verwijderen',en:'Delete',es:'Eliminar',fr:'Supprimer',de:'Löschen',ro:'Șterge',it:'Elimina',pt:'Eliminar'})+'</button>';
+      h+='<button type="button" onclick="deleteDailyVerseAiRecord(\''+String(r.id).replace(/[^A-Za-z0-9_\-]/g,'')+'\')" aria-label="'+tMap({nl:'Verwijderen',en:'Delete',es:'Eliminar',fr:'Supprimer',de:'Löschen',ro:'Șterge',it:'Elimina',pt:'Eliminar'})+'" style="flex-shrink:0;background:none;border:none;padding:0 4px;font-size:18px;line-height:1;color:var(--text3);cursor:pointer">&times;</button>';
       h+='</div>';
       h+='<div style="font-size:12.5px;line-height:1.5;color:var(--text)">'+escapeHtml(r.text||'').replace(/\n/g,'<br>')+'</div>';
       // #1272: EGW disclaimer travels with the record in history too, not
@@ -16488,7 +16488,7 @@ function aiCommentsListHtml(prefix){
       h+='<div data-airec="'+escapeHtml(String(r.id))+'" style="margin-bottom:10px">';
       h+='<div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:2px">';
       h+='<div style="font-size:10.5px;font-weight:700;color:var(--brand)">'+escapeHtml(label)+(r.ref?' <span style="color:var(--text3);font-weight:400">— '+escapeHtml(r.ref)+'</span>':'')+'</div>';
-      h+='<button type="button" onclick="deleteDailyVerseAiRecord(\''+String(r.id).replace(/[^A-Za-z0-9_\-]/g,'')+'\')" style="flex-shrink:0;background:none;border:none;padding:2px 4px;font-size:11px;color:var(--red);cursor:pointer">'+delLbl+'</button>';
+      h+='<button type="button" onclick="deleteDailyVerseAiRecord(\''+String(r.id).replace(/[^A-Za-z0-9_\-]/g,'')+'\')" aria-label="'+delLbl+'" title="'+delLbl+'" style="flex-shrink:0;background:none;border:none;padding:0 4px;font-size:18px;line-height:1;color:var(--text3);cursor:pointer">&times;</button>';
       h+='</div>';
       h+='<div style="font-size:12.5px;line-height:1.5;color:var(--text)">'+escapeHtml(r.text||'').replace(/\n/g,'<br>')+'</div>';
       if(tp&&tp.isEgw)h+='<div style="font-size:10.5px;font-style:italic;color:var(--text3);margin-top:3px">'+escapeHtml(egwAiDisclaimer())+'</div>';
