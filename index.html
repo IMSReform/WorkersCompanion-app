@@ -26577,7 +26577,7 @@ function getAutofillSuggestion(categorie, cursistId){
   // Most recent description for this exact category (+ contact, when given) —
   // "how it was done with the person" isn't just numbers.
   var lastOmsch=past[0].omschrijving||'';
-  if(!topKm&&!topUren&&!travelCat&&!lastOmsch)return null;
+  if(!topKm&&!topUren&&!travelCat)return null;
   var cursistNaam=cursistId?((db.cursisten.find(function(c){return String(c.id)===String(cursistId);})||{}).naam||''):'';
   return{
     uren:topUren?topUren[0]:'',
@@ -26605,7 +26605,7 @@ function applyAutofill(suggestion){
   // it still shows up in the banner text below as an FYI, so nothing about
   // someone's travel pattern is hidden, but it's never applied without the
   // person explicitly typing it in themselves.
-  if(suggestion.omschrijving&&!draft.omschrijving)draft.omschrijving=suggestion.omschrijving;
+  // Omschrijving is never prefilled (Gabriel): the description is always typed fresh.
   if(suggestion.travel){
     draft.travelLabel=suggestion.travel.label;
     draft._autoTravelKm=suggestion.travel.km;
