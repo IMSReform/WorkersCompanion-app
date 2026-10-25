@@ -6282,6 +6282,9 @@ const DRIVE_FILE_NAME='ZDA_Urenregistratie_'+new Date().getFullYear()+'.json';
 // Keep entries short and in plain language (what changed / where to find
 // it), not commit messages.
 const CHANGELOG=[
+  {date:'2026-10-25',items:[
+    {type:'fix',nl:"Reistijd kun je nu zelf intypen (bijv. 32 uur voor een lange vlucht) in plaats van maximaal 12 uur te kiezen. Soort onkosten heeft nu ook Vliegreis en Treinreis, en de omschrijving wordt niet meer vooraf ingevuld.",en:"Travel time is now typed in (e.g. 32 hours for a long flight) instead of a 12-hour dropdown. Expense type now also offers Flight and Train, and the description is no longer prefilled.",es:"El tiempo de viaje ahora se escribe (p. ej. 32 horas en un vuelo largo) en vez de elegir hasta 12 horas. El tipo de gasto incluye Vuelo y Tren, y la descripción ya no se rellena sola."}
+  ]},
   {date:'2026-10-21',items:[
     {type:'new',nl:"Nieuwe bijbelcursus \"Eindsprint\" (Spaans: Mensaje de Amistad), les 1–5: eerst het verhaal, daarna meerkeuzevragen met bijbelteksten. Beschikbaar in presentatiemodus en als leesbare les met antwoorden (ook te printen als PDF).",en:"New Bible course \"Final Sprint\" (Spanish: Mensaje de Amistad), lessons 1–5: first the story, then multiple-choice questions with Bible texts. Available in presenter mode and as a readable lesson with answers (printable as PDF).",es:"Nuevo curso bíblico «Mensaje de Amistad» (en neerlandés: Eindsprint), lecciones 1–5: primero la historia, luego preguntas de opción múltiple con textos bíblicos. Disponible en modo presentación y como lección legible con respuestas (imprimible en PDF).",fr:"Nouveau cours biblique « Dernière ligne droite » (espagnol : Mensaje de Amistad), leçons 1–5 : d'abord l'histoire, puis des questions à choix multiples avec textes bibliques. Disponible en mode présentation et comme leçon lisible avec réponses (imprimable en PDF).",de:"Neuer Bibelkurs „Endspurt“ (Spanisch: Mensaje de Amistad), Lektionen 1–5: zuerst die Geschichte, dann Multiple-Choice-Fragen mit Bibeltexten. Im Präsentationsmodus und als lesbare Lektion mit Antworten verfügbar (als PDF druckbar).",ro:"Curs biblic nou „Sprintul final” (în spaniolă: Mensaje de Amistad), lecțiile 1–5: mai întâi povestea, apoi întrebări cu variante de răspuns și texte biblice. Disponibil în modul prezentare și ca lecție lizibilă cu răspunsuri (imprimabilă ca PDF).",it:"Nuovo corso biblico «Volata finale» (spagnolo: Mensaje de Amistad), lezioni 1–5: prima la storia, poi domande a scelta multipla con testi biblici. Disponibile in modalità presentazione e come lezione leggibile con risposte (stampabile in PDF).",pt:"Novo curso bíblico «Reta final» (espanhol: Mensaje de Amistad), lições 1–5: primeiro a história, depois perguntas de múltipla escolha com textos bíblicos. Disponível no modo apresentação e como lição legível com respostas (imprimível em PDF)."},
     {type:'new',nl:"Presentatiemodus: dia's kunnen nu een plaatje rechts tonen (les 1 van de Eindsprint heeft ze al), er staat een voortgangslijn onder de kop, en als je zelf een tekstgrootte kiest blijft die staan en kun je scrollen.",en:"Presenter mode: slides can now show a picture on the right (Final Sprint lesson 1 has them), there is a progress line under the header, and when you pick a text size it stays and you can scroll.",es:"Modo presentación: las diapositivas pueden mostrar una imagen a la derecha (la lección 1 del curso ya las tiene), hay una línea de progreso bajo el encabezado y, si eliges un tamaño de texto, se mantiene y puedes desplazarte.",fr:"Mode présentation : les diapositives peuvent afficher une image à droite (la leçon 1 du cours en a déjà), une ligne de progression sous l'en-tête, et si vous choisissez une taille de texte, elle est conservée et vous pouvez faire défiler.",de:"Präsentationsmodus: Folien können jetzt rechts ein Bild zeigen (Lektion 1 des Kurses hat sie schon), unter der Kopfzeile gibt es eine Fortschrittslinie, und eine gewählte Textgröße bleibt erhalten – du kannst scrollen.",ro:"Mod prezentare: diapozitivele pot afișa acum o imagine în dreapta (lecția 1 din curs le are deja), există o linie de progres sub antet, iar dacă alegi o mărime a textului, aceasta rămâne și poți derula.",it:"Modalità presentazione: le diapositive possono mostrare un'immagine a destra (la lezione 1 del corso le ha già), c'è una linea di avanzamento sotto l'intestazione e, se scegli una dimensione del testo, resta fissa e puoi scorrere.",pt:"Modo apresentação: os slides podem mostrar uma imagem à direita (a lição 1 do curso já as tem), há uma linha de progresso sob o cabeçalho e, se escolheres um tamanho de texto, ele mantém-se e podes deslizar."},
@@ -19403,7 +19406,7 @@ function renderWiz(){
       <div class="wiz-hint" style="margin-bottom:0">${t('wizard_linked_to')} <strong>${getCatLabel(draft.travelLabel)}</strong></div>
       <div class="travel-box">
         <div class="field-row">
-          <div class="hrs"><span class="form-label">${t('wizard_travel_hours')}</span><select id="w-reisuren" class="hour-picker">${buildHourOptions(draft.reisUren||draft._autoTravelUren||0)}</select></div>
+          <div class="hrs"><span class="form-label">${t('wizard_travel_hours')}</span>${travelHoursInput('w-reisuren',draft.reisUren||draft._autoTravelUren||0,'')}</div>
           <div>
             <span class="form-label">${distLabel()}</span>
             <input type="number" id="w-km" min="0" step="1" placeholder="${draft._autoTravelKm&&!draft.km&&draft.kmHeen==null?draft._autoTravelKm:'0'}" value="${draft.kmHeen!=null?draft.kmHeen:(draft.km||'')}">
@@ -19834,12 +19837,14 @@ function wSetGemeente(){
 // OTROS). Stored as entry.kostenType: ''(unspecified) | 'local' | 'intercity'
 // | 'other'. Generic enough for any country: local = in-city transport,
 // intercity = trips between cities, other = everything else (mail, copies, food).
-var KOSTEN_TYPES=['local','intercity','other'];
+var KOSTEN_TYPES=['local','intercity','flight','train','other'];
 function kostenTypeLabel(k){
   if(!k)return '';
   var L={
     local:{nl:'Lokaal (in de stad)',en:'Local (in the city)',es:'Local / urbano',fr:'Local (en ville)',de:'Lokal (in der Stadt)',pt:'Local (na cidade)',it:'Locale (in città)',ro:'Local (în oraș)'},
     intercity:{nl:'Interstedelijk (reis)',en:'Intercity (travel)',es:'Interurbano (viaje)',fr:'Interurbain (voyage)',de:'Überregional (Reise)',pt:'Intermunicipal (viagem)',it:'Interurbano (viaggio)',ro:'Interurban (călătorie)'},
+    flight:{nl:'Vliegreis',en:'Flight',es:'Vuelo',fr:'Vol',de:'Flug',pt:'Voo',it:'Volo',ro:'Zbor'},
+    train:{nl:'Treinreis',en:'Train',es:'Tren',fr:'Train',de:'Zugfahrt',pt:'Comboio / trem',it:'Treno',ro:'Tren'},
     other:{nl:'Overig',en:'Other',es:'Otros',fr:'Autres',de:'Sonstiges',pt:'Outros',it:'Altro',ro:'Altele'}
   }[k];
   if(!L)return '';
@@ -19849,6 +19854,8 @@ function kostenTypeShort(k){
   if(!k)return '';
   var S={local:{nl:'Lokaal',en:'Local',es:'Urbano',fr:'Local',de:'Lokal',pt:'Local',it:'Locale',ro:'Local'},
     intercity:{nl:'Interstedelijk',en:'Intercity',es:'Viaje',fr:'Interurbain',de:'Überregional',pt:'Viagem',it:'Interurbano',ro:'Interurban'},
+    flight:{nl:'Vlucht',en:'Flight',es:'Vuelo',fr:'Vol',de:'Flug',pt:'Voo',it:'Volo',ro:'Zbor'},
+    train:{nl:'Trein',en:'Train',es:'Tren',fr:'Train',de:'Zug',pt:'Trem',it:'Treno',ro:'Tren'},
     other:{nl:'Overig',en:'Other',es:'Otros',fr:'Autres',de:'Sonstiges',pt:'Outros',it:'Altro',ro:'Altele'}}[k];
   return S?(S[LANG]||S.en):'';
 }
@@ -21611,7 +21618,7 @@ function openQuickRepeatModal(last, prefillDate){
   h+='<input type="text" id="qr-omschrijving" value="'+(last.omschrijving?String(last.omschrijving).replace(/"/g,'&quot;'):'')+'" style="margin-bottom:8px">';
   h+=themaBlock;
   h+=qrMultiHtml;
-  h+='<span class="form-label hrs">'+t('wizard_travel_hours')+'</span><select id="qr-reisuren" class="hour-picker hrs" style="margin-bottom:8px">'+buildHourOptions(last.reisUren||0)+'</select>';
+  h+='<span class="form-label hrs">'+t('wizard_travel_hours')+'</span>'+travelHoursInput('qr-reisuren',last.reisUren||0,'margin-bottom:8px')+'';
   h+='<span class="form-label">Km</span><input type="number" id="qr-km" value="'+(last.kmHeen!=null?last.kmHeen:(last.km||''))+'" min="0" placeholder="0" style="margin-bottom:8px">';
   h+=kmRetourBlockHtml('qr',last.kmRetour,last.vehicle);
   if(orgNeedsNiveauTag()){
@@ -23855,7 +23862,7 @@ function openCursistDetail(id){
     +'</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'
     +'<div><span class="form-label">Km</span><input type="number" id="cs-km" min="0" value="0" style="width:100%">'+kmRetourBlockHtml('cs',null)+'</div>'
-    +'<div class="hrs"><span class="form-label">'+t('wizard_travel_hours')+'</span><select id="cs-reisuren" class="hour-picker" style="width:100%">'+buildHourOptions(0)+'</select></div>'
+    +'<div class="hrs"><span class="form-label">'+t('wizard_travel_hours')+'</span>'+travelHoursInput('cs-reisuren',0,'width:100%')+'</div>'
     +'</div>'
     +'<div style="margin-bottom:8px"><span class="form-label">'+t('wizard_cat')+'</span>'
     +'<select id="cs-cat" style="width:100%">'
@@ -24165,7 +24172,7 @@ function openLidDetail(id){
     +'</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'
     +'<div><span class="form-label">Km</span><input type="number" id="cs-km" min="0" value="0" style="width:100%">'+kmRetourBlockHtml('cs',null)+'</div>'
-    +'<div class="hrs"><span class="form-label">'+t('wizard_travel_hours')+'</span><select id="cs-reisuren" class="hour-picker" style="width:100%">'+buildHourOptions(0)+'</select></div>'
+    +'<div class="hrs"><span class="form-label">'+t('wizard_travel_hours')+'</span>'+travelHoursInput('cs-reisuren',0,'width:100%')+'</div>'
     +'</div>'
     +'<div style="margin-bottom:8px"><span class="form-label">'+t('wizard_cat')+'</span>'
     +'<select id="cs-cat" style="width:100%">'
@@ -31459,6 +31466,12 @@ function formatDate(d){if(!d)return'';try{return parseLocalDate(d).toLocaleDateS
 // modal without ever being defined anywhere, so both threw a ReferenceError
 // the moment either of those rendered (found while adding the quick-repeat
 // popup, which needed the same picker).
+// Travel time: typed number (any length, e.g. 32 h flights) instead of a
+// 0-12h dropdown. Value is read via .value like the old <select>.
+function travelHoursInput(id,cur,style){
+  var c=parseFloat(cur)||0;
+  return '<input type="number" inputmode="decimal" id="'+id+'" min="0" step="0.25" placeholder="0" value="'+(c?c:'')+'" style="'+(style||'')+'">';
+}
 function buildHourOptions(current){
   var cur=parseFloat(current);
   if(isNaN(cur))cur='';
@@ -35472,7 +35485,7 @@ function agendaComplete(planId){
   h += '<button type="button" id="confirm-more-toggle" onclick="toggleConfirmMoreFields()" style="display:'+(hasExtra?'none':'block')+';width:100%;text-align:left;background:none;border:none;padding:6px 0;margin-bottom:6px;color:var(--brand);font-size:13px;font-weight:600;cursor:pointer">'+moreFieldsLbl+'</button>';
   h += '<div id="confirm-more-fields" style="display:'+(hasExtra?'block':'none')+';margin-bottom:8px">';
   h += '<div class="field-row">';
-  h += '<div class="hrs"><span class="form-label">'+t('wizard_travel_hours')+'</span><select id="confirm-reisuren" class="hour-picker">'+buildHourOptions(p.reisUren||0)+'</select></div>';
+  h += '<div class="hrs"><span class="form-label">'+t('wizard_travel_hours')+'</span>'+travelHoursInput('confirm-reisuren',p.reisUren||0,'')+'</div>';
   h += '<div><span class="form-label">'+distLabel()+'</span><input type="number" id="confirm-km" min="0" step="1" placeholder="0" value="'+(p.kmHeen!=null?p.kmHeen:(p.km||''))+'">'+kmRetourBlockHtml('confirm',p.kmRetour,p.vehicle)+'</div>';
   h += '</div>';
   h += '<div style="margin-top:8px"><span class="form-label">'+t('wizard_expense_label')+'</span><input type="number" id="confirm-kosten" min="0" step="0.01" placeholder="0.00 ('+currencySymbol()+')" value="'+(p.kosten||'')+'">'+kostenTypeSelectHtml('confirm-kostentype',p.kostenType)+'</div>';
