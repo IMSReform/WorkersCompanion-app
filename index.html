@@ -6283,6 +6283,7 @@ const DRIVE_FILE_NAME='ZDA_Urenregistratie_'+new Date().getFullYear()+'.json';
 // it), not commit messages.
 const CHANGELOG=[
   {date:'2026-10-25',items:[
+    {type:'new',nl:"Rapport, Reis en andere kosten: nieuwe tab \"Per soort\" met een kleurbalk en de onkosten per soort (lokaal, interstedelijk, vlucht, trein, overig). Tik op een soort om de posten te zien.",en:"Report, Travel and other costs: new \"By type\" tab with a colour bar and expenses per type (local, intercity, flight, train, other). Tap a type to see its items.",es:"Informe, Viajes y otros gastos: nueva pestaña \"Por tipo\" con barra de colores y gastos por tipo (local, interurbano, vuelo, tren, otros). Toca un tipo para ver sus partidas."},
     {type:'fix',nl:"Reistijd kun je nu zelf intypen (bijv. 32 uur voor een lange vlucht) in plaats van maximaal 12 uur te kiezen. Soort onkosten heeft nu ook Vliegreis en Treinreis, en de omschrijving wordt niet meer vooraf ingevuld.",en:"Travel time is now typed in (e.g. 32 hours for a long flight) instead of a 12-hour dropdown. Expense type now also offers Flight and Train, and the description is no longer prefilled.",es:"El tiempo de viaje ahora se escribe (p. ej. 32 horas en un vuelo largo) en vez de elegir hasta 12 horas. El tipo de gasto incluye Vuelo y Tren, y la descripción ya no se rellena sola."}
   ]},
   {date:'2026-10-21',items:[
@@ -24656,6 +24657,34 @@ function _buildRapportInner(){
     byCatKmEntries[label].push(e);
   });
 
+  // "Per soort" pane of the Reis en andere kosten card: expenses grouped by
+  // kostenType (local/intercity/flight/train/other) with a colour bar + drill-down.
+  const rpTabL={nl:['Per activiteit','Per soort'],en:['By activity','By type'],es:['Por actividad','Por tipo'],fr:['Par activité','Par type'],de:['Nach Aktivität','Nach Art'],pt:['Por atividade','Por tipo'],it:['Per attività','Per tipo'],ro:['După activitate','După tip']}[LANG]||['By activity','By type'];
+  const rpNoType={nl:'Niet opgegeven',en:'Not specified',es:'Sin especificar',fr:'Non précisé',de:'Nicht angegeben',pt:'Não especificado',it:'Non specificato',ro:'Nespecificat'}[LANG]||'Not specified';
+  const rpTypeColors={local:'#4a7c8c',intercity:'#8a9a5b',flight:'#c08a3e',train:'#7a6a9a',other:'#9aa3ab',none:'#c9ced3'};
+  const byTypeG={};
+  data.forEach(e=>{const k=parseFloat(e.kosten)||0;if(k<=0)return;const key=e.kostenType||'none';(byTypeG[key]=byTypeG[key]||{sum:0,list:[]});byTypeG[key].sum+=k;byTypeG[key].list.push(e);});
+  const rpTypeKeys=KOSTEN_TYPES.concat(['none']).filter(k=>byTypeG[k]).sort((a,b)=>byTypeG[b].sum-byTypeG[a].sum);
+  const rpTypeTotal=rpTypeKeys.reduce((a,k)=>a+byTypeG[k].sum,0);
+  const rpFmt=v=>currencySymbol()+v.toFixed(2).replace('.',',');
+  const rpTypeHtml=rpTypeKeys.length?(
+    '<div style="display:flex;height:10px;border-radius:5px;overflow:hidden;margin:4px 0 12px">'
+    +rpTypeKeys.map(k=>'<div style="width:'+(byTypeG[k].sum/rpTypeTotal*100).toFixed(2)+'%;background:'+rpTypeColors[k]+'"></div>').join('')+'</div>'
+    +rpTypeKeys.map((k,i)=>{
+      const g=byTypeG[k],id='rp-kt-'+i,lab=k==='none'?rpNoType:kostenTypeLabel(k);
+      const subs=g.list.slice().sort((a,b)=>(a.datum||'').localeCompare(b.datum||'')).map(e=>{
+        const dp=(e.datum||'').split('-');const ds=dp.length===3?(dp[2]+'-'+dp[1]+'-'+dp[0]):(e.datum||'');
+        const who=activityTitle(e);
+        return '<div onclick="rpJumpToDay(\''+(e.datum||'')+'\')" style="display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:6px 4px 6px 17px;cursor:pointer;color:var(--text2)"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+ds+(who?' &middot; '+escapeHtml(who):'')+'</span><span style="font-weight:600;flex-shrink:0;color:var(--text)">'+rpFmt(parseFloat(e.kosten))+'</span></div>';
+      }).join('');
+      return '<div style="margin-bottom:2px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;padding:5px 0;color:var(--text2);cursor:pointer" onclick="var s=document.getElementById(\''+id+'\');var sh=s.style.display===\'none\';s.style.display=sh?\'\':\'none\';document.getElementById(\''+id+'-a\').style.transform=sh?\'rotate(90deg)\':\'rotate(0deg)\';">'
+        +'<span style="display:flex;align-items:center;gap:6px;flex:1;min-width:0"><span id="'+id+'-a" style="font-size:9px;color:var(--text3);transition:transform .15s">&#9654;</span><span style="width:9px;height:9px;border-radius:50%;background:'+rpTypeColors[k]+';flex-shrink:0"></span><span>'+lab+' <span style="color:var(--text3)">('+g.list.length+'&times;)</span></span></span>'
+        +'<span style="flex-shrink:0"><strong>'+rpFmt(g.sum)+'</strong></span></div>'
+        +'<div id="'+id+'" style="display:none;margin-top:2px">'+subs+'</div></div>';
+    }).join('')
+  ):'';
+  const rpTabsHtml=rpTypeKeys.length?'<div style="display:flex;gap:6px;margin:4px 0 8px"><button type="button" id="rp-kt-tab0" class="btn" style="padding:4px 12px;font-size:12px" onclick="rpKmPane(0)">'+rpTabL[0]+'</button><button type="button" id="rp-kt-tab1" class="btn" style="padding:4px 12px;font-size:12px;opacity:.55" onclick="rpKmPane(1)">'+rpTabL[1]+'</button></div>':'';
+
   const studyEntries=data.filter(e=>e.categorie==='Bijbelstudie geven');
   const RP_CONTACT_SECTION_CATS=['Bijbelstudie geven','Pastoraal contact','Pastoraal werk','Bezoek'];
   const contactSectionEntries=data.filter(e=>RP_CONTACT_SECTION_CATS.indexOf(e.categorie)>=0);
@@ -25361,7 +25390,8 @@ function _buildRapportInner(){
         ${totalKm>0?`<div><div style="font-size:18px;font-weight:700;color:var(--amber)">${currencySymbol()}${kmOnlyVergoeding}</div><div style="font-size:11px;color:var(--text3)">${t('vergoeding')}</div></div>`:''}
         ${totalKosten>0?`<div><div style="font-size:18px;font-weight:700;color:var(--amber)">${currencySymbol()}${totalKosten.toFixed(2).replace('.',',')}</div><div style="font-size:11px;color:var(--text3)">${t('col_kosten')||'Onkosten'}</div></div>`:''}
       </div>
-      ${kostenByTypeHtml}
+      ${rpTabsHtml}
+      <div id="rp-km-pane-0">
       ${Object.entries(byCatKm).sort((a,b)=>b[1].km-a[1].km).map(([cat,v],rpKmIdx)=>{
         const parts=[];
         if(v.km>0)parts.push(`<strong>${Math.round(v.km)}${distUnit()}</strong> &middot; ${currencySymbol()}${kmReimbursementForEntries(byCatKmEntries[cat]||[]).toFixed(2).replace('.',',')}`);
@@ -25394,6 +25424,8 @@ function _buildRapportInner(){
           +(subRows?`<div id="${rowId}" style="display:none;margin-top:2px">${subRows}</div>`:'')
           +`</div>`;
       }).join('')}
+      </div>
+      <div id="rp-km-pane-1" style="display:none">${rpTypeHtml}</div>
     </div>
   </div>
   </div>
@@ -31468,6 +31500,7 @@ function formatDate(d){if(!d)return'';try{return parseLocalDate(d).toLocaleDateS
 // popup, which needed the same picker).
 // Travel time: typed number (any length, e.g. 32 h flights) instead of a
 // 0-12h dropdown. Value is read via .value like the old <select>.
+function rpKmPane(i){[0,1].forEach(function(n){var p=document.getElementById('rp-km-pane-'+n),b=document.getElementById('rp-kt-tab'+n);if(p)p.style.display=(n===i)?'':'none';if(b)b.style.opacity=(n===i)?'1':'.55';});}
 function travelHoursInput(id,cur,style){
   var c=parseFloat(cur)||0;
   return '<input type="number" inputmode="decimal" id="'+id+'" min="0" step="0.25" placeholder="0" value="'+(c?c:'')+'" style="'+(style||'')+'">';
