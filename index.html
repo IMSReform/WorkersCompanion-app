@@ -42163,17 +42163,17 @@ function openEditEntryModal(entryId,skipSummary){
   var eeSumRow=function(label,val){eeSumRows+='<div'+(String(val).indexOf('ee-q-uren')>=0?' class="hrs"':'')+' style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:13px"><span style="color:var(--text3)">'+label+'</span><span style="font-weight:600;text-align:right">'+val+'</span></div>';};
   // Quick-edit: date + hours are editable right in the summary (Save below),
   // so a small change like "2h -> 2.5h" doesn't need the full form.
-  var eeQIn='style="width:120px;text-align:right;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);font:inherit;font-weight:600"';
-  eeSumRow(t('wizard_date'), '<input type="date" id="ee-q-datum" value="'+(e.datum||'')+'" '+eeQIn.replace('120px','150px')+'>');
-  eeSumRow(t('wizard_time'), '<input type="time" id="ee-q-tijd" value="'+(e.tijd||'')+'" '+eeQIn.replace('120px','150px')+'>');
+  var eeQIn='style="width:220px;max-width:62%;box-sizing:border-box;text-align:left;padding:10px 12px;border:none;outline:none;border-radius:10px;background:var(--surface2);font:inherit;font-weight:600"';
+  eeSumRow(t('wizard_date'), '<input type="date" id="ee-q-datum" value="'+(e.datum||'')+'" '+eeQIn+'>');
+  eeSumRow(t('wizard_time'), '<input type="time" id="ee-q-tijd" value="'+(e.tijd||'')+'" '+eeQIn+'>');
   eeSumRow(t('wizard_hours'), '<input type="number" id="ee-q-uren" min="0" step="0.25" value="'+(parseFloat(e.uren)||0)+'" '+eeQIn+'>');
   if(parseFloat(e.km)>0)eeSumRow('Km', Math.round(parseFloat(e.km))+distUnit()+kmBreakdownSuffix(e.kmHeen,e.kmRetour));
   if(parseFloat(e.reisUren)>0)eeSumRow(t('wizard_travel_hours'), parseFloat(e.reisUren)+t('hours_abbr'));
   if(parseFloat(e.kosten)>0)eeSumRow(t('col_kosten'), currencySymbol()+parseFloat(e.kosten).toFixed(2).replace('.',',')+(e.kostenType?' · '+kostenTypeLabel(e.kostenType):''));
   var eePhotos=entryPhotos(e);
   if(eePhotos.length)eeSumRow(receiptPhotoLabel(), eePhotos.map(function(p){return '<img src="'+p.thumb+'" style="width:32px;height:32px;object-fit:cover;border-radius:6px;border:1px solid var(--border);vertical-align:middle;margin-left:4px">';}).join(''));
-  eeSumRow(t('wizard_cat'), '<select id="ee-q-cat" '+eeQIn.replace('width:120px','width:200px;max-width:100%')+'>'+catOpts.replace(/ selected(="selected")?/g,'').replace('value="'+String(e.categorie||'').replace(/"/g,'&quot;')+'"','value="'+String(e.categorie||'').replace(/"/g,'&quot;')+'" selected')+'</select>');
-  eeSumRow(t('wizard_desc'), '<input type="text" id="ee-q-omsch" value="'+(e.omschrijving||'').replace(/"/g,'&quot;')+'" '+eeQIn.replace('width:120px','width:200px;max-width:100%').replace('text-align:right','text-align:right')+'>');
+  eeSumRow(t('wizard_cat'), '<select id="ee-q-cat" '+eeQIn+'>'+catOpts.replace(/ selected(="selected")?/g,'').replace('value="'+String(e.categorie||'').replace(/"/g,'&quot;')+'"','value="'+String(e.categorie||'').replace(/"/g,'&quot;')+'" selected')+'</select>');
+  eeSumRow(t('wizard_desc'), '<input type="text" id="ee-q-omsch" value="'+(e.omschrijving||'').replace(/"/g,'&quot;')+'" '+eeQIn+'>');
   // Gabriel: with a group visit, "Met wie" used to only ever show this
   // entry's own single contact (whichever of the group happened to be
   // opened) which read as if only that one person was involved. Now this
