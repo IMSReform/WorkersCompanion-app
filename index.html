@@ -6283,6 +6283,7 @@ const DRIVE_FILE_NAME='ZDA_Urenregistratie_'+new Date().getFullYear()+'.json';
 // it), not commit messages.
 const CHANGELOG=[
   {date:'2026-10-25',items:[
+    {type:'new',nl:"Invoer bewerken: bovenaan staan nu groot de datum en omschrijving, met klein de categorie, zodat je meteen ziet welke invoer je bewerkt.",en:"Edit entry: the date and description now appear large at the top, with the category in small letters, so you instantly see which entry you are editing.",es:"Editar registro: arriba aparecen en grande la fecha y la descripción, y en pequeño la categoría, para ver enseguida qué registro editas."},
     {type:'new',nl:"Soort onkosten: nieuwe optie Bus (bijv. Flixbus). Zodra je kilometers invult, wordt het soort automatisch Interstedelijk; zonder km kies je zelf (lokaal, bus, trein, vlucht, overig).",en:"Expense type: new Coach option (e.g. Flixbus). As soon as you enter kilometers the type is set to Intercity automatically; without km you choose yourself (local, coach, train, flight, other).",es:"Tipo de gasto: nueva opción Autobús (p. ej. Flixbus). Al introducir kilómetros el tipo pasa automáticamente a Interurbano; sin km eliges tú (local, autobús, tren, vuelo, otros)."},
     {type:'new',nl:"Logboek zoeken: reis die bij een andere activiteit hoort (km, kosten, reistijd) vind je nu met woorden als \"reis\", \"km\", \"kosten\", \"vlucht\" of \"trein\". Het filter \"Reis\" toont nu ook die posten, en er is een nieuw filter \"Kosten zonder soort\" om oude posten snel een soort te geven.",en:"Logbook search: travel that belongs to another activity (km, costs, travel time) can now be found with words like \"travel\", \"km\", \"costs\", \"flight\" or \"train\". The \"Travel\" filter now includes those entries too, and a new \"Costs without type\" filter lets you quickly give old entries a type.",es:"Búsqueda en el registro: los viajes ligados a otra actividad (km, gastos, tiempo de viaje) ahora se encuentran con palabras como \"viaje\", \"km\", \"gastos\", \"vuelo\" o \"tren\". El filtro \"Viaje\" los incluye y hay un nuevo filtro \"Gastos sin tipo\"."},
     {type:'new',nl:"Rapport, Reis en andere kosten: nieuwe tab \"Per soort\" met een kleurbalk en de onkosten per soort (lokaal, interstedelijk, vlucht, trein, overig). Tik op een soort om de posten te zien.",en:"Report, Travel and other costs: new \"By type\" tab with a colour bar and expenses per type (local, intercity, flight, train, other). Tap a type to see its items.",es:"Informe, Viajes y otros gastos: nueva pestaña \"Por tipo\" con barra de colores y gastos por tipo (local, interurbano, vuelo, tren, otros). Toca un tipo para ver sus partidas."},
@@ -42208,8 +42209,11 @@ function openEditEntryModal(entryId,skipSummary){
   var h='<div style="padding:16px;max-height:85vh;overflow-y:auto">';
   h+=sumH;
   h+='<div id="ee-full-form" style="display:'+(skipSummary?'block':'none')+'">';
-  h+='<div style="font-size:15px;font-weight:700;margin-bottom:14px">'
-    +(LANG==='en'?'Edit entry':LANG==='es'?'Editar registro':LANG==='fr'?'Modifier entrée':LANG==='de'?'Eintrag bearbeiten':LANG==='ro'?'Editare intrare':LANG==='it'?'Modifica registrazione':'Invoer bewerken')+'</div>';
+  var _eeDate='';try{_eeDate=e.datum?parseLocalDate(e.datum).toLocaleDateString(getLocale(),{weekday:'short',day:'numeric',month:'long',year:'numeric'}):'';}catch(_x){_eeDate=e.datum||'';}
+  var _eeDesc=(e.omschrijving||'').trim()||e.cursistNaam||'';
+  h+='<div style="margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border,#e5e7eb)">'
+    +'<div style="font-family:Poppins,Roboto,sans-serif;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-.3px;color:var(--text)">'+escapeHtml(_eeDate)+(_eeDesc?'<span style="font-weight:600;color:var(--text2)"> &middot; '+escapeHtml(_eeDesc.length>70?_eeDesc.substring(0,70)+'…':_eeDesc)+'</span>':'')+'</div>'
+    +'<div style="font-size:12px;font-weight:500;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.06em">'+escapeHtml(getCatLabel(e.categorie)||'')+'</div></div>';
   // Grouped into 3 labeled sections (Gabriel: "I wonder how this whole
   // entry edit could be seen grouped/organized... idea: wat+how much,
   // Categorie+met wie, thema+opmerkingen?") - reuses the same
