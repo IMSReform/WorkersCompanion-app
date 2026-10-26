@@ -42197,8 +42197,17 @@ function openEditEntryModal(entryId,skipSummary){
   if(e.opmerking)eeSumRow(t('wizard_note'), escapeHtml(e.opmerking));
   var eeMoreLbl=tMap({nl:'Alle velden',en:'All fields',es:'Todos los campos',fr:'Tous les champs',de:'Alle Felder',ro:'Toate câmpurile',it:'Tutti i campi',pt:'Todos os campos'});
   var eeSaveLbl=tMap({nl:'Opslaan',en:'Save',es:'Guardar',fr:'Enregistrer',de:'Speichern',ro:'Salvează',it:'Salva',pt:'Salvar'});
+  var _eeDate='';try{_eeDate=e.datum?parseLocalDate(e.datum).toLocaleDateString(getLocale(),{weekday:'short',day:'numeric',month:'long',year:'numeric'}):'';}catch(_x){_eeDate=e.datum||'';}
+  var _eeDesc=(e.omschrijving||'').trim()||e.cursistNaam||'';
+  var _eeDescShort=_eeDesc.length>90?_eeDesc.substring(0,90)+'…':_eeDesc;
+  var _eeHeader='<div style="margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border,#e5e7eb)">'
+    +'<div style="display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:4px 22px;align-items:baseline">'
+    +'<div style="font-family:Poppins,Roboto,sans-serif;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-.3px;color:var(--text)">'+escapeHtml(_eeDate)+'</div>'
+    +'<div style="font-family:Poppins,Roboto,sans-serif;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-.3px;color:var(--text);word-break:break-word">'+escapeHtml(_eeDescShort)+'</div>'
+    +'<div style="grid-column:1 / -1;font-size:12px;font-weight:500;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.06em">'+escapeHtml(getCatLabel(e.categorie)||'')+'</div>'
+    +'</div></div>';
   var sumH='<div id="ee-summary"'+(skipSummary?' style="display:none"':'')+'>';
-  sumH+='<div style="font-size:15px;font-weight:700;margin-bottom:14px">'+escapeHtml(e.omschrijving||getCatLabel(e.categorie))+'</div>';
+  sumH+=_eeHeader;
   sumH+='<div style="margin-bottom:14px">'+eeSumRows+'</div>';
   sumH+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
   sumH+='<button class="btn" onclick="closeModals()" style="flex:1">'+t('close_btn')+'</button>';
@@ -42209,15 +42218,7 @@ function openEditEntryModal(entryId,skipSummary){
   var h='<div style="padding:16px;max-height:85vh;overflow-y:auto">';
   h+=sumH;
   h+='<div id="ee-full-form" style="display:'+(skipSummary?'block':'none')+'">';
-  var _eeDate='';try{_eeDate=e.datum?parseLocalDate(e.datum).toLocaleDateString(getLocale(),{weekday:'short',day:'numeric',month:'long',year:'numeric'}):'';}catch(_x){_eeDate=e.datum||'';}
-  var _eeDesc=(e.omschrijving||'').trim()||e.cursistNaam||'';
-  var _eeDescShort=_eeDesc.length>90?_eeDesc.substring(0,90)+'…':_eeDesc;
-  h+='<div style="margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border,#e5e7eb)">'
-    +'<div style="display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:4px 22px;align-items:baseline">'
-    +'<div style="font-family:Poppins,Roboto,sans-serif;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-.3px;color:var(--text)">'+escapeHtml(_eeDate)+'</div>'
-    +'<div style="font-family:Poppins,Roboto,sans-serif;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-.3px;color:var(--text);word-break:break-word">'+escapeHtml(_eeDescShort)+'</div>'
-    +'<div style="grid-column:1 / -1;font-size:12px;font-weight:500;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.06em">'+escapeHtml(getCatLabel(e.categorie)||'')+'</div>'
-    +'</div></div>';
+  h+=_eeHeader;
   // Grouped into 3 labeled sections (Gabriel: "I wonder how this whole
   // entry edit could be seen grouped/organized... idea: wat+how much,
   // Categorie+met wie, thema+opmerkingen?") - reuses the same
