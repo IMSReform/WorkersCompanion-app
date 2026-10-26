@@ -6283,6 +6283,7 @@ const DRIVE_FILE_NAME='ZDA_Urenregistratie_'+new Date().getFullYear()+'.json';
 // it), not commit messages.
 const CHANGELOG=[
   {date:'2026-10-25',items:[
+    {type:'new',nl:"Logboek zoeken: reis die bij een andere activiteit hoort (km, kosten, reistijd) vind je nu met woorden als \"reis\", \"km\", \"kosten\", \"vlucht\" of \"trein\". Het filter \"Reis\" toont nu ook die posten, en er is een nieuw filter \"Kosten zonder soort\" om oude posten snel een soort te geven.",en:"Logbook search: travel that belongs to another activity (km, costs, travel time) can now be found with words like \"travel\", \"km\", \"costs\", \"flight\" or \"train\". The \"Travel\" filter now includes those entries too, and a new \"Costs without type\" filter lets you quickly give old entries a type.",es:"Búsqueda en el registro: los viajes ligados a otra actividad (km, gastos, tiempo de viaje) ahora se encuentran con palabras como \"viaje\", \"km\", \"gastos\", \"vuelo\" o \"tren\". El filtro \"Viaje\" los incluye y hay un nuevo filtro \"Gastos sin tipo\"."},
     {type:'new',nl:"Rapport, Reis en andere kosten: nieuwe tab \"Per soort\" met een kleurbalk en de onkosten per soort (lokaal, interstedelijk, vlucht, trein, overig). Tik op een soort om de posten te zien.",en:"Report, Travel and other costs: new \"By type\" tab with a colour bar and expenses per type (local, intercity, flight, train, other). Tap a type to see its items.",es:"Informe, Viajes y otros gastos: nueva pestaña \"Por tipo\" con barra de colores y gastos por tipo (local, interurbano, vuelo, tren, otros). Toca un tipo para ver sus partidas."},
     {type:'fix',nl:"Reistijd kun je nu zelf intypen (bijv. 32 uur voor een lange vlucht) in plaats van maximaal 12 uur te kiezen. Soort onkosten heeft nu ook Vliegreis en Treinreis, en de omschrijving wordt niet meer vooraf ingevuld.",en:"Travel time is now typed in (e.g. 32 hours for a long flight) instead of a 12-hour dropdown. Expense type now also offers Flight and Train, and the description is no longer prefilled.",es:"El tiempo de viaje ahora se escribe (p. ej. 32 horas en un vuelo largo) en vez de elegir hasta 12 horas. El tipo de gasto incluye Vuelo y Tren, y la descripción ya no se rellena sola."}
   ]},
@@ -9782,9 +9783,10 @@ function renderSpreadsheet(){
     // matched, even though that's the normal way most km actually gets
     // logged. Also match on the km/kosten fields themselves, whatever
     // category they're attached to.
+    if(filterType==='kostenzonder')return costNoTypeFilter(e);
     if(filterType==='reis'){return !!(findCatByLabel(e.categorie)?.isTravel||e.isAutoTravel||parseFloat(e.km)||parseFloat(e.kosten));}
     if(filterType&&e.categorie!==filterType)return false;
-    if(ssSearch){var h=normNameForMatch((e.categorie||'')+' '+(e.omschrijving||'')+' '+(e.cursistNaam||'')+' '+(e.datum||'')+' '+(e.thema||'')+' '+(e.opmerking||'')+' '+(e.gemeente||''));if(h.indexOf(ssSearch)<0)return false;}
+    if(ssSearch){var h=normNameForMatch((e.categorie||'')+' '+(e.omschrijving||'')+' '+(e.cursistNaam||'')+' '+(e.datum||'')+' '+(e.thema||'')+' '+(e.opmerking||'')+' '+(e.gemeente||'')+entryCostSearchText(e));if(h.indexOf(ssSearch)<0)return false;}
     return true;
   }).sort(function(a,b){
     // Hardened against ever throwing or returning a non-numeric result: a
@@ -15069,7 +15071,7 @@ function renderSubbar(screen){
     // Type select
     var ts=document.createElement('select');ts.id='log-filter-type';ts.style.cssText='min-width:80px;max-width:120px;';
     ts.onchange=function(){renderLog();};
-    ts.innerHTML='<option value="">'+t('all_types')+'</option><option value="Bijbelstudie geven">'+t('bible_study')+'</option><option value="Evangeliseren extern">'+t('evangelism_type')+'</option><option value="Pastoraal contact">'+t('pastoral_type')+'</option><option value="reis">'+t('travel_type')+'</option><option value="Administratie">'+t('admin_type')+'</option>';
+    ts.innerHTML='<option value="">'+t('all_types')+'</option><option value="Bijbelstudie geven">'+t('bible_study')+'</option><option value="Evangeliseren extern">'+t('evangelism_type')+'</option><option value="Pastoraal contact">'+t('pastoral_type')+'</option><option value="reis">'+t('travel_type')+'</option><option value="kostenzonder">'+travelNoTypeLabel()+'</option><option value="Administratie">'+t('admin_type')+'</option>';
     sb.appendChild(ts);
     populateLogMonths();
 
@@ -20511,10 +20513,11 @@ function _renderLogInner(){
     if(!e.categorie)return false;
     if(logYear&&!(e.datum||'').startsWith(logYear))return false;
     if(mF&&!(e.datum||'').startsWith(mF))return false;
-    if(tF==='reis')return findCatByLabel(e.categorie)?.isTravel;
+    if(tF==='kostenzonder')return costNoTypeFilter(e);
+    if(tF==='reis')return !!(findCatByLabel(e.categorie)?.isTravel||e.isAutoTravel||parseFloat(e.km)||parseFloat(e.kosten)||parseFloat(e.reisUren));
     if(tF&&e.categorie!==tF)return false;
     if(sF){
-      var hay=normNameForMatch((e.categorie||'')+' '+(e.omschrijving||'')+' '+(e.cursistNaam||'')+' '+(e.opmerking||'')+' '+(e.datum||'')+' '+(e.thema||''));
+      var hay=normNameForMatch((e.categorie||'')+' '+(e.omschrijving||'')+' '+(e.cursistNaam||'')+' '+(e.opmerking||'')+' '+(e.datum||'')+' '+(e.thema||'')+entryCostSearchText(e));
       if(hay.indexOf(sF)<0)return false;
     }
     return true;
@@ -31502,6 +31505,19 @@ function formatDate(d){if(!d)return'';try{return parseLocalDate(d).toLocaleDateS
 // Travel time: typed number (any length, e.g. 32 h flights) instead of a
 // 0-12h dropdown. Value is read via .value like the old <select>.
 function rpKmPane(i){[0,1].forEach(function(n){var p=document.getElementById('rp-km-pane-'+n),b=document.getElementById('rp-kt-tab'+n);if(p)p.style.display=(n===i)?'':'none';if(b)b.style.opacity=(n===i)?'1':'.55';});}
+// Extra searchable text for km/kosten/reistijd so travel that rides along with
+// another activity (Bijbelstudie, Preek...) can be found by "reis", "km",
+// "kosten", "vlucht", "trein" etc. without the word being in the entry itself.
+function entryCostSearchText(e){
+  var x='';
+  if(parseFloat(e.km))x+=' km reis reizen travel viaje voyage reise';
+  if(parseFloat(e.reisUren))x+=' reistijd reis reizen travel viaje voyage reise';
+  if(parseFloat(e.kosten)){x+=' kosten onkosten reiskosten costs gastos frais ausgaben';
+    x+=' '+(e.kostenType?(kostenTypeLabel(e.kostenType)+' '+kostenTypeShort(e.kostenType)):'soort zonder');}
+  return x;
+}
+function costNoTypeFilter(e){return (parseFloat(e.kosten)||0)>0&&!e.kostenType;}
+function travelNoTypeLabel(){return {nl:'Kosten zonder soort',en:'Costs without type',es:'Gastos sin tipo',fr:'Frais sans type',de:'Kosten ohne Art',pt:'Despesas sem tipo',it:'Spese senza tipo',ro:'Cheltuieli fără tip'}[LANG]||'Costs without type';}
 function travelHoursInput(id,cur,style){
   var c=parseFloat(cur)||0;
   return '<input type="number" inputmode="decimal" id="'+id+'" min="0" step="0.25" placeholder="0" value="'+(c?c:'')+'" style="'+(style||'')+'">';
