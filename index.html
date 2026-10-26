@@ -42197,7 +42197,7 @@ function openEditEntryModal(entryId,skipSummary){
   if(e.opmerking)eeSumRow(t('wizard_note'), escapeHtml(e.opmerking));
   var eeMoreLbl=tMap({nl:'Alle velden',en:'All fields',es:'Todos los campos',fr:'Tous les champs',de:'Alle Felder',ro:'Toate câmpurile',it:'Tutti i campi',pt:'Todos os campos'});
   var eeSaveLbl=tMap({nl:'Opslaan',en:'Save',es:'Guardar',fr:'Enregistrer',de:'Speichern',ro:'Salvează',it:'Salva',pt:'Salvar'});
-  var _eeDate='';try{_eeDate=e.datum?parseLocalDate(e.datum).toLocaleDateString(getLocale(),{weekday:'short',day:'numeric',month:'long',year:'numeric'}):'';}catch(_x){_eeDate=e.datum||'';}
+  var _eeDate='';try{_eeDate=e.datum?parseLocalDate(e.datum).toLocaleDateString(getLocale(),{day:'numeric',month:'long',year:'numeric'}):'';}catch(_x){_eeDate=e.datum||'';}
   var _eeDesc=(e.omschrijving||'').trim()||e.cursistNaam||'';
   var _eeDescShort=_eeDesc.length>90?_eeDesc.substring(0,90)+'…':_eeDesc;
   var _eeHeader='<div style="margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border,#e5e7eb)">'
