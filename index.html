@@ -42202,8 +42202,8 @@ function openEditEntryModal(entryId,skipSummary){
   var _eeDescShort=_eeDesc.length>90?_eeDesc.substring(0,90)+'…':_eeDesc;
   var _eeHeader='<div style="margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border,#e5e7eb)">'
     +'<div style="display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:4px 22px;align-items:baseline">'
-    +'<div style="font-family:Poppins,Roboto,sans-serif;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-.3px;color:var(--text)">'+escapeHtml(_eeDate)+'</div>'
-    +'<div style="font-family:Poppins,Roboto,sans-serif;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-.3px;color:var(--text);word-break:break-word">'+escapeHtml(_eeDescShort)+'</div>'
+    +'<div style="font-family:Poppins,Roboto,sans-serif;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-.3px;color:var(--brand)">'+escapeHtml(_eeDate)+'</div>'
+    +'<div style="font-family:Poppins,Roboto,sans-serif;font-size:22px;font-weight:800;line-height:1.2;letter-spacing:-.3px;color:var(--brand);word-break:break-word">'+escapeHtml(_eeDescShort)+'</div>'
     +'<div style="grid-column:1 / -1;font-size:12px;font-weight:500;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.06em">'+escapeHtml(getCatLabel(e.categorie)||'')+'</div>'
     +'</div></div>';
   var sumH='<div id="ee-summary"'+(skipSummary?' style="display:none"':'')+'>';
