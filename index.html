@@ -6282,7 +6282,7 @@ const DRIVE_FILE_NAME='ZDA_Urenregistratie_'+new Date().getFullYear()+'.json';
 // Keep entries short and in plain language (what changed / where to find
 // it), not commit messages.
 const CHANGELOG=[
-  {date:'2026-10-25',items:[
+  {date:'2026-10-25',items:[{type:'new',nl:'Volledige agenda: knop "Activiteit plannen" op elke dag (ook lege dagen), zonder de volledige weergave te verlaten',en:'Full calendar: "Plan an activity" button on every day (including empty ones), without leaving full view',es:'Calendario completo: botón "Planificar actividad" en cada día, sin salir de la vista completa'},
     {type:'fix',nl:"Herhalen-popup (snelle herhaling): kilometers worden niet meer automatisch ingevuld met de waarde van de vorige keer. Die waarde staat nu alleen als grijze hint in het veld, en wordt pas opgeslagen als je zelf een getal intypt.",en:"Quick repeat popup: kilometers are no longer prefilled with the previous value. It now only shows as a grey hint in the field and is only saved if you type a number yourself.",es:"Repetición rápida: los kilómetros ya no se rellenan con el valor anterior. Ahora solo aparece como pista gris y solo se guarda si escribes un número."},
     {type:'new',nl:"Invoer bewerken: bovenaan staan nu groot de datum en omschrijving, met klein de categorie, zodat je meteen ziet welke invoer je bewerkt.",en:"Edit entry: the date and description now appear large at the top, with the category in small letters, so you instantly see which entry you are editing.",es:"Editar registro: arriba aparecen en grande la fecha y la descripción, y en pequeño la categoría, para ver enseguida qué registro editas."},
     {type:'new',nl:"Soort onkosten: nieuwe optie Bus (bijv. Flixbus). Zodra je kilometers invult, wordt het soort automatisch Interstedelijk; zonder km kies je zelf (lokaal, bus, trein, vlucht, overig).",en:"Expense type: new Coach option (e.g. Flixbus). As soon as you enter kilometers the type is set to Intercity automatically; without km you choose yourself (local, coach, train, flight, other).",es:"Tipo de gasto: nueva opción Autobús (p. ej. Flixbus). Al introducir kilómetros el tipo pasa automáticamente a Interurbano; sin km eliges tú (local, autobús, tren, vuelo, otros)."},
@@ -21399,6 +21399,7 @@ function fcOpenYearDayPopup(ds,anchorEl){
       h+='</div></div></div>';
     });
   }
+  h+='<button class="btn sm primary" onclick="fcPlanOnDay(\''+ds+'\')" style="margin:10px 12px 12px;display:inline-flex;align-items:center;gap:6px"><svg width="14" height="14"><use href="#ico-plus"/></svg>'+fcPlanBtnLbl()+'</button>';
   h+='</div>';
 
   var pop=document.createElement('div');
@@ -33552,9 +33553,12 @@ function renderFcDayDetail(ds){
       h+='</div></div></div>';
     });
   }
+  h+='<button class="btn sm primary" onclick="fcPlanOnDay(\''+ds+'\')" style="margin-top:10px;display:inline-flex;align-items:center;gap:6px"><svg width="14" height="14"><use href="#ico-plus"/></svg>'+fcPlanBtnLbl()+'</button>';
   h+='</div>';
   return h;
 }
+function fcPlanBtnLbl(){return {nl:'Activiteit plannen',en:'Plan an activity',es:'Planificar actividad',fr:'Planifier une activité',de:'Aktivität planen',pt:'Planear atividade',it:'Pianifica attività',ro:'Planifică o activitate'}[LANG]||'Plan an activity';}
+function fcPlanOnDay(ds){var pop=document.getElementById('fc-yd-popover');if(pop&&typeof closeFcYdPopup==='function')closeFcYdPopup();openPlanModal(null,ds);}
 function renderFullCalWeek(){
   var now=new Date();
   var dayNames=fcDayNames();
