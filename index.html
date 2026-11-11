@@ -6292,6 +6292,11 @@ const DRIVE_FILE_NAME='ZDA_Urenregistratie_'+new Date().getFullYear()+'.json';
 // Keep entries short and in plain language (what changed / where to find
 // it), not commit messages.
 const CHANGELOG=[
+  {date:'2026-11-11',items:[
+    {type:'new',nl:"Stem: de app legt nu in gewone zinnen uit wat hij gaat opslaan (categorie, datum, contact, uren, reistijd, km) en vraagt om akkoord. Reistijd zoals \"20 minuten reistijd\" wordt herkend.",en:"Voice: the app now explains in plain words what it will save (category, date, contact, hours, travel time, km) and asks for your OK. Phrases like \"20 minutes travel time\" are recognised.",es:"Voz: la app explica ahora con palabras sencillas lo que va a guardar (categoría, fecha, contacto, horas, viaje, km) y pide tu conformidad. Se reconocen frases como \"20 minutos de viaje\".",fr:"Voix : l'appli explique désormais en mots simples ce qu'elle va enregistrer (catégorie, date, contact, heures, trajet, km) et demande votre accord.",de:"Sprache: Die App erklärt jetzt in einfachen Worten, was sie speichert (Kategorie, Datum, Kontakt, Stunden, Reisezeit, km) und fragt nach deinem Einverständnis.",ro:"Voce: aplicația explică acum în cuvinte simple ce va salva (categorie, dată, contact, ore, drum, km) și cere acordul tău.",it:"Voce: l'app spiega ora in parole semplici cosa salverà (categoria, data, contatto, ore, viaggio, km) e chiede il tuo consenso.",pt:"Voz: o app agora explica em palavras simples o que vai salvar (categoria, data, contato, horas, viagem, km) e pede seu acordo."},
+    {type:'new',nl:"Stem: je kunt vragen stellen, bijvoorbeeld \"Hoeveel uren heb ik deze maand gedaan en wat mis ik nog?\" of over bijbelstudies en kilometers, per week, maand of jaar.",en:"Voice: you can ask questions, for example \"How many hours did I do this month and what is still missing?\" or about Bible studies and kilometres, per week, month or year.",es:"Voz: puedes hacer preguntas, por ejemplo \"¿Cuántas horas he hecho este mes y cuánto me falta?\" o sobre estudios bíblicos y kilómetros, por semana, mes o año.",fr:"Voix : vous pouvez poser des questions, p. ex. « Combien d'heures ce mois-ci et que me manque-t-il ? ».",de:"Sprache: Du kannst Fragen stellen, z. B. „Wie viele Stunden habe ich diesen Monat und was fehlt noch?“",ro:"Voce: poți pune întrebări, de ex. „Câte ore am făcut luna aceasta și ce mai lipsește?”",it:"Voce: puoi fare domande, ad es. «Quante ore ho fatto questo mese e cosa manca?»",pt:"Voz: você pode fazer perguntas, por exemplo \"Quantas horas fiz este mês e o que falta?\""},
+    {type:'new',nl:"Eenvoudige modus: grote microfoonknop in het Logboek. Tik, vertel wat je gedaan hebt, en de app leest de samenvatting voor. Ook staat de dagtekst nu als inklapbare balk bovenaan het Logboek, en komt het dashboard terug zodra je een dashboard-onderdeel aanvinkt.",en:"Simple mode: big microphone button in the Logbook. Tap, say what you did, and the app reads the summary back. The daily verse is now a collapsible bar at the top of the Logbook, and the dashboard comes back as soon as you tick a dashboard item.",es:"Modo sencillo: botón de micrófono grande en el Registro. Toca, cuenta lo que hiciste y la app lee el resumen. El versículo del día es ahora una barra plegable arriba del Registro, y el panel vuelve al marcar un elemento del panel.",fr:"Mode simple : grand bouton micro dans le Journal ; le verset du jour devient une barre repliable.",de:"Einfacher Modus: großer Mikrofonknopf im Logbuch; der Tagesvers ist jetzt eine einklappbare Leiste oben im Logbuch.",ro:"Mod simplu: buton mare de microfon în Jurnal; versetul zilei este acum o bară pliabilă.",it:"Modalità semplice: grande pulsante microfono nel Registro; il versetto del giorno è ora una barra comprimibile.",pt:"Modo simples: botão de microfone grande no Registro; o versículo do dia agora é uma barra recolhível."}
+  ]},
   {date:'2026-10-25',items:[{type:'new',nl:'Eenvoudige modus: kies bij het openen (of later bij Instellingen → Weergave) of je alleen uren wilt bijhouden of de volledige app wilt. Je kunt ook zelf aanvinken wat je wilt zien (agenda, contacten, bijbelstudies, to-do, projecten, dagtekst, tips, dashboard, formulier in het Logboek). In de eenvoudige modus start de app direct in het Logboek met alleen de spreadsheet. Er gaat geen data verloren',en:'Simple mode: choose when opening (or later in Settings → View) whether you only track hours or want the full app. You can also tick exactly what you want to see (calendar, contacts, Bible studies, to-do, projects, daily verse, tips, dashboard, form in the logbook). In simple mode the app opens straight in the logbook with only the spreadsheet. No data is lost',es:'Modo sencillo: elige al abrir (o luego en Ajustes) si solo quieres registrar horas o la app completa, o marca lo que quieres ver. No se pierde ningún dato'},{type:'new',nl:'Invoeren met stem: spreek in wat je hebt gedaan (bv. "gisteren bijbelstudie bij Maria, twee uur, 30 km"); de app stelt categorie, contact, datum, uren en km voor en jij bevestigt. Te vinden in het snelle plan-scherm van de volledige agenda en op het eerste scherm van "Activiteit registreren"',en:'Voice entry: say what you did (e.g. "yesterday Bible study with Maria, two hours, 30 km"); the app proposes category, contact, date, hours and km and you confirm. Found in the quick-plan screen of the full calendar and on the first screen of "Register activity"',es:'Entrada por voz: di lo que hiciste; la app propone categoría, contacto, fecha, horas y km y tú confirmas'},{type:'new',nl:'Volledige agenda: snel plannen zoals in Apple Agenda. Typ wat je gaat doen (en eventueel een tijd); categorie, contact, onderwerp, uren en km worden ingevuld op basis van eerdere activiteiten',en:'Full calendar: quick plan like Apple Calendar. Type what you are doing (and optionally a time); category, contact, topic, hours and km are filled in from earlier activities',es:'Calendario completo: planificación rápida como en Apple Calendar. Escribe qué vas a hacer; el resto se completa según actividades anteriores'},{type:'new',nl:'Volledige agenda: knop "Herhalen" naast "Activiteit plannen" op elke dag, zodat je een eerdere activiteit snel kunt herhalen',en:'Full calendar: "Repeat" button next to "Plan an activity" on every day, to quickly repeat an earlier activity',es:'Calendario completo: botón "Repetir" junto a "Planificar actividad" en cada día'},{type:'new',nl:'Volledige agenda: sleep een activiteit naar een andere dag (maandweergave) of dag + tijd (weekweergave). Op de telefoon: even ingedrukt houden',en:'Full calendar: drag an activity to another day (month view) or day + time (week view). On phone: press and hold',es:'Calendario completo: arrastra una actividad a otro día (vista mensual) o día y hora (vista semanal). En el móvil: mantén pulsado'},{type:'new',nl:'Volledige agenda: knop "Activiteit plannen" op elke dag (ook lege dagen), zonder de volledige weergave te verlaten',en:'Full calendar: "Plan an activity" button on every day (including empty ones), without leaving full view',es:'Calendario completo: botón "Planificar actividad" en cada día, sin salir de la vista completa'},
     {type:'fix',nl:"Herhalen-popup (snelle herhaling): kilometers worden niet meer automatisch ingevuld met de waarde van de vorige keer. Die waarde staat nu alleen als grijze hint in het veld, en wordt pas opgeslagen als je zelf een getal intypt.",en:"Quick repeat popup: kilometers are no longer prefilled with the previous value. It now only shows as a grey hint in the field and is only saved if you type a number yourself.",es:"Repetición rápida: los kilómetros ya no se rellenan con el valor anterior. Ahora solo aparece como pista gris y solo se guarda si escribes un número."},
     {type:'new',nl:"Invoer bewerken: bovenaan staan nu groot de datum en omschrijving, met klein de categorie, zodat je meteen ziet welke invoer je bewerkt.",en:"Edit entry: the date and description now appear large at the top, with the category in small letters, so you instantly see which entry you are editing.",es:"Editar registro: arriba aparecen en grande la fecha y la descripción, y en pequeño la categoría, para ver enseguida qué registro editas."},
@@ -9412,6 +9417,7 @@ function renderLogVerseBar(){
 }
 function applyHomeFeatures(){
   try{renderLogVerseBar();}catch(e){}
+  try{applyVoiceFab();}catch(e){}
   var dash=document.getElementById('home-dashboard');
   var set=function(el,hide){if(el)el.style.display=hide?'none':'';};
   var tip=document.getElementById('home-tip-bar-top');set(tip,!uiFeat('tips'));
@@ -15122,6 +15128,7 @@ function navTo(screen){
   if(nb)nb.classList.add('active');
   currentScreen=screen;
   if(screen==='log'){try{renderLogVerseBar();}catch(e){}}
+  try{applyVoiceFab();}catch(e){}
   // Remember where the user was so reopening the app (after being fully
   // closed, or after the phone/computer restarts) lands back on the same
   // screen instead of always resetting to Home. Skip 'wizard' - its draft
@@ -33903,10 +33910,123 @@ function fcQASave(){
 // keyboard's own mic key works in the text box). Parsing = AI when enabled and
 // a key is set, else simple local rules + matching against earlier entries.
 var vcRec=null, vcListening=false;
+// ── Voice v2: plain-language confirmation, questions about hours/goals, big mic button (simple mode)
+function vcSpeak(text){
+  try{
+    if(!window.speechSynthesis||!text)return;
+    window.speechSynthesis.cancel();
+    var u=new SpeechSynthesisUtterance(text);u.lang=vcLang();
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function vcSummary(){
+  var g=function(id){var e=document.getElementById(id);return e?e.value:'';};
+  var L={
+    nl:{log:'Ik zet dit in je logboek',plan:'Ik zet dit in je agenda (gepland)',none:'nog zonder categorie',w:'bij',on:'op',at:'om',h:'uur',tr:'reistijd',ok:'Akkoord?'},
+    en:{log:'I will add this to your logbook',plan:'I will add this to your calendar (planned)',none:'no category yet',w:'with',on:'on',at:'at',h:'hours',tr:'travel time',ok:'OK?'},
+    es:{log:'Lo voy a poner en tu registro',plan:'Lo voy a poner en tu agenda (planificado)',none:'aún sin categoría',w:'con',on:'el',at:'a las',h:'horas',tr:'de viaje',ok:'¿De acuerdo?'},
+    fr:{log:'Je l\'ajoute à votre journal',plan:'Je l\'ajoute à votre agenda (planifié)',none:'sans catégorie',w:'avec',on:'le',at:'à',h:'heures',tr:'de trajet',ok:'D\'accord ?'},
+    de:{log:'Ich trage das in dein Logbuch ein',plan:'Ich trage das in deinen Kalender ein (geplant)',none:'noch ohne Kategorie',w:'bei',on:'am',at:'um',h:'Stunden',tr:'Reisezeit',ok:'Einverstanden?'},
+    ro:{log:'Voi pune asta în jurnalul tău',plan:'Voi pune asta în calendarul tău (planificat)',none:'încă fără categorie',w:'la',on:'pe',at:'la ora',h:'ore',tr:'timp de călătorie',ok:'De acord?'},
+    it:{log:'Lo metto nel tuo registro',plan:'Lo metto nel tuo calendario (pianificato)',none:'ancora senza categoria',w:'con',on:'il',at:'alle',h:'ore',tr:'di viaggio',ok:'D\'accordo?'},
+    pt:{log:'Vou colocar isto no seu registro',plan:'Vou colocar isto na sua agenda (planejado)',none:'ainda sem categoria',w:'com',on:'em',at:'às',h:'horas',tr:'de viagem',ok:'De acordo?'}
+  }[LANG]||null;
+  if(!L)L={log:'I will add this to your logbook',plan:'I will add this to your calendar (planned)',none:'no category yet',w:'with',on:'on',at:'at',h:'hours',tr:'travel time',ok:'OK?'};
+  var cat=g('vc-cat'),ds=g('vc-date')||ymdLocal(),tm=g('vc-time'),cuId=g('vc-cu');
+  var u=parseFloat(g('vc-uren'))||0,rt=parseFloat(g('vc-reis'))||0,km=parseFloat(g('vc-km'))||0;
+  var cu=cuId?(db.cursisten||[]).find(function(c){return String(c.id)===String(cuId);}):null;
+  var now=new Date(),today=ymdLocal(now),nowT=('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
+  var future=ds>today||(ds===today&&tm&&tm>nowT);
+  var dtxt=ds;try{dtxt=new Date(ds+'T12:00:00').toLocaleDateString(getLocale(),{weekday:'long',day:'numeric',month:'long'});}catch(e){}
+  var s=(future?L.plan:L.log)+': '+(cat?getCatLabel(cat):L.none);
+  if(cu)s+=' '+L.w+' '+cu.naam;
+  s+=' '+L.on+' '+dtxt;
+  if(tm)s+=' '+L.at+' '+tm;
+  if(u)s+=', '+u+' '+L.h;
+  if(rt)s+=', '+rt+' '+L.h+' '+L.tr;
+  if(km)s+=', '+km+' km';
+  return s+'. '+L.ok;
+}
+function vcRefreshSummary(){var el=document.getElementById('vc-sum');if(el)el.textContent=vcSummary();}
+function vcIsQuestion(text){
+  var f=fcFold(text);
+  return /(hoeveel|how many|how much|cuantas|cuantos|cuanto|combien|wie viele|wieviel|wie viel|cate |cati |quante|quanti|quantas|quantos|quanto|wat mis|wat moet ik nog|what do i still|what is left|me falta|il me reste|fehlt mir|mai am nevoie|mi manca)/.test(f);
+}
+function vcAnswer(text){
+  var f=fcFold(text);
+  var T={
+    nl:{P:{m:'Deze maand',y:'Dit jaar',w:'Deze week'},hours:'{P} heb je {v} uur geregistreerd.',studies:'{P} heb je {v} bijbelstudies gegeven.',km:'{P} heb je {v} km gereden.',count:'{P} heb je {v} activiteiten geregistreerd.',goal:'Je doel is {g}: je mist nog {m}.',met:'Je doel ({g}) is gehaald.',help:'Ik kan vragen beantwoorden over je uren, bijbelstudies en kilometers, bijvoorbeeld "Hoeveel uren heb ik deze maand gedaan?"'},
+    en:{P:{m:'This month',y:'This year',w:'This week'},hours:'{P} you logged {v} hours.',studies:'{P} you gave {v} Bible studies.',km:'{P} you drove {v} km.',count:'{P} you logged {v} activities.',goal:'Your goal is {g}: {m} to go.',met:'Goal ({g}) reached.',help:'I can answer questions about your hours, Bible studies and kilometres, for example "How many hours did I do this month?"'},
+    es:{P:{m:'Este mes',y:'Este año',w:'Esta semana'},hours:'{P} has registrado {v} horas.',studies:'{P} has dado {v} estudios bíblicos.',km:'{P} has recorrido {v} km.',count:'{P} has registrado {v} actividades.',goal:'Tu meta es {g}: te faltan {m}.',met:'Meta ({g}) alcanzada.',help:'Puedo responder preguntas sobre tus horas, estudios bíblicos y kilómetros, por ejemplo "¿Cuántas horas he hecho este mes?"'},
+    fr:{P:{m:'Ce mois-ci',y:'Cette année',w:'Cette semaine'},hours:'{P}, vous avez enregistré {v} heures.',studies:'{P}, vous avez donné {v} études bibliques.',km:'{P}, vous avez roulé {v} km.',count:'{P}, vous avez enregistré {v} activités.',goal:'Votre objectif est {g} : il reste {m}.',met:'Objectif ({g}) atteint.',help:'Je peux répondre à des questions sur vos heures, études bibliques et kilomètres, par exemple « Combien d\'heures ai-je faites ce mois-ci ? »'},
+    de:{P:{m:'Diesen Monat',y:'Dieses Jahr',w:'Diese Woche'},hours:'{P} hast du {v} Stunden erfasst.',studies:'{P} hast du {v} Bibelstudien gehalten.',km:'{P} bist du {v} km gefahren.',count:'{P} hast du {v} Aktivitäten erfasst.',goal:'Dein Ziel ist {g}: es fehlen noch {m}.',met:'Ziel ({g}) erreicht.',help:'Ich kann Fragen zu deinen Stunden, Bibelstudien und Kilometern beantworten, z. B. „Wie viele Stunden habe ich diesen Monat?"'},
+    ro:{P:{m:'Luna aceasta',y:'Anul acesta',w:'Săptămâna aceasta'},hours:'{P} ai înregistrat {v} ore.',studies:'{P} ai ținut {v} studii biblice.',km:'{P} ai parcurs {v} km.',count:'{P} ai înregistrat {v} activități.',goal:'Obiectivul tău este {g}: mai ai {m}.',met:'Obiectiv ({g}) atins.',help:'Pot răspunde la întrebări despre orele, studiile biblice și kilometrii tăi, de ex. „Câte ore am făcut luna aceasta?"'},
+    it:{P:{m:'Questo mese',y:'Quest\'anno',w:'Questa settimana'},hours:'{P} hai registrato {v} ore.',studies:'{P} hai tenuto {v} studi biblici.',km:'{P} hai percorso {v} km.',count:'{P} hai registrato {v} attività.',goal:'Il tuo obiettivo è {g}: mancano {m}.',met:'Obiettivo ({g}) raggiunto.',help:'Posso rispondere a domande su ore, studi biblici e chilometri, ad es. «Quante ore ho fatto questo mese?»'},
+    pt:{P:{m:'Este mês',y:'Este ano',w:'Esta semana'},hours:'{P} você registrou {v} horas.',studies:'{P} você deu {v} estudos bíblicos.',km:'{P} você percorreu {v} km.',count:'{P} você registrou {v} atividades.',goal:'Sua meta é {g}: faltam {m}.',met:'Meta ({g}) atingida.',help:'Posso responder perguntas sobre suas horas, estudos bíblicos e quilômetros, por exemplo "Quantas horas fiz este mês?"'}
+  };
+  var X=T[LANG]||T.en;
+  var topic=null;
+  if(/(bijbelstud|\bstudie|bible stud|\bstudies\b|estudio|etude|bibelstud|studiu|studi biblic|estudo)/.test(f))topic='studies';
+  else if(/(\bkm\b|kilomet|miles|millas)/.test(f))topic='km';
+  else if(/(\buur|\buren|hours?|horas?|heures?|stunden|\bore\b|\bora\b|\bori\b|\bheur)/.test(f)||/(wat mis|me falta|still need|left|il me reste|fehlt|mai am nevoie|manca|faltam)/.test(f))topic='hours';
+  if(!topic){vcShowAnswer(X.help);return;}
+  var per='m';
+  if(/(jaar|year|ano|anno|an|annee|jahr|anul|quest anno)/.test(f))per='y';
+  else if(/(week|semana|semaine|woche|saptamana|settimana)/.test(f))per='w';
+  var now=new Date(),today=ymdLocal(now),ym=today.slice(0,7),yr=today.slice(0,4);
+  var lo,hi;
+  if(per==='m'){lo=ym+'-01';hi=ym+'-31';}
+  else if(per==='y'){lo=yr+'-01-01';hi=yr+'-12-31';}
+  else{var dow=(now.getDay()+6)%7;var st=new Date(now);st.setDate(now.getDate()-dow);var en=new Date(st);en.setDate(st.getDate()+6);lo=ymdLocal(st);hi=ymdLocal(en);}
+  var ents=(db.entries||[]).filter(function(e){return e.categorie&&e.datum>=lo&&e.datum<=hi;});
+  var s=db.settings||{},val=0,goal=0,unit='';
+  var useTopic=topic;
+  if(topic==='hours'&&!hoursOn()){useTopic='count';}
+  if(useTopic==='hours'){
+    val=ents.reduce(function(a,e){return a+entryUren(e);},0);unit=' h';
+    if(s.goalUrenWeek){
+      if(per==='w')goal=s.goalUrenWeek;
+      else if(per==='m')goal=monthlyGoalFromWeekly(s.goalUrenWeek,ym);
+      else{for(var mi=1;mi<=12;mi++)goal+=monthlyGoalFromWeekly(s.goalUrenWeek,yr+'-'+('0'+mi).slice(-2));}
+    }
+  }else if(useTopic==='studies'){
+    val=ents.filter(function(e){return e.categorie==='Bijbelstudie geven';}).length;
+    if(s.goalStudies)goal=per==='y'?s.goalStudies*12:(per==='m'?s.goalStudies:0);
+  }else if(useTopic==='km'){
+    val=ents.reduce(function(a,e){return a+(parseFloat(e.km)||0);},0);unit=' km';
+  }else{val=ents.length;}
+  var fmt=function(n){return (Math.round(n*10)/10).toLocaleString(getLocale());};
+  var out=X[useTopic].replace('{P}',X.P[per]).replace('{v}',fmt(val));
+  if(goal>0&&(useTopic==='hours'||useTopic==='studies')){
+    if(val>=goal)out+=' '+X.met.replace('{g}',fmt(goal)+unit);
+    else out+=' '+X.goal.replace('{g}',fmt(goal)+unit).replace('{m}',fmt(goal-val)+unit);
+  }
+  vcShowAnswer(out);
+}
+function vcShowAnswer(msg){
+  var el=document.getElementById('vc-result');if(!el)return;
+  el.innerHTML='<div style="margin-top:14px;padding:12px;border-radius:12px;background:var(--brand-light);font-size:14px;font-weight:600;line-height:1.5;color:var(--text)">'+escapeHtml(msg)+'</div>';
+  if(window._vcAuto)vcSpeak(msg);
+  var b=document.getElementById('vc-go');if(b){b.disabled=false;b.textContent=tMap({nl:'Verwerken',en:'Process',es:'Procesar',fr:'Traiter',de:'Verarbeiten',ro:'Procesează',it:'Elabora',pt:'Processar'});}
+}
+function applyVoiceFab(){
+  var show=db&&db.settings&&db.settings.uiMode==='simple'&&(currentScreen==='log'||currentScreen==='rapport');
+  var el=document.getElementById('vc-fab');
+  if(!show){if(el)el.style.display='none';return;}
+  if(!el){
+    el=document.createElement('button');el.id='vc-fab';el.type='button';
+    el.setAttribute('aria-label','Voice');
+    el.style.cssText='position:fixed;right:16px;bottom:calc(90px + env(safe-area-inset-bottom,0px));width:60px;height:60px;border-radius:50%;border:none;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.28);z-index:900;cursor:pointer';
+    el.innerHTML=vcMicSvg().replace('width="22" height="22"','width="28" height="28"');
+    el.onclick=function(){openVoiceEntry(null,true);};
+    document.body.appendChild(el);
+  }
+  el.style.display='flex';
+}
 function vcSupported(){return !!(window.SpeechRecognition||window.webkitSpeechRecognition);}
 function vcLang(){return {nl:'nl-NL',en:'en-US',es:'es-ES',fr:'fr-FR',de:'de-DE',ro:'ro-RO',it:'it-IT',pt:'pt-PT'}[LANG]||'en-US';}
 function vcMicSvg(){return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';}
-function openVoiceEntry(ds){
+function openVoiceEntry(ds,auto){window._vcAuto=!!auto;window._vcAutoDone=false;
   var pop=document.getElementById('fc-yd-popover');if(pop&&typeof closeFcYdPopup==='function')closeFcYdPopup();
   window._vcDs=ds||ymdLocal();
   var inp='width:100%;box-sizing:border-box;padding:10px 12px;border:none;outline:none;border-radius:10px;background:var(--surface2);font:inherit;font-weight:600';
@@ -33922,6 +34042,7 @@ function openVoiceEntry(ds){
   h+='<button class="btn full" onclick="vcStop();closeModals()" style="margin-top:8px">'+t('cancel_btn')+'</button>';
   h+='</div>';
   showModal(h);
+  if(auto&&vcSupported())setTimeout(function(){try{vcToggle();}catch(e){}},250);
 }
 function vcStop(){try{if(vcRec)vcRec.stop();}catch(e){}vcListening=false;}
 function vcToggle(){
@@ -33938,7 +34059,7 @@ function vcToggle(){
     vcListening=false;if(mic)mic.style.background='';
     if(st)st.textContent=(ev.error==='not-allowed'||ev.error==='service-not-allowed')?tMap({nl:'Geen toegang tot de microfoon. Sta dit toe in je browser/telefoon, of typ hieronder.',en:'No microphone access. Allow it in your browser/phone, or type below.',es:'Sin acceso al micrófono. Permítelo o escribe abajo.',fr:'Pas d\'accès au micro. Autorisez-le ou tapez ci-dessous.',de:'Kein Mikrofonzugriff. Erlaube ihn oder tippe unten.',ro:'Fără acces la microfon. Permite-l sau scrie mai jos.',it:'Nessun accesso al microfono. Consentilo o scrivi sotto.',pt:'Sem acesso ao microfone. Permita ou digite abaixo.'}):tMap({nl:'Spraak niet gelukt. Probeer opnieuw of typ.',en:'Speech failed. Try again or type.',es:'No se pudo reconocer. Reintenta o escribe.',fr:'Échec de la reconnaissance. Réessayez ou tapez.',de:'Spracherkennung fehlgeschlagen. Nochmal oder tippen.',ro:'Recunoaștere eșuată. Reîncearcă sau scrie.',it:'Riconoscimento non riuscito. Riprova o scrivi.',pt:'Falha no reconhecimento. Tente de novo ou digite.'});
   };
-  vcRec.onend=function(){
+  vcRec.onend=function(){ setTimeout(function(){ if(window._vcAuto&&!window._vcAutoDone){var tx=document.getElementById('vc-text');if(tx&&tx.value.trim()){window._vcAutoDone=true;vcProcess();}} },50);
     vcListening=false;if(mic)mic.style.background='';
     var s2=document.getElementById('vc-status');
     if(s2&&s2.textContent.indexOf('…')>=0)s2.textContent=tMap({nl:'Klaar. Pas aan of tik Verwerken',en:'Done. Edit or tap Process',es:'Listo. Edita o toca Procesar',fr:'Terminé. Modifiez ou touchez Traiter',de:'Fertig. Bearbeiten oder Verarbeiten',ro:'Gata. Editează sau apasă Procesează',it:'Fatto. Modifica o tocca Elabora',pt:'Pronto. Edite ou toque em Processar'});
@@ -33946,7 +34067,7 @@ function vcToggle(){
   try{vcRec.start();vcListening=true;if(mic)mic.style.background='#dc2626';if(st)st.textContent=tMap({nl:'Luisteren…',en:'Listening…',es:'Escuchando…',fr:'J\'écoute…',de:'Zuhören…',ro:'Ascult…',it:'In ascolto…',pt:'Ouvindo…'});}catch(e){}
 }
 function vcLocalParse(text){
-  var f=fcFold(text),r={date:null,time:'',category:'',contact:'',uren:0,km:0,omschrijving:text.trim()};
+  var f=fcFold(text),r={date:null,time:'',category:'',contact:'',uren:0,reis:0,km:0,omschrijving:text.trim()};
   var today=new Date();
   function off(n){var d=new Date(today);d.setDate(d.getDate()+n);return ymdLocal(d);}
   if(/\b(eergisteren|day before yesterday|anteayer|avant-hier|vorgestern|anteontem)\b/.test(f))r.date=off(-2);
@@ -33957,6 +34078,9 @@ function vcLocalParse(text){
   var hm=f.match(/(\d+(?:[.,]\d+)?|[a-z]+)\s*(?:uur|uren|u\b|h\b|hours?|horas?|heures?|stunden?|ore\b|ora\b|ori\b)/);
   if(hm){var v=hm[1];var n=/^\d/.test(v)?parseFloat(v.replace(',','.')):words[v];if(n&&!(tm&&hm.index===tm.index))r.uren=n;}
   if(/\b(anderhalf|anderhalve|one and a half|hora y media)\b/.test(f))r.uren=1.5;
+  var mn=f.match(/(\d+)\s*(?:min|minuten|minutes|minutos|minuti|minute)\b/);
+  if(mn){var mh=Math.round(parseInt(mn[1],10)/60*100)/100;
+    if(/(reistijd|gereisd|reis|travel|trip|drive|viaje|viajar|trayecto|voyage|trajet|reise|fahrt|calatorie|viaggio|viagem|rit\b)/.test(f))r.reis=mh;else if(!r.uren)r.uren=mh;}
   var km=f.match(/(\d+(?:[.,]\d+)?)\s*(?:km|kilomet\w*|miles?|mi\b)/);if(km)r.km=parseFloat(km[1].replace(',','.'));
   var best=null;
   (db.cursisten||[]).forEach(function(c){
@@ -33972,6 +34096,7 @@ function vcLocalParse(text){
 }
 async function vcProcess(){
   var text=document.getElementById('vc-text').value.trim();if(!text)return;
+  if(vcIsQuestion(text)){vcAnswer(text);return;}
   var btn=document.getElementById('vc-go');btn.disabled=true;btn.textContent='…';
   var res=vcLocalParse(text);
   var aiOk=false;
@@ -33979,7 +34104,7 @@ async function vcProcess(){
     if(typeof isAiEnabled==='function'&&isAiEnabled()){
       var cats=getCATEGORIES().filter(function(c){return !c.isTravel;}).map(function(c){return c.label;});
       var names=(db.cursisten||[]).slice(0,200).map(function(c){return c.naam;});
-      var prompt='Today is '+ymdLocal()+'. A church worker dictated what they did. Extract JSON ONLY (no prose) with keys: date (YYYY-MM-DD, resolve words like yesterday relative to today, default today), time (HH:MM or ""), category (EXACTLY one of the list, or ""), contact (EXACTLY one of the names list, or ""), uren (number of hours, 0 if unknown), km (number, 0 if unknown), omschrijving (short description in the speaker\'s language, without date/hours/km).\nCategories: '+JSON.stringify(cats)+'\nNames: '+JSON.stringify(names)+'\nText: '+JSON.stringify(text);
+      var prompt='Today is '+ymdLocal()+'. A church worker dictated what they did. Extract JSON ONLY (no prose) with keys: date (YYYY-MM-DD, resolve words like yesterday relative to today, default today), time (HH:MM or ""), category (EXACTLY one of the list, or ""), contact (EXACTLY one of the names list, or ""), uren (number of hours of the activity itself, 0 if unknown), reisUren (hours of travel time, e.g. 20 minutes = 0.33, 0 if none), km (number, 0 if unknown), omschrijving (short description in the speaker\'s language, without date/hours/km).\nCategories: '+JSON.stringify(cats)+'\nNames: '+JSON.stringify(names)+'\nText: '+JSON.stringify(text);
       var out=await aiCall(prompt,'You convert dictated activity reports into strict JSON.',600);
       var mm=String(out).match(/\{[\s\S]*\}/);
       if(mm){
@@ -33990,6 +34115,7 @@ async function vcProcess(){
         if(j.contact){var cc=(db.cursisten||[]).find(function(c){return c.naam===j.contact;});if(cc)res.contact=String(cc.id);}
         if(j.uren!=null)res.uren=parseFloat(j.uren)||0;
         if(j.km!=null)res.km=parseFloat(j.km)||0;
+        if(j.reisUren!=null)res.reis=parseFloat(j.reisUren)||0;
         if(j.omschrijving)res.omschrijving=String(j.omschrijving);
         aiOk=true;
       }
@@ -34005,17 +34131,21 @@ function vcShowResult(r,aiOk){
   var cuOpts='<option value="">—</option>'+(db.cursisten||[]).slice().sort(function(a,b){return String(a.naam).localeCompare(String(b.naam));}).map(function(c){return '<option value="'+c.id+'"'+(String(c.id)===String(r.contact)?' selected':'')+'>'+escapeHtml(c.naam)+'</option>';}).join('');
   var h='<div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--border)">';
   h+='<div style="font-size:12px;color:var(--text3)">'+tMap({nl:'Controleer en pas aan waar nodig',en:'Check and adjust if needed',es:'Revisa y ajusta si hace falta',fr:'Vérifiez et ajustez si besoin',de:'Prüfen und bei Bedarf anpassen',ro:'Verifică și ajustează dacă e nevoie',it:'Controlla e modifica se serve',pt:'Verifique e ajuste se preciso'})+(aiOk?' · AI':'')+'</div>';
+  h+='<div id="vc-sum" style="margin:8px 0;padding:10px 12px;border-radius:12px;background:var(--brand-light);color:var(--text);font-size:13.5px;font-weight:600;line-height:1.5"></div>';
   h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
   h+='<div>'+lab(tMap({nl:'Datum',en:'Date',es:'Fecha',fr:'Date',de:'Datum',ro:'Data',it:'Data',pt:'Data'}))+'<input type="date" id="vc-date" value="'+(r.date||window._vcDs||ymdLocal())+'" style="'+inp+'"></div>';
   h+='<div>'+lab(tMap({nl:'Tijd',en:'Time',es:'Hora',fr:'Heure',de:'Uhrzeit',ro:'Ora',it:'Ora',pt:'Hora'}))+'<input type="time" id="vc-time" value="'+(r.time||'')+'" style="'+inp+'"></div>';
   h+='</div>';
   h+=lab(tMap({nl:'Categorie',en:'Category',es:'Categoría',fr:'Catégorie',de:'Kategorie',ro:'Categorie',it:'Categoria',pt:'Categoria'}))+'<select id="vc-cat" style="'+inp+'">'+catOpts+'</select>';
   h+=lab(tMap({nl:'Contact',en:'Contact',es:'Contacto',fr:'Contact',de:'Kontakt',ro:'Contact',it:'Contatto',pt:'Contato'}))+'<select id="vc-cu" style="'+inp+'">'+cuOpts+'</select>';
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div>'+lab(tMap({nl:'Uren',en:'Hours',es:'Horas',fr:'Heures',de:'Stunden',ro:'Ore',it:'Ore',pt:'Horas'}))+'<input type="number" step="0.25" min="0" id="vc-uren" value="'+(r.uren||'')+'" style="'+inp+'"></div><div>'+lab('km')+'<input type="number" step="1" min="0" id="vc-km" value="'+(r.km||'')+'" style="'+inp+'"></div></div>';
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"><div>'+lab(tMap({nl:'Uren',en:'Hours',es:'Horas',fr:'Heures',de:'Stunden',ro:'Ore',it:'Ore',pt:'Horas'}))+'<input type="number" step="0.25" min="0" id="vc-uren" value="'+(r.uren||'')+'" style="'+inp+'"></div><div>'+lab(tMap({nl:'Reistijd (u)',en:'Travel (h)',es:'Viaje (h)',fr:'Trajet (h)',de:'Reise (Std)',ro:'Drum (ore)',it:'Viaggio (h)',pt:'Viagem (h)'}))+'<input type="number" step="0.25" min="0" id="vc-reis" value="'+(r.reis||'')+'" style="'+inp+'"></div><div>'+lab('km')+'<input type="number" step="1" min="0" id="vc-km" value="'+(r.km||'')+'" style="'+inp+'"></div></div>';
   h+=lab(tMap({nl:'Omschrijving',en:'Description',es:'Descripción',fr:'Description',de:'Beschreibung',ro:'Descriere',it:'Descrizione',pt:'Descrição'}))+'<input type="text" id="vc-desc" value="'+escapeHtml(r.omschrijving||'')+'" style="'+inp+'">';
   window._vcExtra={thema:r._thema||'',themacode:r._themacode||''};
-  h+='<button class="btn primary full" onclick="vcSave()" style="margin-top:12px">'+tMap({nl:'Opslaan',en:'Save',es:'Guardar',fr:'Enregistrer',de:'Speichern',ro:'Salvează',it:'Salva',pt:'Salvar'})+'</button></div>';
-  document.getElementById('vc-result').innerHTML=h;
+  h+='<button class="btn primary full" onclick="vcSave()" style="margin-top:12px">'+tMap({nl:'Akkoord, opslaan',en:'OK, save',es:'De acuerdo, guardar',fr:'D\'accord, enregistrer',de:'Einverstanden, speichern',ro:'De acord, salvează',it:'D\'accordo, salva',pt:'De acordo, salvar'})+'</button></div>';
+  var _vr=document.getElementById('vc-result');_vr.innerHTML=h;
+  _vr.oninput=vcRefreshSummary;_vr.onchange=vcRefreshSummary;
+  vcRefreshSummary();
+  if(window._vcAuto)vcSpeak(vcSummary());
 }
 function vcSave(){
   var cat=document.getElementById('vc-cat').value;
@@ -34027,7 +34157,7 @@ function vcSave(){
   var ex=window._vcExtra||{};
   var base={datum:ds,categorie:cat,cursistId:cu?cu.id:'',cursistNaam:cu?cu.naam:'',omschrijving:document.getElementById('vc-desc').value.trim(),
     thema:ex.thema||'',themacode:ex.themacode||'',themaCompleted:true,uren:parseFloat(document.getElementById('vc-uren').value)||0,
-    km:parseFloat(document.getElementById('vc-km').value)||0,kmHeen:null,kmRetour:null,vehicle:'',opmerking:''};
+    km:parseFloat(document.getElementById('vc-km').value)||0,reisUren:parseFloat((document.getElementById('vc-reis')||{}).value)||0,kmHeen:null,kmRetour:null,vehicle:'',opmerking:''};
   var now=new Date(),today=ymdLocal(now),nowT=('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
   var future=ds>today||(ds===today&&tm&&tm>nowT);
   if(future){
@@ -34039,7 +34169,7 @@ function vcSave(){
     touch(e);db.entries.push(e);save();
     if(typeof keepDateVisibleInLog==='function')keepDateVisibleInLog(ds);
   }
-  vcStop();closeModals();
+  vcStop();try{if(window.speechSynthesis)window.speechSynthesis.cancel();}catch(e){}closeModals();
   if(document.getElementById('full-cal-overlay')&&typeof fcRefreshFull==='function')fcRefreshFull();
   if(currentScreen==='home'&&typeof renderHome==='function')renderHome();
   else if(currentScreen==='log'){if(logView==='calendar')renderCalendar();else renderLog();}
