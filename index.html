@@ -2007,6 +2007,15 @@ function hideBootSplash(){
         </div>
       </div>
 
+      <div class="settings-item" id="settings-item-uimode">
+        <div class="settings-item-header" onclick="toggleSettingsItem(this)">
+          <span class="acc-title"><span class="acc-icon"><svg><use href="#ico-dashboard"/></svg></span><span id="uimode-title"></span></span><span class="acc-chevron">⌄</span>
+        </div>
+        <div class="settings-item-body">
+        <div id="setting-uimode-wrap"></div>
+        </div>
+      </div>
+
       <div class="settings-item" id="settings-item-gpdisplay">
         <div class="settings-item-header" onclick="toggleSettingsItem(this)">
           <span class="acc-title"><span class="acc-icon"><svg><use href="#ico-calendar"/></svg></span><span id="gp-display-title"></span></span><span class="acc-chevron">⌄</span>
@@ -6282,7 +6291,7 @@ const DRIVE_FILE_NAME='ZDA_Urenregistratie_'+new Date().getFullYear()+'.json';
 // Keep entries short and in plain language (what changed / where to find
 // it), not commit messages.
 const CHANGELOG=[
-  {date:'2026-10-25',items:[{type:'new',nl:'Invoeren met stem: spreek in wat je hebt gedaan (bv. "gisteren bijbelstudie bij Maria, twee uur, 30 km"); de app stelt categorie, contact, datum, uren en km voor en jij bevestigt. Te vinden in het snelle plan-scherm van de volledige agenda en op het eerste scherm van "Activiteit registreren"',en:'Voice entry: say what you did (e.g. "yesterday Bible study with Maria, two hours, 30 km"); the app proposes category, contact, date, hours and km and you confirm. Found in the quick-plan screen of the full calendar and on the first screen of "Register activity"',es:'Entrada por voz: di lo que hiciste; la app propone categoría, contacto, fecha, horas y km y tú confirmas'},{type:'new',nl:'Volledige agenda: snel plannen zoals in Apple Agenda. Typ wat je gaat doen (en eventueel een tijd); categorie, contact, onderwerp, uren en km worden ingevuld op basis van eerdere activiteiten',en:'Full calendar: quick plan like Apple Calendar. Type what you are doing (and optionally a time); category, contact, topic, hours and km are filled in from earlier activities',es:'Calendario completo: planificación rápida como en Apple Calendar. Escribe qué vas a hacer; el resto se completa según actividades anteriores'},{type:'new',nl:'Volledige agenda: knop "Herhalen" naast "Activiteit plannen" op elke dag, zodat je een eerdere activiteit snel kunt herhalen',en:'Full calendar: "Repeat" button next to "Plan an activity" on every day, to quickly repeat an earlier activity',es:'Calendario completo: botón "Repetir" junto a "Planificar actividad" en cada día'},{type:'new',nl:'Volledige agenda: sleep een activiteit naar een andere dag (maandweergave) of dag + tijd (weekweergave). Op de telefoon: even ingedrukt houden',en:'Full calendar: drag an activity to another day (month view) or day + time (week view). On phone: press and hold',es:'Calendario completo: arrastra una actividad a otro día (vista mensual) o día y hora (vista semanal). En el móvil: mantén pulsado'},{type:'new',nl:'Volledige agenda: knop "Activiteit plannen" op elke dag (ook lege dagen), zonder de volledige weergave te verlaten',en:'Full calendar: "Plan an activity" button on every day (including empty ones), without leaving full view',es:'Calendario completo: botón "Planificar actividad" en cada día, sin salir de la vista completa'},
+  {date:'2026-10-25',items:[{type:'new',nl:'Eenvoudige modus: kies bij het openen (of later bij Instellingen → Weergave) of je alleen uren wilt bijhouden of de volledige app wilt. Je kunt ook zelf aanvinken wat je wilt zien (agenda, contacten, bijbelstudies, to-do, projecten, dagtekst, tips). Er gaat geen data verloren',en:'Simple mode: choose when opening (or later in Settings → View) whether you only track hours or want the full app. You can also tick exactly what you want to see (calendar, contacts, Bible studies, to-do, projects, daily verse, tips). No data is lost',es:'Modo sencillo: elige al abrir (o luego en Ajustes) si solo quieres registrar horas o la app completa, o marca lo que quieres ver. No se pierde ningún dato'},{type:'new',nl:'Invoeren met stem: spreek in wat je hebt gedaan (bv. "gisteren bijbelstudie bij Maria, twee uur, 30 km"); de app stelt categorie, contact, datum, uren en km voor en jij bevestigt. Te vinden in het snelle plan-scherm van de volledige agenda en op het eerste scherm van "Activiteit registreren"',en:'Voice entry: say what you did (e.g. "yesterday Bible study with Maria, two hours, 30 km"); the app proposes category, contact, date, hours and km and you confirm. Found in the quick-plan screen of the full calendar and on the first screen of "Register activity"',es:'Entrada por voz: di lo que hiciste; la app propone categoría, contacto, fecha, horas y km y tú confirmas'},{type:'new',nl:'Volledige agenda: snel plannen zoals in Apple Agenda. Typ wat je gaat doen (en eventueel een tijd); categorie, contact, onderwerp, uren en km worden ingevuld op basis van eerdere activiteiten',en:'Full calendar: quick plan like Apple Calendar. Type what you are doing (and optionally a time); category, contact, topic, hours and km are filled in from earlier activities',es:'Calendario completo: planificación rápida como en Apple Calendar. Escribe qué vas a hacer; el resto se completa según actividades anteriores'},{type:'new',nl:'Volledige agenda: knop "Herhalen" naast "Activiteit plannen" op elke dag, zodat je een eerdere activiteit snel kunt herhalen',en:'Full calendar: "Repeat" button next to "Plan an activity" on every day, to quickly repeat an earlier activity',es:'Calendario completo: botón "Repetir" junto a "Planificar actividad" en cada día'},{type:'new',nl:'Volledige agenda: sleep een activiteit naar een andere dag (maandweergave) of dag + tijd (weekweergave). Op de telefoon: even ingedrukt houden',en:'Full calendar: drag an activity to another day (month view) or day + time (week view). On phone: press and hold',es:'Calendario completo: arrastra una actividad a otro día (vista mensual) o día y hora (vista semanal). En el móvil: mantén pulsado'},{type:'new',nl:'Volledige agenda: knop "Activiteit plannen" op elke dag (ook lege dagen), zonder de volledige weergave te verlaten',en:'Full calendar: "Plan an activity" button on every day (including empty ones), without leaving full view',es:'Calendario completo: botón "Planificar actividad" en cada día, sin salir de la vista completa'},
     {type:'fix',nl:"Herhalen-popup (snelle herhaling): kilometers worden niet meer automatisch ingevuld met de waarde van de vorige keer. Die waarde staat nu alleen als grijze hint in het veld, en wordt pas opgeslagen als je zelf een getal intypt.",en:"Quick repeat popup: kilometers are no longer prefilled with the previous value. It now only shows as a grey hint in the field and is only saved if you type a number yourself.",es:"Repetición rápida: los kilómetros ya no se rellenan con el valor anterior. Ahora solo aparece como pista gris y solo se guarda si escribes un número."},
     {type:'new',nl:"Invoer bewerken: bovenaan staan nu groot de datum en omschrijving, met klein de categorie, zodat je meteen ziet welke invoer je bewerkt.",en:"Edit entry: the date and description now appear large at the top, with the category in small letters, so you instantly see which entry you are editing.",es:"Editar registro: arriba aparecen en grande la fecha y la descripción, y en pequeño la categoría, para ver enseguida qué registro editas."},
     {type:'new',nl:"Soort onkosten: nieuwe optie Bus (bijv. Flixbus). Zodra je kilometers invult, wordt het soort automatisch Interstedelijk; zonder km kies je zelf (lokaal, bus, trein, vlucht, overig).",en:"Expense type: new Coach option (e.g. Flixbus). As soon as you enter kilometers the type is set to Intercity automatically; without km you choose yourself (local, coach, train, flight, other).",es:"Tipo de gasto: nueva opción Autobús (p. ej. Flixbus). Al introducir kilómetros el tipo pasa automáticamente a Interurbano; sin km eliges tú (local, autobús, tren, vuelo, otros)."},
@@ -9346,11 +9355,114 @@ function toggleGpDisplaySetting(key,val){
 // Show/hide role-specific parts of the UI. Cursisten (contacts) stays visible for
 // both roles — office staff track contacts/candidates/youth too, just not the
 // bible-study-giving workflow, so only the Bijbelstudies tab is role-gated.
+// ── Simple / full mode + per-feature visibility ("choose what you want to see").
+// db.settings.uiFeatures = {key:false} for hidden features (missing = shown).
+// db.settings.uiMode = 'simple' | 'full' | 'custom'. Data is never touched,
+// only what is shown, so switching back always restores everything.
+var UI_FEATURES=[
+  {k:'agenda',l:{nl:'Agenda en "Binnenkort"',en:'Calendar and "Coming up"',es:'Calendario y "Próximamente"',fr:'Calendrier et « À venir »',de:'Kalender und „Demnächst"',ro:'Calendar și „Urmează"',it:'Calendario e «In arrivo»',pt:'Calendário e "Em breve"'}},
+  {k:'followup',l:{nl:'Opvolging van contacten (startscherm)',en:'Contact follow-up (home)',es:'Seguimiento de contactos (inicio)',fr:'Suivi des contacts (accueil)',de:'Kontakt-Nachverfolgung (Start)',ro:'Urmărirea contactelor (acasă)',it:'Seguito dei contatti (home)',pt:'Acompanhamento de contatos (início)'}},
+  {k:'contacts',l:{nl:'Tabblad Contacten',en:'Contacts tab',es:'Pestaña Contactos',fr:'Onglet Contacts',de:'Tab Kontakte',ro:'Fila Contacte',it:'Scheda Contatti',pt:'Aba Contatos'}},
+  {k:'bible',l:{nl:'Tabblad Bijbelstudies',en:'Bible studies tab',es:'Pestaña Estudios bíblicos',fr:'Onglet Études bibliques',de:'Tab Bibelstudien',ro:'Fila Studii biblice',it:'Scheda Studi biblici',pt:'Aba Estudos bíblicos'}},
+  {k:'todo',l:{nl:'To-do en gebedslijst',en:'To-do and prayer list',es:'Tareas y lista de oración',fr:'Tâches et liste de prière',de:'Aufgaben und Gebetsliste',ro:'De făcut și listă de rugăciune',it:'Cose da fare e preghiere',pt:'Tarefas e lista de oração'}},
+  {k:'projects',l:{nl:'Projecten',en:'Projects',es:'Proyectos',fr:'Projets',de:'Projekte',ro:'Proiecte',it:'Progetti',pt:'Projetos'}},
+  {k:'verse',l:{nl:'Dagtekst',en:'Daily verse',es:'Versículo del día',fr:'Verset du jour',de:'Tagesvers',ro:'Versetul zilei',it:'Versetto del giorno',pt:'Versículo do dia'}},
+  {k:'tips',l:{nl:'Tips bovenaan',en:'Tips bar',es:'Barra de consejos',fr:'Barre de conseils',de:'Tipp-Leiste',ro:'Bara de sfaturi',it:'Barra dei suggerimenti',pt:'Barra de dicas'}}
+];
+function uiFeat(k){var f=db&&db.settings&&db.settings.uiFeatures;return !f||f[k]!==false;}
+function uiSetMode(mode){
+  var s=db.settings;
+  s.uiMode=mode;s.uiModeChosen=true;
+  if(mode==='simple'){s.uiFeatures={};UI_FEATURES.forEach(function(x){s.uiFeatures[x.k]=false;});}
+  else if(mode==='full'){s.uiFeatures={};}
+  else if(!s.uiFeatures)s.uiFeatures={};
+  save();uiApplyAll();
+}
+function uiToggleFeature(k,on){
+  var s=db.settings;
+  if(!s.uiFeatures)s.uiFeatures={};
+  s.uiFeatures[k]=!!on;
+  var hidden=UI_FEATURES.filter(function(x){return s.uiFeatures[x.k]===false;}).length;
+  s.uiMode=hidden===0?'full':(hidden===UI_FEATURES.length?'simple':'custom');
+  s.uiModeChosen=true;
+  save();uiApplyAll();
+}
+function uiApplyAll(){
+  applyWorkRoleVisibility();
+  if(currentScreen==='home'&&typeof renderHome==='function')renderHome();
+  else applyHomeFeatures();
+  if(document.getElementById('setting-uimode-wrap'))renderUiModeSettings();
+}
+function applyHomeFeatures(){
+  var dash=document.getElementById('home-dashboard');
+  var set=function(el,hide){if(el)el.style.display=hide?'none':'';};
+  var tip=document.getElementById('home-tip-bar-top');set(tip,!uiFeat('tips'));
+  if(!dash)return;
+  set(document.getElementById('home-verse-card'),!uiFeat('verse'));
+  var up=document.getElementById('home-upcoming-list');
+  if(up&&up.parentElement){var card=up.parentElement;set(card,!uiFeat('agenda'));set(card.previousElementSibling,!uiFeat('agenda'));}
+  var wraps=dash.querySelectorAll('.dash-2col-wrap');
+  var kantoor=db.settings.workRole==='kantoor';
+  if(wraps[0]&&wraps[0].children.length>=2){
+    var c0=wraps[0].children[0],c1=wraps[0].children[1];
+    set(c0,!uiFeat('agenda'));
+    set(c1,kantoor?!uiFeat('agenda'):!uiFeat('followup'));
+    set(wraps[0],!uiFeat('agenda')&&(kantoor||!uiFeat('followup')));
+  }
+  if(wraps[1])set(wraps[1],!uiFeat('todo'));
+  set(document.getElementById('home-projects-wrap'),!uiFeat('projects'));
+}
+function renderUiModeSettings(){
+  var title=document.getElementById('uimode-title');
+  if(title)title.textContent=tMap({nl:'Weergave: eenvoudig of volledig',en:'View: simple or full',es:'Vista: sencilla o completa',fr:'Affichage : simple ou complet',de:'Ansicht: einfach oder voll',ro:'Vizualizare: simplă sau completă',it:'Vista: semplice o completa',pt:'Visualização: simples ou completa'});
+  var wrap=document.getElementById('setting-uimode-wrap');if(!wrap)return;
+  var s=db.settings,mode=s.uiMode||'full';
+  var btn=function(m,lbl,sub){var on=mode===m;return '<button type="button" class="btn" onclick="uiSetMode(\''+m+'\')" style="width:100%;text-align:left;margin-bottom:8px;padding:10px 12px;'+(on?'outline:2px solid var(--brand);outline-offset:-2px;background:var(--brand-light)':'')+'"><div style="font-weight:700">'+lbl+'</div><div style="font-size:11.5px;color:var(--text3);font-weight:400;margin-top:2px">'+sub+'</div></button>';};
+  var h='<div style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.4">'+tMap({nl:'Kies hoeveel je in de app wilt zien. Er gaat niets verloren: je gegevens blijven bewaard en je kunt altijd terug.',en:'Choose how much you want to see. Nothing is lost: your data is kept and you can always switch back.',es:'Elige cuánto quieres ver. No se pierde nada: tus datos se conservan y puedes volver.',fr:'Choisissez ce que vous voulez voir. Rien n\'est perdu : vos données sont conservées.',de:'Wähle, wie viel du sehen willst. Nichts geht verloren: deine Daten bleiben erhalten.',ro:'Alege cât vrei să vezi. Nu se pierde nimic: datele rămân salvate.',it:'Scegli quanto vuoi vedere. Non si perde nulla: i dati restano salvati.',pt:'Escolha quanto quer ver. Nada se perde: seus dados são mantidos.'})+'</div>';
+  h+=btn('simple',tMap({nl:'Eenvoudig (alleen uren bijhouden)',en:'Simple (just track hours)',es:'Sencillo (solo registrar horas)',fr:'Simple (seulement les heures)',de:'Einfach (nur Stunden erfassen)',ro:'Simplu (doar ore)',it:'Semplice (solo ore)',pt:'Simples (apenas horas)'}),tMap({nl:'Registreren, logboek en rapport',en:'Register, log and report',es:'Registrar, registro e informe',fr:'Enregistrer, journal et rapport',de:'Erfassen, Logbuch und Bericht',ro:'Înregistrare, jurnal și raport',it:'Registra, registro e rapporto',pt:'Registrar, registro e relatório'}));
+  h+=btn('full',tMap({nl:'Volledig',en:'Full',es:'Completo',fr:'Complet',de:'Voll',ro:'Complet',it:'Completo',pt:'Completo'}),tMap({nl:'Alle onderdelen van de app',en:'Everything in the app',es:'Todo en la app',fr:'Tout dans l\'app',de:'Alles in der App',ro:'Tot ce e în aplicație',it:'Tutto nell\'app',pt:'Tudo no app'}));
+  h+='<div style="font-size:12px;font-weight:700;color:var(--text2);margin:14px 0 6px">'+tMap({nl:'Of kies zelf wat je wilt zien',en:'Or choose what to show',es:'O elige qué mostrar',fr:'Ou choisissez quoi afficher',de:'Oder wähle selbst',ro:'Sau alege ce să afișezi',it:'Oppure scegli cosa mostrare',pt:'Ou escolha o que mostrar'})+(mode==='custom'?' ✓':'')+'</div>';
+  UI_FEATURES.forEach(function(x){
+    h+='<div class="toggle-row"><div><div class="toggle-label">'+(x.l[LANG]||x.l.en)+'</div></div><label class="toggle"><input type="checkbox" '+(uiFeat(x.k)?'checked':'')+' onchange="uiToggleFeature(\''+x.k+'\',this.checked)"><span class="toggle-slider"></span></label></div>';
+  });
+  wrap.innerHTML=h;
+}
+function maybeAskUiMode(){
+  var s=db.settings;
+  if(!s||s.uiModeChosen||(s.uiModeAsked||0)>=2)return;
+  if(document.getElementById('plan-modal-overlay')||document.getElementById('full-cal-overlay'))return;
+  if(currentScreen!=='home')return;
+  s.uiModeAsked=(s.uiModeAsked||0)+1;save();
+  var b=function(m,lbl,sub,prim){return '<button class="btn'+(prim?' primary':'')+' full" onclick="uiPick(\''+m+'\')" style="text-align:left;margin-bottom:8px;padding:12px 14px"><div style="font-weight:700">'+lbl+'</div><div style="font-size:12px;font-weight:400;opacity:.8;margin-top:2px">'+sub+'</div></button>';};
+  var h='<div style="padding:16px">';
+  h+='<div style="font-size:16px;font-weight:800;color:var(--brand);margin-bottom:4px">'+tMap({nl:'Hoe wil je de app gebruiken?',en:'How do you want to use the app?',es:'¿Cómo quieres usar la app?',fr:'Comment voulez-vous utiliser l\'app ?',de:'Wie möchtest du die App nutzen?',ro:'Cum vrei să folosești aplicația?',it:'Come vuoi usare l\'app?',pt:'Como quer usar o app?'})+'</div>';
+  h+='<div style="font-size:12.5px;color:var(--text3);margin-bottom:14px;line-height:1.4">'+tMap({nl:'Je kunt dit later altijd wijzigen bij Instellingen. Je gegevens blijven bewaard.',en:'You can always change this later in Settings. Your data is kept.',es:'Puedes cambiarlo luego en Ajustes. Tus datos se conservan.',fr:'Modifiable plus tard dans Réglages. Vos données sont conservées.',de:'Du kannst das später in den Einstellungen ändern. Deine Daten bleiben erhalten.',ro:'Poți schimba oricând în Setări. Datele rămân salvate.',it:'Puoi cambiarlo dopo in Impostazioni. I dati restano salvati.',pt:'Você pode mudar depois em Ajustes. Seus dados são mantidos.'})+'</div>';
+  h+=b('simple',tMap({nl:'Alleen uren bijhouden',en:'Just track my hours',es:'Solo registrar mis horas',fr:'Seulement mes heures',de:'Nur Stunden erfassen',ro:'Doar orele',it:'Solo le ore',pt:'Apenas minhas horas'}),tMap({nl:'Eenvoudig: registreren, logboek en rapport',en:'Simple: register, log and report',es:'Sencillo: registrar, registro e informe',fr:'Simple : enregistrer, journal, rapport',de:'Einfach: erfassen, Logbuch, Bericht',ro:'Simplu: înregistrare, jurnal, raport',it:'Semplice: registra, registro, rapporto',pt:'Simples: registrar, registro, relatório'}),true);
+  h+=b('full',tMap({nl:'Alles gebruiken',en:'Use everything',es:'Usar todo',fr:'Tout utiliser',de:'Alles nutzen',ro:'Folosesc tot',it:'Usare tutto',pt:'Usar tudo'}),tMap({nl:'Agenda, contacten, bijbelstudies, projecten en meer',en:'Calendar, contacts, Bible studies, projects and more',es:'Calendario, contactos, estudios, proyectos y más',fr:'Calendrier, contacts, études, projets et plus',de:'Kalender, Kontakte, Bibelstudien, Projekte und mehr',ro:'Calendar, contacte, studii, proiecte și altele',it:'Calendario, contatti, studi, progetti e altro',pt:'Calendário, contatos, estudos, projetos e mais'}),false);
+  h+=b('custom',tMap({nl:'Zelf kiezen',en:'Let me choose',es:'Elegir yo',fr:'Je choisis',de:'Selbst wählen',ro:'Aleg eu',it:'Scelgo io',pt:'Eu escolho'}),tMap({nl:'Vink aan wat je wilt zien',en:'Tick what you want to see',es:'Marca lo que quieres ver',fr:'Cochez ce que vous voulez voir',de:'Hake an, was du sehen willst',ro:'Bifează ce vrei să vezi',it:'Spunta cosa vuoi vedere',pt:'Marque o que quer ver'}),false);
+  h+='<div style="text-align:center"><a href="#" onclick="closeModals();return false" style="font-size:12px;color:var(--text3)">'+tMap({nl:'Later kiezen',en:'Choose later',es:'Elegir luego',fr:'Plus tard',de:'Später',ro:'Mai târziu',it:'Più tardi',pt:'Depois'})+'</a></div></div>';
+  showModal(h);
+}
+function uiPick(m){
+  closeModals();
+  if(m==='custom'){
+    db.settings.uiModeChosen=true;db.settings.uiMode=db.settings.uiMode||'full';save();
+    navTo('settings');
+    setTimeout(function(){var it=document.getElementById('settings-item-uimode');if(it){var hd=it.querySelector('.settings-item-header');if(hd&&!it.classList.contains('open'))toggleSettingsItem(hd);it.scrollIntoView({block:'start'});}},200);
+    return;
+  }
+  uiSetMode(m);
+}
 function applyWorkRoleVisibility(){
   var isKantoor=db.settings.workRole==='kantoor';
   var navBtn=document.getElementById('nb-bijbelstudies');
-  if(navBtn)navBtn.style.display=isKantoor?'none':'';
-  if(isKantoor&&currentScreen==='bijbelstudies')navTo('home');
+  var hideBible=isKantoor||!uiFeat('bible');
+  if(navBtn)navBtn.style.display=hideBible?'none':'';
+  var cuBtn=document.getElementById('nb-cursisten');
+  if(cuBtn)cuBtn.style.display=uiFeat('contacts')?'':'none';
+  if(hideBible&&currentScreen==='bijbelstudies')navTo('home');
+  if(!uiFeat('contacts')&&currentScreen==='cursisten')navTo('home');
+  if(typeof applyHomeFeatures==='function')applyHomeFeatures();
 }
 
 var _inSetLanguage=false;
@@ -14400,6 +14512,7 @@ function applySettings(){const s=db.settings;
   var _orgLbl=document.getElementById('lbl-orgsplit-card');if(_orgLbl)_orgLbl.textContent=orgSplitLbl('mode_lbl');
   buildChurchRoleSelect(s.churchRoles&&s.churchRoles.length?s.churchRoles:(s.churchRole?[s.churchRole]:[]));
   renderGpDisplaySettings();
+  renderUiModeSettings();
   renderCalExportToggle();
   updateAiKeyStatus();
   var kmRateEl=document.getElementById('goal-km-rate');
@@ -14976,7 +15089,8 @@ function makePills(items, activeVal, onclickFn, labelFn){
 // NAVIGATION
 let currentScreen='home';
 function navTo(screen){
-  if(screen==='bijbelstudies'&&db.settings.workRole==='kantoor')screen='home';
+  if(screen==='bijbelstudies'&&(db.settings.workRole==='kantoor'||!uiFeat('bible')))screen='home';
+  if(screen==='cursisten'&&!uiFeat('contacts'))screen='home';
   document.querySelectorAll('#screen-main .screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.bn-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('s-'+screen).classList.add('active');
@@ -15710,7 +15824,7 @@ function _renderHomeInner(){
   // comment block above renderProjectsCard). Kept as its own card rather
   // than merged into Tareas (a type dropdown was considered - see PROJECTS
   // v2 comment) so each keeps its own simple, focused "+" entry point.
-  h+=renderProjectsCard();
+  h+='<div id="home-projects-wrap">'+renderProjectsCard()+'</div>';
 
 
   // Fresh render of the whole Home screen - collapse the mobile Follow-up
@@ -15719,6 +15833,7 @@ function _renderHomeInner(){
   // navigating away and back, or after the list itself changed).
   _fuStage=0;
   dash.innerHTML=h;
+  applyHomeFeatures();
   renderHomeUpcoming();
   renderTodoOpenList();
   renderPrayerList();
@@ -43277,6 +43392,7 @@ try {
     renderHome();
   }
   startReminderTimer();
+  setTimeout(function(){try{maybeAskUiMode();}catch(e){}},1500);
 } catch(e) {
   console.error('renderHome error:', e);
   const dash = document.getElementById('home-dashboard');
