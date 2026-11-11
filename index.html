@@ -9532,6 +9532,7 @@ function setLanguage(lang){
   refreshReminderBars();
   var screen=typeof currentScreen!=='undefined'?currentScreen:'home';
   if(screen==='home')renderHome();
+  else if(screen==='voice'){renderVoiceScreen();}
   else if(screen==='log'){renderSubbar('log');populateLogMonths();renderLog();}
   else if(screen==='cursisten')renderCursisten();
   else if(screen==='rapport'){renderRapport();buildChartTypeSelect();}
