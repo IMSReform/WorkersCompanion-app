@@ -6291,7 +6291,7 @@ const DRIVE_FILE_NAME='ZDA_Urenregistratie_'+new Date().getFullYear()+'.json';
 // Keep entries short and in plain language (what changed / where to find
 // it), not commit messages.
 const CHANGELOG=[
-  {date:'2026-10-25',items:[{type:'new',nl:'Eenvoudige modus: kies bij het openen (of later bij Instellingen → Weergave) of je alleen uren wilt bijhouden of de volledige app wilt. Je kunt ook zelf aanvinken wat je wilt zien (agenda, contacten, bijbelstudies, to-do, projecten, dagtekst, tips). Er gaat geen data verloren',en:'Simple mode: choose when opening (or later in Settings → View) whether you only track hours or want the full app. You can also tick exactly what you want to see (calendar, contacts, Bible studies, to-do, projects, daily verse, tips). No data is lost',es:'Modo sencillo: elige al abrir (o luego en Ajustes) si solo quieres registrar horas o la app completa, o marca lo que quieres ver. No se pierde ningún dato'},{type:'new',nl:'Invoeren met stem: spreek in wat je hebt gedaan (bv. "gisteren bijbelstudie bij Maria, twee uur, 30 km"); de app stelt categorie, contact, datum, uren en km voor en jij bevestigt. Te vinden in het snelle plan-scherm van de volledige agenda en op het eerste scherm van "Activiteit registreren"',en:'Voice entry: say what you did (e.g. "yesterday Bible study with Maria, two hours, 30 km"); the app proposes category, contact, date, hours and km and you confirm. Found in the quick-plan screen of the full calendar and on the first screen of "Register activity"',es:'Entrada por voz: di lo que hiciste; la app propone categoría, contacto, fecha, horas y km y tú confirmas'},{type:'new',nl:'Volledige agenda: snel plannen zoals in Apple Agenda. Typ wat je gaat doen (en eventueel een tijd); categorie, contact, onderwerp, uren en km worden ingevuld op basis van eerdere activiteiten',en:'Full calendar: quick plan like Apple Calendar. Type what you are doing (and optionally a time); category, contact, topic, hours and km are filled in from earlier activities',es:'Calendario completo: planificación rápida como en Apple Calendar. Escribe qué vas a hacer; el resto se completa según actividades anteriores'},{type:'new',nl:'Volledige agenda: knop "Herhalen" naast "Activiteit plannen" op elke dag, zodat je een eerdere activiteit snel kunt herhalen',en:'Full calendar: "Repeat" button next to "Plan an activity" on every day, to quickly repeat an earlier activity',es:'Calendario completo: botón "Repetir" junto a "Planificar actividad" en cada día'},{type:'new',nl:'Volledige agenda: sleep een activiteit naar een andere dag (maandweergave) of dag + tijd (weekweergave). Op de telefoon: even ingedrukt houden',en:'Full calendar: drag an activity to another day (month view) or day + time (week view). On phone: press and hold',es:'Calendario completo: arrastra una actividad a otro día (vista mensual) o día y hora (vista semanal). En el móvil: mantén pulsado'},{type:'new',nl:'Volledige agenda: knop "Activiteit plannen" op elke dag (ook lege dagen), zonder de volledige weergave te verlaten',en:'Full calendar: "Plan an activity" button on every day (including empty ones), without leaving full view',es:'Calendario completo: botón "Planificar actividad" en cada día, sin salir de la vista completa'},
+  {date:'2026-10-25',items:[{type:'new',nl:'Eenvoudige modus: kies bij het openen (of later bij Instellingen → Weergave) of je alleen uren wilt bijhouden of de volledige app wilt. Je kunt ook zelf aanvinken wat je wilt zien (agenda, contacten, bijbelstudies, to-do, projecten, dagtekst, tips, dashboard, formulier in het Logboek). In de eenvoudige modus start de app direct in het Logboek met alleen de spreadsheet. Er gaat geen data verloren',en:'Simple mode: choose when opening (or later in Settings → View) whether you only track hours or want the full app. You can also tick exactly what you want to see (calendar, contacts, Bible studies, to-do, projects, daily verse, tips, dashboard, form in the logbook). In simple mode the app opens straight in the logbook with only the spreadsheet. No data is lost',es:'Modo sencillo: elige al abrir (o luego en Ajustes) si solo quieres registrar horas o la app completa, o marca lo que quieres ver. No se pierde ningún dato'},{type:'new',nl:'Invoeren met stem: spreek in wat je hebt gedaan (bv. "gisteren bijbelstudie bij Maria, twee uur, 30 km"); de app stelt categorie, contact, datum, uren en km voor en jij bevestigt. Te vinden in het snelle plan-scherm van de volledige agenda en op het eerste scherm van "Activiteit registreren"',en:'Voice entry: say what you did (e.g. "yesterday Bible study with Maria, two hours, 30 km"); the app proposes category, contact, date, hours and km and you confirm. Found in the quick-plan screen of the full calendar and on the first screen of "Register activity"',es:'Entrada por voz: di lo que hiciste; la app propone categoría, contacto, fecha, horas y km y tú confirmas'},{type:'new',nl:'Volledige agenda: snel plannen zoals in Apple Agenda. Typ wat je gaat doen (en eventueel een tijd); categorie, contact, onderwerp, uren en km worden ingevuld op basis van eerdere activiteiten',en:'Full calendar: quick plan like Apple Calendar. Type what you are doing (and optionally a time); category, contact, topic, hours and km are filled in from earlier activities',es:'Calendario completo: planificación rápida como en Apple Calendar. Escribe qué vas a hacer; el resto se completa según actividades anteriores'},{type:'new',nl:'Volledige agenda: knop "Herhalen" naast "Activiteit plannen" op elke dag, zodat je een eerdere activiteit snel kunt herhalen',en:'Full calendar: "Repeat" button next to "Plan an activity" on every day, to quickly repeat an earlier activity',es:'Calendario completo: botón "Repetir" junto a "Planificar actividad" en cada día'},{type:'new',nl:'Volledige agenda: sleep een activiteit naar een andere dag (maandweergave) of dag + tijd (weekweergave). Op de telefoon: even ingedrukt houden',en:'Full calendar: drag an activity to another day (month view) or day + time (week view). On phone: press and hold',es:'Calendario completo: arrastra una actividad a otro día (vista mensual) o día y hora (vista semanal). En el móvil: mantén pulsado'},{type:'new',nl:'Volledige agenda: knop "Activiteit plannen" op elke dag (ook lege dagen), zonder de volledige weergave te verlaten',en:'Full calendar: "Plan an activity" button on every day (including empty ones), without leaving full view',es:'Calendario completo: botón "Planificar actividad" en cada día, sin salir de la vista completa'},
     {type:'fix',nl:"Herhalen-popup (snelle herhaling): kilometers worden niet meer automatisch ingevuld met de waarde van de vorige keer. Die waarde staat nu alleen als grijze hint in het veld, en wordt pas opgeslagen als je zelf een getal intypt.",en:"Quick repeat popup: kilometers are no longer prefilled with the previous value. It now only shows as a grey hint in the field and is only saved if you type a number yourself.",es:"Repetición rápida: los kilómetros ya no se rellenan con el valor anterior. Ahora solo aparece como pista gris y solo se guarda si escribes un número."},
     {type:'new',nl:"Invoer bewerken: bovenaan staan nu groot de datum en omschrijving, met klein de categorie, zodat je meteen ziet welke invoer je bewerkt.",en:"Edit entry: the date and description now appear large at the top, with the category in small letters, so you instantly see which entry you are editing.",es:"Editar registro: arriba aparecen en grande la fecha y la descripción, y en pequeño la categoría, para ver enseguida qué registro editas."},
     {type:'new',nl:"Soort onkosten: nieuwe optie Bus (bijv. Flixbus). Zodra je kilometers invult, wordt het soort automatisch Interstedelijk; zonder km kies je zelf (lokaal, bus, trein, vlucht, overig).",en:"Expense type: new Coach option (e.g. Flixbus). As soon as you enter kilometers the type is set to Intercity automatically; without km you choose yourself (local, coach, train, flight, other).",es:"Tipo de gasto: nueva opción Autobús (p. ej. Flixbus). Al introducir kilómetros el tipo pasa automáticamente a Interurbano; sin km eliges tú (local, autobús, tren, vuelo, otros)."},
@@ -9360,6 +9360,8 @@ function toggleGpDisplaySetting(key,val){
 // db.settings.uiMode = 'simple' | 'full' | 'custom'. Data is never touched,
 // only what is shown, so switching back always restores everything.
 var UI_FEATURES=[
+  {k:'dashboard',l:{nl:'Dashboard (startscherm)',en:'Dashboard (home screen)',es:'Panel (inicio)',fr:'Tableau de bord (accueil)',de:'Dashboard (Startseite)',ro:'Panou (acasă)',it:'Dashboard (home)',pt:'Painel (início)'}},
+  {k:'logform',l:{nl:'Logboek: Formulier naast Spreadsheet',en:'Logbook: Form next to Spreadsheet',es:'Registro: Formulario junto a Hoja',fr:'Journal : Formulaire et Tableur',de:'Logbuch: Formular neben Tabelle',ro:'Jurnal: Formular lângă Tabel',it:'Registro: Modulo e Foglio',pt:'Registro: Formulário e Planilha'}},
   {k:'agenda',l:{nl:'Agenda en "Binnenkort"',en:'Calendar and "Coming up"',es:'Calendario y "Próximamente"',fr:'Calendrier et « À venir »',de:'Kalender und „Demnächst"',ro:'Calendar și „Urmează"',it:'Calendario e «In arrivo»',pt:'Calendário e "Em breve"'}},
   {k:'followup',l:{nl:'Opvolging van contacten (startscherm)',en:'Contact follow-up (home)',es:'Seguimiento de contactos (inicio)',fr:'Suivi des contacts (accueil)',de:'Kontakt-Nachverfolgung (Start)',ro:'Urmărirea contactelor (acasă)',it:'Seguito dei contatti (home)',pt:'Acompanhamento de contatos (início)'}},
   {k:'contacts',l:{nl:'Tabblad Contacten',en:'Contacts tab',es:'Pestaña Contactos',fr:'Onglet Contacts',de:'Tab Kontakte',ro:'Fila Contacte',it:'Scheda Contatti',pt:'Aba Contatos'}},
@@ -9431,7 +9433,7 @@ function maybeAskUiMode(){
   var s=db.settings;
   if(!s||s.uiModeChosen||(s.uiModeAsked||0)>=2)return;
   if(document.getElementById('plan-modal-overlay')||document.getElementById('full-cal-overlay'))return;
-  if(currentScreen!=='home')return;
+  if(currentScreen!=='home'&&currentScreen!=='log')return;
   s.uiModeAsked=(s.uiModeAsked||0)+1;save();
   var b=function(m,lbl,sub,prim){return '<button class="btn'+(prim?' primary':'')+' full" onclick="uiPick(\''+m+'\')" style="text-align:left;margin-bottom:8px;padding:12px 14px"><div style="font-weight:700">'+lbl+'</div><div style="font-size:12px;font-weight:400;opacity:.8;margin-top:2px">'+sub+'</div></button>';};
   var h='<div style="padding:16px">';
@@ -9462,6 +9464,10 @@ function applyWorkRoleVisibility(){
   if(cuBtn)cuBtn.style.display=uiFeat('contacts')?'':'none';
   if(hideBible&&currentScreen==='bijbelstudies')navTo('home');
   if(!uiFeat('contacts')&&currentScreen==='cursisten')navTo('home');
+  var hBtn=document.getElementById('nb-home');
+  if(hBtn)hBtn.style.display=uiFeat('dashboard')?'':'none';
+  if(!uiFeat('dashboard')&&currentScreen==='home')navTo('log');
+  if(!uiFeat('logform')&&logMode!=='spreadsheet'){logMode='spreadsheet';if(currentScreen==='log')navTo('log');}
   if(typeof applyHomeFeatures==='function')applyHomeFeatures();
 }
 
@@ -11609,7 +11615,7 @@ function jumpToLogboek(dateOrMonth,entryId){
   var month=dateOrMonth&&dateOrMonth.length>7?dateOrMonth.substring(0,7):dateOrMonth;
   navTo('log');
   setTimeout(function(){
-    if(entryId&&logMode==='spreadsheet')logMode='formulier';
+    if(entryId&&logMode==='spreadsheet'&&uiFeat('logform'))logMode='formulier';
     var sel=document.getElementById('log-filter-month');
     if(sel){sel.value=month;}
     renderLog();
@@ -15091,6 +15097,8 @@ let currentScreen='home';
 function navTo(screen){
   if(screen==='bijbelstudies'&&(db.settings.workRole==='kantoor'||!uiFeat('bible')))screen='home';
   if(screen==='cursisten'&&!uiFeat('contacts'))screen='home';
+  if(screen==='home'&&!uiFeat('dashboard'))screen='log';
+  if(screen==='log'&&!uiFeat('logform'))logMode='spreadsheet';
   document.querySelectorAll('#screen-main .screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.bn-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('s-'+screen).classList.add('active');
@@ -15164,7 +15172,7 @@ function renderSubbar(screen){
     ssBtn.className='g-subbar-btn'+(logMode==='spreadsheet'?' active':'');
     ssBtn.innerHTML='<svg width="12" height="12" style="vertical-align:-1px;margin-right:3px"><use href="#ico-list"/></svg>'+t('spreadsheet_mode');
     ssBtn.onclick=function(){logMode='spreadsheet';try{localStorage.setItem('zda_last_logmode','spreadsheet');}catch(e){}navTo('log');};
-    sb.appendChild(wizBtn);sb.appendChild(ssBtn);
+    if(uiFeat('logform')){sb.appendChild(wizBtn);sb.appendChild(ssBtn);}
     // Kalender moved to Dashboard agenda
     // Year select — defaults to the most recent year with data, so the log/
     // spreadsheet doesn't dump every entry ever logged into one huge list.
