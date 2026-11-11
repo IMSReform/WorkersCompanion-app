@@ -2245,14 +2245,14 @@ function hideBootSplash(){
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav no-print" id="bottom-nav">
+  <button class="bn-btn" id="nb-voice" onclick="navTo('voice')" style="display:none">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span id="nb-voice-lbl">Stem</span>
+  </button>
   <button class="bn-btn active" id="nb-home" onclick="navTo('home')">
     <svg width="22" height="22"><use href="#ico-dashboard"/></svg><span data-i18n="nav_dashboard">Dashboard</span>
   </button>
   <button class="bn-btn" id="nb-log" onclick="navTo('log')">
     <svg width="22" height="22"><use href="#ico-log"/></svg><span data-i18n="nav_log">Logboek</span>
-  </button>
-  <button class="bn-btn" id="nb-voice" onclick="navTo('voice')" style="display:none">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span id="nb-voice-lbl">Stem</span>
   </button>
   <button class="bn-btn" id="nb-cursisten" onclick="navTo('cursisten')">
     <svg width="22" height="22"><use href="#ico-members"/></svg><span data-i18n="nav_cursisten">Contacten</span>
