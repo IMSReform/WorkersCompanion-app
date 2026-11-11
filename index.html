@@ -1591,7 +1591,7 @@ function hideBootSplash(){
     </div>
     <div class="g-org">
       <div class="g-org-name" id="g-org-name">Workers Companion App</div>
-      <div class="g-org-sub" id="header-subtitle">Urenregistratie</div>
+      <div class="g-org-sub" id="header-subtitle">IMS SDA Reform Mov.</div>
     </div>
     <div class="g-header-actions">
       <button class="g-icon-btn" id="g-refresh-btn" onclick="syncNow()" title="Synchroniseer nu: haalt wijzigingen van andere toestellen op en verstuurt je eigen wijzigingen naar Google Drive" style="display:none">
@@ -1610,7 +1610,7 @@ function hideBootSplash(){
     </div>
   </div>
   <div class="g-brand-row">
-    <div class="g-greeting" id="home-greeting">Goedemorgen</div>
+    <div class="g-greeting" id="home-greeting">Good morning</div>
     <div class="g-date" id="home-date-top"></div>
   </div>
   <!-- Tab-specific subbar (changes per tab) -->
@@ -15538,6 +15538,10 @@ function applyOrgName(){
   }
   var hs=document.getElementById('header-subtitle');
   if(hs) hs.textContent=getOrgShortName();
+  try{
+    var _h=new Date().getHours(),_g=document.getElementById('home-greeting');
+    if(_g)_g.textContent=(_h<12?t('greeting_morning'):_h<18?t('greeting_afternoon'):t('greeting_evening'))+((db.settings&&db.settings.naam)?', '+db.settings.naam.split(' ')[0]:'');
+  }catch(e){}
 }
 window.addEventListener('resize',applyOrgName);
 
