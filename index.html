@@ -33974,7 +33974,8 @@ function vcSummary(){
 function vcRefreshSummary(){var el=document.getElementById('vc-sum');if(el)el.textContent=vcSummary();}
 function vcIsQuestion(text){
   var f=fcFold(text);
-  return /(hoeveel|how many|how much|cuantas|cuantos|cuanto|combien|wie viele|wieviel|wie viel|cate |cati |quante|quanti|quantas|quantos|quanto|wat mis|wat moet ik nog|what do i still|what is left|me falta|il me reste|fehlt mir|mai am nevoie|mi manca)/.test(f);
+  if(/(wanneer.*laatst|when.*last|cuando.*ultim|quand.*derni|wann.*zuletzt|quando.*ultim|cand.*ultima)/.test(f))return true;
+  return /(wanneer voor het laatst|when did i last|cuando fue la ultima|derniere fois|zuletzt|ultima volta|ultima vez|hoeveel|hoeveel|how many|how much|cuantas|cuantos|cuanto|combien|wie viele|wieviel|wie viel|cate |cati |quante|quanti|quantas|quantos|quanto|wat mis|wat moet ik nog|what do i still|what is left|me falta|il me reste|fehlt mir|mai am nevoie|mi manca)/.test(f);
 }
 function vcAnswer(text){
   var f=fcFold(text);
@@ -33993,6 +33994,7 @@ function vcAnswer(text){
   if(/(bijbelstud|\bstudie|bible stud|\bstudies\b|estudio|etude|bibelstud|studiu|studi biblic|estudo)/.test(f))topic='studies';
   else if(/(\bkm\b|kilomet|miles|millas)/.test(f))topic='km';
   else if(/(\buur|\buren|hours?|horas?|heures?|stunden|\bore\b|\bora\b|\bori\b|\bheur)/.test(f)||/(wat mis|me falta|still need|left|il me reste|fehlt|mai am nevoie|manca|faltam)/.test(f))topic='hours';
+  if(vcAnswerExtra(text,f,topic,X))return;
   if(!topic){vcShowAnswer(X.help);return;}
   var per='m';
   if(/(jaar|year|ano|anno|an|annee|jahr|anul|quest anno)/.test(f))per='y';
@@ -34113,6 +34115,74 @@ function vcToggle(){
   };
   try{vcRec.start();vcListening=true;if(mic){mic.style.background='#dc2626';mic.classList.add('listening');}if(st)st.textContent=tMap({nl:'Luisteren…',en:'Listening…',es:'Escuchando…',fr:'J\'écoute…',de:'Zuhören…',ro:'Ascult…',it:'In ascolto…',pt:'Ouvindo…'});}catch(e){}
 }
+var VC_CAT_WORDS=[
+  ['Vergaderen',/(vergader|meeting|reunion|reuniao|reuniones|sitzung|besprechung|sedinta|riunione|conseil|assemblee)/],
+  ['Bijbelstudie geven',/(bijbelstudie|bible stud|estudio biblico|estudios biblicos|etude biblique|bibelstud|studiu biblic|studio biblico|studi biblici|estudo biblico)/],
+  ['Bezoek',/(bezoek|\bvisit|visita|besuch|visite|vizita)/]
+];
+function vcCatFromWords(f){
+  var cats=getCATEGORIES();
+  for(var i=0;i<VC_CAT_WORDS.length;i++){
+    if(VC_CAT_WORDS[i][1].test(f)&&cats.some(function(c){return c.label===VC_CAT_WORDS[i][0];}))return VC_CAT_WORDS[i][0];
+  }
+  return '';
+}
+function vcPeriodOf(f){
+  if(/(jaar|year|\bano\b|\banno\b|\ban\b|annee|jahr|anul|quest anno)/.test(f))return 'y';
+  if(/(week|semana|semaine|woche|saptamana|settimana)/.test(f))return 'w';
+  return 'm';
+}
+function vcAnswerExtra(text,f,topic,X){
+  var best=null;
+  (db.cursisten||[]).forEach(function(c){
+    var parts=fcFold(c.naam).split(/\s+/).filter(function(w){return w.length>=3;});
+    var hit=parts.filter(function(w){return f.indexOf(w)>=0;}).length;
+    if(hit&&(!best||hit>best.hit))best={c:c,hit:hit};
+  });
+  var cat=vcCatFromWords(f);
+  if(!best&&!(cat&&cat!=='Bijbelstudie geven'))return false;
+  if(!best&&topic==='studies')return false;
+  var per=vcPeriodOf(f);
+  var now=new Date(),today=ymdLocal(now),ym=today.slice(0,7),yr=today.slice(0,4),lo,hi;
+  if(per==='m'){lo=ym+'-01';hi=ym+'-31';}
+  else if(per==='y'){lo=yr+'-01-01';hi=yr+'-12-31';}
+  else{var dow=(now.getDay()+6)%7;var st=new Date(now);st.setDate(now.getDate()-dow);var en=new Date(st);en.setDate(st.getDate()+6);lo=ymdLocal(st);hi=ymdLocal(en);}
+  var L={
+    nl:{ps:'{P} heb je {v} keer een bijbelstudie gegeven bij {n}.',pa:'{P} heb je {v} keer contact gehad met {n}.',last:'Laatste keer: {d}.',none:'Nog niet.',c:'{P} heb je {v} keer {c} geregistreerd.'},
+    en:{ps:'{P} you gave {v} Bible studies to {n}.',pa:'{P} you had {v} contacts with {n}.',last:'Last time: {d}.',none:'Not yet.',c:'{P} you logged {c} {v} times.'},
+    es:{ps:'{P} le has dado {v} estudios bíblicos a {n}.',pa:'{P} has tenido {v} contactos con {n}.',last:'Última vez: {d}.',none:'Todavía no.',c:'{P} has registrado {c} {v} veces.'},
+    fr:{ps:'{P}, vous avez donné {v} études bibliques à {n}.',pa:'{P}, vous avez eu {v} contacts avec {n}.',last:'Dernière fois : {d}.',none:'Pas encore.',c:'{P}, vous avez enregistré {c} {v} fois.'},
+    de:{ps:'{P} hast du {n} {v} Bibelstudien gehalten.',pa:'{P} hattest du {v} Kontakte mit {n}.',last:'Zuletzt: {d}.',none:'Noch nicht.',c:'{P} hast du {c} {v}-mal erfasst.'},
+    ro:{ps:'{P} i-ai ținut lui {n} {v} studii biblice.',pa:'{P} ai avut {v} contacte cu {n}.',last:'Ultima dată: {d}.',none:'Încă nu.',c:'{P} ai înregistrat {c} de {v} ori.'},
+    it:{ps:'{P} hai tenuto {v} studi biblici con {n}.',pa:'{P} hai avuto {v} contatti con {n}.',last:'Ultima volta: {d}.',none:'Non ancora.',c:'{P} hai registrato {c} {v} volte.'},
+    pt:{ps:'{P} você deu {v} estudos bíblicos a {n}.',pa:'{P} você teve {v} contatos com {n}.',last:'Última vez: {d}.',none:'Ainda não.',c:'{P} você registrou {c} {v} vezes.'}
+  }[LANG];
+  var Pn={
+    nl:{m:'Deze maand',y:'Dit jaar',w:'Deze week'},en:{m:'This month',y:'This year',w:'This week'},es:{m:'Este mes',y:'Este año',w:'Esta semana'},
+    fr:{m:'Ce mois-ci',y:'Cette année',w:'Cette semaine'},de:{m:'Diesen Monat',y:'Dieses Jahr',w:'Diese Woche'},ro:{m:'Luna aceasta',y:'Anul acesta',w:'Săptămâna aceasta'},
+    it:{m:'Questo mese',y:'Quest\'anno',w:'Questa settimana'},pt:{m:'Este mês',y:'Este ano',w:'Esta semana'}
+  }[LANG]||{m:'This month',y:'This year',w:'This week'};
+  if(!L)L=null;
+  if(!L){return false;}
+  var all=(db.entries||[]).filter(function(e){return e.categorie;});
+  var out;
+  if(best){
+    var cid=String(best.c.id);
+    var mine=all.filter(function(e){return String(e.cursistId)===cid||(e.cursistIds||[]).map(String).indexOf(cid)>=0;});
+    var wantStudy=(topic==='studies')||cat==='Bijbelstudie geven';
+    var pool=wantStudy?mine.filter(function(e){return e.categorie==='Bijbelstudie geven';}):mine;
+    var inP=pool.filter(function(e){return e.datum>=lo&&e.datum<=hi;});
+    out=(wantStudy?L.ps:L.pa).replace('{P}',Pn[per]).replace('{v}',inP.length).replace('{n}',best.c.naam);
+    var lastD=pool.map(function(e){return e.datum;}).sort().pop();
+    if(lastD){var dd=lastD;try{dd=new Date(lastD+'T12:00:00').toLocaleDateString(getLocale(),{day:'numeric',month:'long',year:'numeric'});}catch(e){}out+=' '+L.last.replace('{d}',dd);}
+    else out+=' '+L.none;
+  }else{
+    var inC=all.filter(function(e){return e.categorie===cat&&e.datum>=lo&&e.datum<=hi;});
+    out=L.c.replace('{P}',Pn[per]).replace('{c}',getCatLabel(cat)).replace('{v}',inC.length);
+  }
+  vcShowAnswer(out);
+  return true;
+}
 function vcLocalParse(text){
   var f=fcFold(text),r={date:null,time:'',category:'',contact:'',uren:0,reis:0,km:0,omschrijving:text.trim()};
   var today=new Date();
@@ -34125,6 +34195,18 @@ function vcLocalParse(text){
   var hm=f.match(/(\d+(?:[.,]\d+)?|[a-z]+)\s*(?:uur|uren|u\b|h\b|hours?|horas?|heures?|stunden?|ore\b|ora\b|ori\b)/);
   if(hm){var v=hm[1];var n=/^\d/.test(v)?parseFloat(v.replace(',','.')):words[v];if(n&&!(tm&&hm.index===tm.index))r.uren=n;}
   if(/\b(anderhalf|anderhalve|one and a half|hora y media)\b/.test(f))r.uren=1.5;
+  // Time range: "van 9 tot 11", "from 9:00 to 11:00", "de 9:00 a 11:00", "9:00-11:00"
+  var _rg=f.match(/\b(?:van|from|de|desde|von|da|dalle|des|din|entre|between)\s+(\d{1,2})(?:[:.h](\d{2}))?\s*(?:uur|u|h|horas?|heures?|uhr|ore|ora|ori)?\s*(?:tot|to|till|until|a|hasta|au|bis|alle|ate|pana la|y|and|-)\s*(\d{1,2})(?:[:.h](\d{2}))?|\b(\d{1,2})[:.h](\d{2})\s*(?:-|to|tot|a|bis|au)\s*(\d{1,2})[:.h](\d{2})\b/);
+  if(_rg){
+    var a1,a2,b1,b2;
+    if(_rg[1]!=null){a1=+_rg[1];a2=+(_rg[2]||0);b1=+_rg[3];b2=+(_rg[4]||0);}
+    else{a1=+_rg[5];a2=+_rg[6];b1=+_rg[7];b2=+_rg[8];}
+    var st=a1*60+a2,en=b1*60+b2;
+    if(a1<24&&b1<=24&&a2<60&&b2<60&&en>st&&en-st<=16*60){
+      r.time=('0'+a1).slice(-2)+':'+('0'+a2).slice(-2);
+      r.uren=Math.round((en-st)/60*100)/100;
+    }
+  }
   var mn=f.match(/(\d+)\s*(?:min|minuten|minutes|minutos|minuti|minute)\b/);
   if(mn){var mh=Math.round(parseInt(mn[1],10)/60*100)/100;
     if(/(reistijd|gereisd|reis|travel|trip|drive|viaje|viajar|trayecto|voyage|trajet|reise|fahrt|calatorie|viaggio|viagem|rit\b)/.test(f))r.reis=mh;else if(!r.uren)r.uren=mh;}
@@ -34139,6 +34221,7 @@ function vcLocalParse(text){
   var m=fcQAMatches(text)[0];
   if(m){r.category=m.categorie;if(!r.contact&&m.cursistId)r.contact=String(m.cursistId);if(!r.uren&&m.uren)r.uren=parseFloat(m.uren)||0;if(!r.km&&m.km&&best)r.km=parseFloat(m.km)||0;r._thema=m.thema||'';r._themacode=m.themacode||'';}
   else{getCATEGORIES().forEach(function(c){if(!r.category&&f.indexOf(fcFold(getCatLabel(c.label)))>=0)r.category=c.label;});}
+  var _syn=vcCatFromWords(f);if(_syn)r.category=_syn;
   return r;
 }
 async function vcProcess(){
