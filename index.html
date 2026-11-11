@@ -9387,7 +9387,7 @@ var UI_FEATURES=[
   {k:'voice',l:{nl:'Tabblad Stem (spreken)',en:'Voice tab (speak)',es:'Pestaña Voz (hablar)',fr:'Onglet Voix (parler)',de:'Tab Sprache (sprechen)',ro:'Fila Voce (vorbește)',it:'Scheda Voce (parla)',pt:'Aba Voz (falar)'}},
   {k:'tips',l:{nl:'Tips bovenaan',en:'Tips bar',es:'Barra de consejos',fr:'Barre de conseils',de:'Tipp-Leiste',ro:'Bara de sfaturi',it:'Barra dei suggerimenti',pt:'Barra de dicas'}}
 ];
-function uiVoiceOn(){var s=db&&db.settings;if(!s)return false;if(s.uiFeatures&&typeof s.uiFeatures.voice==='boolean')return s.uiFeatures.voice;return s.uiMode==='simple';}
+function uiVoiceOn(){var s=db&&db.settings;if(!s)return false;if(s.uiFeatures&&typeof s.uiFeatures.voice==='boolean')return s.uiFeatures.voice;return true;}
 function uiFeat(k){if(k==='voice')return uiVoiceOn();var f=db&&db.settings&&db.settings.uiFeatures;return !f||f[k]!==false;}
 function uiSetMode(mode){
   var s=db.settings;
