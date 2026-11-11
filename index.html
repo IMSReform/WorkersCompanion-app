@@ -34043,7 +34043,14 @@ function renderVoiceScreen(saved){
   var h='<div style="max-width:560px;margin:0 auto;padding:10px 4px 110px;text-align:center">';
   h+='<div style="font-size:20px;font-weight:800;color:var(--brand)">'+tMap({nl:'Vertel wat je gedaan hebt',en:'Tell me what you did',es:'Cuéntame lo que hiciste',fr:'Dites ce que vous avez fait',de:'Erzähl, was du getan hast',ro:'Spune ce ai făcut',it:'Racconta cosa hai fatto',pt:'Conte o que você fez'})+'</div>';
   h+='<div style="font-size:13px;color:var(--text3);margin-top:4px">'+tMap({nl:'Tik op de groene knop en spreek. Of vraag: "Hoeveel uren heb ik deze maand?"',en:'Tap the green button and speak. Or ask: "How many hours this month?"',es:'Toca el botón verde y habla. O pregunta: "¿Cuántas horas este mes?"',fr:'Touchez le bouton vert et parlez. Ou demandez : « Combien d\'heures ce mois-ci ? »',de:'Tippe auf den grünen Knopf und sprich. Oder frage: „Wie viele Stunden diesen Monat?"',ro:'Atinge butonul verde și vorbește. Sau întreabă: „Câte ore luna aceasta?"',it:'Tocca il pulsante verde e parla. Oppure chiedi: «Quante ore questo mese?»',pt:'Toque no botão verde e fale. Ou pergunte: "Quantas horas este mês?"'})+'</div>';
-  if(saved)h+='<div style="margin-top:12px;font-size:14px;font-weight:700;color:#16a34a">✓ '+tMap({nl:'Opgeslagen',en:'Saved',es:'Guardado',fr:'Enregistré',de:'Gespeichert',ro:'Salvat',it:'Salvato',pt:'Salvo'})+'</div>';
+  if(saved){
+    var _si=window._vcSavedInfo||{};
+    var _plan=_si.kind==='plan';
+    var _msg=_plan?tMap({nl:'Ingepland in je agenda (staat niet in het logboek tot de tijd voorbij is)',en:'Scheduled in your calendar (it shows in the log once the time has passed)',es:'Programado en tu agenda (aparece en el registro cuando pase la hora)',fr:'Planifié dans votre agenda (visible dans le journal une fois l\'heure passée)',de:'In deinem Kalender geplant (erscheint im Logbuch, sobald die Zeit vorbei ist)',ro:'Programat în agendă (apare în jurnal după ce trece ora)',it:'Pianificato nel calendario (appare nel registro dopo l\'ora)',pt:'Agendado no calendário (aparece no registro depois do horário)'})
+      :tMap({nl:'Opgeslagen in je logboek',en:'Saved in your log',es:'Guardado en tu registro',fr:'Enregistré dans votre journal',de:'Im Logbuch gespeichert',ro:'Salvat în jurnal',it:'Salvato nel registro',pt:'Salvo no registro'});
+    h+='<div style="margin-top:12px;font-size:14px;font-weight:700;color:#16a34a">✓ '+_msg+(_si.cat?'<div style="font-weight:600;color:var(--text2);font-size:13px;margin-top:2px">'+escapeHtml(getCatLabel(_si.cat))+(_si.ds?' · '+escapeHtml(_si.ds):'')+'</div>':'')+'</div>';
+    h+='<button class="btn" style="margin-top:8px" onclick="navTo(\''+(_plan?'home':'log')+'\')">'+(_plan?tMap({nl:'Naar dashboard',en:'Go to dashboard',es:'Ir al panel',fr:'Aller au tableau',de:'Zum Dashboard',ro:'La panou',it:'Vai alla dashboard',pt:'Ir ao painel'}):tMap({nl:'Open logboek',en:'Open log',es:'Abrir registro',fr:'Ouvrir le journal',de:'Logbuch öffnen',ro:'Deschide jurnalul',it:'Apri registro',pt:'Abrir registro'}))+'</button>';
+  }
   if(sup){
     h+='<div><button id="vc-mic" class="vc-bigmic" onclick="vcToggle()" aria-label="Voice">'+big+'</button></div>';
     h+='<div id="vc-status" style="font-size:13px;color:var(--text3);min-height:18px">'+tMap({nl:'Tik en spreek',en:'Tap and speak',es:'Toca y habla',fr:'Touchez et parlez',de:'Tippen und sprechen',ro:'Atinge și vorbește',it:'Tocca e parla',pt:'Toque e fale'})+'</div>';
@@ -34302,6 +34309,7 @@ function vcSave(){
     if(typeof keepDateVisibleInLog==='function')keepDateVisibleInLog(ds);
   }
   vcStop();try{if(window.speechSynthesis)window.speechSynthesis.cancel();}catch(e){}closeModals();
+  window._vcSavedInfo={kind:future?'plan':'log',ds:ds,cat:cat};
   var _wasVoice=(currentScreen==='voice');
   if(_wasVoice){renderVoiceScreen(true);return;}
   if(document.getElementById('full-cal-overlay')&&typeof fcRefreshFull==='function')fcRefreshFull();
