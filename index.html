@@ -1813,6 +1813,15 @@ function hideBootSplash(){
         </div>
       </div>
 
+      <div class="settings-item" id="settings-item-uimode">
+        <div class="settings-item-header" onclick="toggleSettingsItem(this)">
+          <span class="acc-title"><span class="acc-icon"><svg><use href="#ico-dashboard"/></svg></span><span id="uimode-title"></span></span><span class="acc-chevron">⌄</span>
+        </div>
+        <div class="settings-item-body">
+        <div id="setting-uimode-wrap"></div>
+        </div>
+      </div>
+
       <div class="settings-item">
         <div class="settings-item-header" onclick="toggleSettingsItem(this)">
           <span class="acc-title"><span class="acc-icon"><svg><use href="#ico-bell"/></svg></span><span data-i18n="reminder_card">Herinnering</span></span><span class="acc-chevron">⌄</span>
@@ -2004,15 +2013,6 @@ function hideBootSplash(){
           <button class="btn full" onclick="loadDemoData()" style="background:transparent;color:var(--text2);border-color:var(--border2);font-weight:500" data-i18n="demo_data">Laad Demo Gegevens</button>
           <button class="btn full" onclick="confirmClear()" style="margin-top:8px;background:transparent;color:var(--red);border-color:var(--border2)" data-i18n="clear_data">Alle gegevens wissen</button>
         </div>
-        </div>
-      </div>
-
-      <div class="settings-item" id="settings-item-uimode">
-        <div class="settings-item-header" onclick="toggleSettingsItem(this)">
-          <span class="acc-title"><span class="acc-icon"><svg><use href="#ico-dashboard"/></svg></span><span id="uimode-title"></span></span><span class="acc-chevron">⌄</span>
-        </div>
-        <div class="settings-item-body">
-        <div id="setting-uimode-wrap"></div>
         </div>
       </div>
 
