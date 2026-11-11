@@ -1715,6 +1715,7 @@ function hideBootSplash(){
 
   <!-- LOGBOEK -->
   <div class="screen" id="s-log">
+    <div id="log-verse-bar"></div>
     <div id="log-list" class="card"></div>
     <div id="log-calendar" style="display:none"></div>
   </div>
@@ -9384,6 +9385,12 @@ function uiToggleFeature(k,on){
   var s=db.settings;
   if(!s.uiFeatures)s.uiFeatures={};
   s.uiFeatures[k]=!!on;
+  // Dashboard blocks only live on the dashboard: ticking one brings the
+  // dashboard back; unticking the dashboard hides all its blocks.
+  var DASH_BLOCKS=['agenda','followup','todo','projects'];
+  if(on&&DASH_BLOCKS.indexOf(k)>-1)s.uiFeatures.dashboard=true;
+  if(k==='dashboard'&&!on)DASH_BLOCKS.forEach(function(b){s.uiFeatures[b]=false;});
+  if(k==='dashboard'&&on&&!DASH_BLOCKS.some(function(b){return s.uiFeatures[b]!==false;}))DASH_BLOCKS.forEach(function(b){delete s.uiFeatures[b];});
   var hidden=UI_FEATURES.filter(function(x){return s.uiFeatures[x.k]===false;}).length;
   s.uiMode=hidden===0?'full':(hidden===UI_FEATURES.length?'simple':'custom');
   s.uiModeChosen=true;
@@ -9395,7 +9402,16 @@ function uiApplyAll(){
   else applyHomeFeatures();
   if(document.getElementById('setting-uimode-wrap'))renderUiModeSettings();
 }
+function renderLogVerseBar(){
+  var el=document.getElementById('log-verse-bar');if(!el)return;
+  if(uiFeat('dashboard')||!uiFeat('verse')){el.innerHTML='';return;}
+  var verses=VERSES[LANG]||VERSES['nl'];
+  var doy=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/86400000);
+  var v=verses[(doy+getVerseOffset())%verses.length];
+  el.innerHTML='<details class="card" style="margin-bottom:10px;padding:8px 12px;background:linear-gradient(135deg,var(--brand-light),var(--surface));border:1px solid rgba(51,87,129,.15)"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--brand);list-style:none">'+t('verse_title')+' · '+v.ref+'</summary><div style="font-size:13.5px;color:var(--text);line-height:1.6;font-style:italic;margin-top:8px">&ldquo;'+v.text+'&rdquo;</div></details>';
+}
 function applyHomeFeatures(){
+  try{renderLogVerseBar();}catch(e){}
   var dash=document.getElementById('home-dashboard');
   var set=function(el,hide){if(el)el.style.display=hide?'none':'';};
   var tip=document.getElementById('home-tip-bar-top');set(tip,!uiFeat('tips'));
@@ -15105,6 +15121,7 @@ function navTo(screen){
   var nb=document.getElementById('nb-'+screen);
   if(nb)nb.classList.add('active');
   currentScreen=screen;
+  if(screen==='log'){try{renderLogVerseBar();}catch(e){}}
   // Remember where the user was so reopening the app (after being fully
   // closed, or after the phone/computer restarts) lands back on the same
   // screen instead of always resetting to Home. Skip 'wizard' - its draft
