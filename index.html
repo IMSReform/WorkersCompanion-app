@@ -6282,7 +6282,7 @@ const DRIVE_FILE_NAME='ZDA_Urenregistratie_'+new Date().getFullYear()+'.json';
 // Keep entries short and in plain language (what changed / where to find
 // it), not commit messages.
 const CHANGELOG=[
-  {date:'2026-10-25',items:[{type:'new',nl:'Volledige agenda: knop "Activiteit plannen" op elke dag (ook lege dagen), zonder de volledige weergave te verlaten',en:'Full calendar: "Plan an activity" button on every day (including empty ones), without leaving full view',es:'Calendario completo: botón "Planificar actividad" en cada día, sin salir de la vista completa'},
+  {date:'2026-10-25',items:[{type:'new',nl:'Volledige agenda: sleep een activiteit naar een andere dag (maandweergave) of dag + tijd (weekweergave). Op de telefoon: even ingedrukt houden',en:'Full calendar: drag an activity to another day (month view) or day + time (week view). On phone: press and hold',es:'Calendario completo: arrastra una actividad a otro día (vista mensual) o día y hora (vista semanal). En el móvil: mantén pulsado'},{type:'new',nl:'Volledige agenda: knop "Activiteit plannen" op elke dag (ook lege dagen), zonder de volledige weergave te verlaten',en:'Full calendar: "Plan an activity" button on every day (including empty ones), without leaving full view',es:'Calendario completo: botón "Planificar actividad" en cada día, sin salir de la vista completa'},
     {type:'fix',nl:"Herhalen-popup (snelle herhaling): kilometers worden niet meer automatisch ingevuld met de waarde van de vorige keer. Die waarde staat nu alleen als grijze hint in het veld, en wordt pas opgeslagen als je zelf een getal intypt.",en:"Quick repeat popup: kilometers are no longer prefilled with the previous value. It now only shows as a grey hint in the field and is only saved if you type a number yourself.",es:"Repetición rápida: los kilómetros ya no se rellenan con el valor anterior. Ahora solo aparece como pista gris y solo se guarda si escribes un número."},
     {type:'new',nl:"Invoer bewerken: bovenaan staan nu groot de datum en omschrijving, met klein de categorie, zodat je meteen ziet welke invoer je bewerkt.",en:"Edit entry: the date and description now appear large at the top, with the category in small letters, so you instantly see which entry you are editing.",es:"Editar registro: arriba aparecen en grande la fecha y la descripción, y en pequeño la categoría, para ver enseguida qué registro editas."},
     {type:'new',nl:"Soort onkosten: nieuwe optie Bus (bijv. Flixbus). Zodra je kilometers invult, wordt het soort automatisch Interstedelijk; zonder km kies je zelf (lokaal, bus, trein, vlucht, overig).",en:"Expense type: new Coach option (e.g. Flixbus). As soon as you enter kilometers the type is set to Intercity automatically; without km you choose yourself (local, coach, train, flight, other).",es:"Tipo de gasto: nueva opción Autobús (p. ej. Flixbus). Al introducir kilómetros el tipo pasa automáticamente a Interurbano; sin km eliges tú (local, autobús, tren, vuelo, otros)."},
@@ -33294,6 +33294,121 @@ function fcToday(){
   fcRefreshFull();
 }
 function fcSetView(v){fcView=v;fcSelectedDate=null;if(v==='month')fcLoadedMonths=null;if(v==='year')fcLoadedYears=null;fcRefreshFull();}
+// ── Full calendar: drag an activity to another day (month view: direct;
+// week view: also pick the time). Touch = long-press (~0.35s) to pick up,
+// mouse = just drag. Works through pointer events so one code path serves
+// both. Elements opt in with data-fc-id/data-fc-kind ('p' planned, 'e' entry);
+// drop targets carry data-fc-ds="YYYY-MM-DD".
+var fcDrag=null, fcDragSuppressClick=false;
+function fcFindItem(id,kind){
+  var arr;
+  if(kind==='p'){ensurePlanned();arr=db.planned;}else arr=db.entries;
+  return arr.find(function(x){return String(x.id)===String(id);});
+}
+function fcMoveItem(id,kind,ds,newTime){
+  var it=fcFindItem(id,kind);if(!it)return;
+  var oldD=it.datum, oldT=it.time||it.tijd||'';
+  it.datum=ds;
+  if(newTime!=null){if(kind==='p')it.time=newTime;else it.tijd=newTime;}
+  touch(it);
+  var body=document.getElementById('fc-body');var st=body?body.scrollTop:0;
+  var prompt=false,dc=oldD!==ds,tc=newTime!=null&&newTime!==oldT;
+  if(kind==='p'){
+    if(it.calExported&&isCalExportEnabled()&&(dc||tc)){it.calSeq=(parseInt(it.calSeq)||0)+1;prompt=true;}
+    savePlanned();
+  }else save();
+  fcRefreshFull();
+  var b2=document.getElementById('fc-body');if(b2)b2.scrollTop=st;
+  if(prompt)openCalUpdatePrompt(it.id,dc,tc,false);
+}
+function fcWeekMovePrompt(id,kind,ds){
+  var it=fcFindItem(id,kind);if(!it)return;
+  var d=parseLocalDate(ds);
+  var dl=d.toLocaleDateString(getLocale(),{weekday:'long',day:'numeric',month:'long'});
+  var cur=it.time||it.tijd||'';
+  var h='<div style="padding:16px">';
+  h+='<div style="font-size:15px;font-weight:700;margin-bottom:4px;text-transform:capitalize">'+dl+'</div>';
+  h+='<div style="font-size:13px;color:var(--text2);margin-bottom:12px">'+escapeHtml(it.cursistNaam||activityTitle(it))+'</div>';
+  h+='<label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px">'+tMap({nl:'Tijd',en:'Time',es:'Hora',fr:'Heure',de:'Uhrzeit',ro:'Ora',it:'Ora',pt:'Hora'})+'</label>';
+  h+='<input type="time" id="fc-mv-time" value="'+escapeHtml(cur)+'" style="width:100%;box-sizing:border-box;padding:10px 12px;border:none;border-radius:10px;background:var(--surface2);font:inherit;margin-bottom:16px">';
+  h+='<div style="display:flex;gap:8px"><button class="btn" onclick="closeModals()" style="flex:1">'+t('cancel_btn')+'</button>';
+  h+='<button class="btn primary" onclick="var v=document.getElementById(\'fc-mv-time\').value;closeModals();fcMoveItem('+ssIdArg(it.id)+',\''+kind+'\',\''+ds+'\',v)" style="flex:1">'+tMap({nl:'Verplaatsen',en:'Move',es:'Mover',fr:'Déplacer',de:'Verschieben',ro:'Mută',it:'Sposta',pt:'Mover'})+'</button></div></div>';
+  showModal(h);
+}
+function fcDragTargetAt(x,y){
+  var el=document.elementFromPoint(x,y);
+  return el&&el.closest?el.closest('[data-fc-ds]'):null;
+}
+function fcDragStart(){
+  if(!fcDrag||fcDrag.active)return;
+  fcDrag.active=true;
+  var r=fcDrag.el.getBoundingClientRect();
+  var g=fcDrag.el.cloneNode(true);
+  g.removeAttribute('data-fc-id');g.removeAttribute('onclick');
+  g.style.cssText+=';position:fixed;left:'+r.left+'px;top:'+r.top+'px;width:'+Math.max(r.width,120)+'px;z-index:10050;pointer-events:none;opacity:.9;box-shadow:0 6px 18px rgba(0,0,0,.3);border-radius:6px;background:var(--surface);transform:scale(1.04)';
+  document.body.appendChild(g);
+  fcDrag.ghost=g;fcDrag.offX=fcDrag.x-r.left;fcDrag.offY=fcDrag.y-r.top;
+  fcDrag.el.style.opacity='.35';
+  if(navigator.vibrate)try{navigator.vibrate(15);}catch(e){}
+  fcDrag.scrollIv=setInterval(function(){
+    var b=document.getElementById('fc-body');if(!b||!fcDrag)return;
+    var br=b.getBoundingClientRect();
+    if(fcDrag.y<br.top+60)b.scrollTop-=14;else if(fcDrag.y>br.bottom-60)b.scrollTop+=14;
+    fcDragHighlight();
+  },30);
+}
+function fcDragHighlight(){
+  if(!fcDrag||!fcDrag.active)return;
+  var t=fcDragTargetAt(fcDrag.x,fcDrag.y);
+  if(fcDrag.over&&fcDrag.over!==t){fcDrag.over.style.outline=fcDrag.overOld||'';}
+  if(t&&t!==fcDrag.over){fcDrag.overOld=t.style.outline;t.style.outline='2px solid var(--brand)';t.style.outlineOffset='-2px';}
+  fcDrag.over=t;
+}
+function fcDragEnd(cancel){
+  var d=fcDrag;if(!d)return;fcDrag=null;
+  if(d.timer)clearTimeout(d.timer);
+  if(!d.active)return;
+  clearInterval(d.scrollIv);
+  if(d.ghost)d.ghost.remove();
+  d.el.style.opacity='';
+  if(d.over)d.over.style.outline=d.overOld||'';
+  fcDragSuppressClick=true;setTimeout(function(){fcDragSuppressClick=false;},120);
+  if(cancel||!d.over)return;
+  var ds=d.over.getAttribute('data-fc-ds');
+  var it=fcFindItem(d.id,d.kind);
+  if(!it||!ds)return;
+  if(fcView==='week')fcWeekMovePrompt(d.id,d.kind,ds);
+  else if(ds!==it.datum)fcMoveItem(d.id,d.kind,ds,null);
+}
+(function(){
+  document.addEventListener('pointerdown',function(ev){
+    if(!document.getElementById('full-cal-overlay')||fcView==='year')return;
+    if(ev.pointerType==='mouse'&&ev.button!==0)return;
+    var el=ev.target.closest?ev.target.closest('[data-fc-id]'):null;
+    if(!el)return;
+    fcDrag={el:el,id:el.getAttribute('data-fc-id'),kind:el.getAttribute('data-fc-kind'),x:ev.clientX,y:ev.clientY,sx:ev.clientX,sy:ev.clientY,active:false,touch:ev.pointerType!=='mouse'};
+    if(fcDrag.touch)fcDrag.timer=setTimeout(fcDragStart,350);
+  },true);
+  document.addEventListener('pointermove',function(ev){
+    if(!fcDrag)return;
+    fcDrag.x=ev.clientX;fcDrag.y=ev.clientY;
+    var dist=Math.abs(ev.clientX-fcDrag.sx)+Math.abs(ev.clientY-fcDrag.sy);
+    if(!fcDrag.active){
+      if(fcDrag.touch){if(dist>8){clearTimeout(fcDrag.timer);fcDrag=null;}}
+      else if(dist>6)fcDragStart();
+      return;
+    }
+    fcDrag.ghost.style.left=(ev.clientX-fcDrag.offX)+'px';
+    fcDrag.ghost.style.top=(ev.clientY-fcDrag.offY)+'px';
+    fcDragHighlight();
+  },true);
+  document.addEventListener('pointerup',function(){fcDragEnd(false);},true);
+  document.addEventListener('pointercancel',function(){if(fcDrag&&fcDrag.active&&fcDrag.touch)return;fcDragEnd(true);},true);
+  document.addEventListener('touchmove',function(ev){if(fcDrag&&fcDrag.active)ev.preventDefault();},{passive:false});
+  document.addEventListener('touchcancel',function(){fcDragEnd(true);},true);
+  document.addEventListener('contextmenu',function(ev){if(fcDrag)ev.preventDefault();},true);
+  document.addEventListener('click',function(ev){if(fcDragSuppressClick){ev.stopPropagation();ev.preventDefault();}},true);
+})();
 function fcRefreshFull(){
   var ov=document.getElementById('full-cal-overlay');
   if(!ov)return;
@@ -33387,7 +33502,7 @@ function renderFcMonthSection(yr,mo){
       var cat=findCatByLabel(item.categorie);
       var col=AARDEN_COLORS[cat?cat.aard:'Overig']||'#A1A1AA';
       var label=item.cursistNaam||activityTitle(item);
-      chips+='<div style="font-size:9.5px;background:'+col+';color:#fff;border-radius:3px;padding:1px 4px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+label+'</div>';
+      chips+='<div data-fc-id="'+escapeHtml(String(item.id))+'" data-fc-kind="'+(db.planned.indexOf(item)>=0?'p':'e')+'" style="font-size:9.5px;background:'+col+';color:#fff;border-radius:3px;padding:1px 4px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none">'+label+'</div>';
     });
     gpItems.slice(0,Math.max(0,3-items.length)).forEach(function(item){
       chips+='<div style="font-size:9.5px;background:'+gpItemColor(item)+';color:#fff;border-radius:3px;padding:1px 4px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escapeHtml(item.titel)+'</div>';
@@ -33397,7 +33512,7 @@ function renderFcMonthSection(yr,mo){
     // of expanding an inline panel below the grid - gives month view the
     // tap-to-see-activities + tap-to-expand-detail behavior the user liked
     // in year view, without pushing the rest of the grid down.
-    h+='<div onclick="fcOpenYearDayPopup(\''+ds+'\',this)" style="background:'+(isSel?'var(--brand-light)':'var(--bg)')+';min-height:76px;padding:4px;cursor:pointer;box-sizing:border-box;overflow:hidden">';
+    h+='<div data-fc-ds="'+ds+'" onclick="fcOpenYearDayPopup(\''+ds+'\',this)" style="background:'+(isSel?'var(--brand-light)':'var(--bg)')+';min-height:76px;padding:4px;cursor:pointer;box-sizing:border-box;overflow:hidden">';
     h+='<div style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12.5px;'+(isToday?'background:var(--brand);color:#fff;font-weight:700':'color:var(--text)')+'">'+d+'</div>';
     h+=chips;
     if(extra>0)h+='<div style="font-size:9.5px;color:var(--text3);margin-top:2px">+'+extra+'</div>';
@@ -33567,7 +33682,7 @@ function renderFullCalWeek(){
   var h='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden;box-sizing:border-box;width:100%">';
   days.forEach(function(d,i){
     var isToday=d.toDateString()===now.toDateString();
-    h+='<div style="background:var(--surface2);padding:6px 2px;text-align:center">';
+    h+='<div data-fc-ds="'+ymdLocal(d)+'" style="background:var(--surface2);padding:6px 2px;text-align:center">';
     h+='<div style="font-size:10px;color:var(--text3);text-transform:uppercase">'+dayNames[i]+'</div>';
     h+='<div style="width:26px;height:26px;border-radius:50%;margin:2px auto 0;display:flex;align-items:center;justify-content:center;font-size:13.5px;'+(isToday?'background:var(--brand);color:#fff;font-weight:700':'color:var(--text)')+'">'+d.getDate()+'</div>';
     h+='</div>';
@@ -33582,16 +33697,17 @@ function renderFullCalWeek(){
     var gpItems=gemeentePlanningForDay(ds);
     if(!ents.length&&!plans.length&&!gpItems.length)return;
     any=true;
+    h+='<div data-fc-ds="'+ds+'">';
     h+='<div style="padding:12px 2px 4px;font-size:12px;font-weight:700;color:var(--text3);text-transform:capitalize">'+d.toLocaleDateString(getLocale(),{weekday:'long',day:'numeric',month:'short'})+'</div>';
     plans.concat(ents).sort(sortByTimeAsc).forEach(function(item){
       var cat=findCatByLabel(item.categorie);
       var col=AARDEN_COLORS[cat?cat.aard:'Overig']||'#A1A1AA';
       var idArg=ssIdArg(item.id);
       var label=item.cursistNaam||activityTitle(item);
-      h+='<div onclick="openEditEntryModal('+idArg+')" style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid var(--border);cursor:pointer">';
+      h+='<div data-fc-id="'+escapeHtml(String(item.id))+'" data-fc-kind="'+(db.planned.indexOf(item)>=0?'p':'e')+'" onclick="openEditEntryModal('+idArg+')" style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid var(--border);cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none">';
       h+='<div style="width:8px;height:8px;border-radius:50%;background:'+col+';flex-shrink:0"></div>';
       h+='<div style="font-size:13px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)">'+label+'</div>';
-      if(item.tijd)h+='<div style="font-size:11px;color:var(--text3)">'+formatTimeDisplay(item.tijd)+'</div>';
+      if(item.tijd||item.time)h+='<div style="font-size:11px;color:var(--text3)">'+formatTimeDisplay(item.time||item.tijd)+'</div>';
       h+='</div>';
     });
     gpItems.forEach(function(item){
@@ -33601,6 +33717,7 @@ function renderFullCalWeek(){
       if(item.tijd)h+='<div style="font-size:11px;color:var(--text3)">'+item.tijd+'</div>';
       h+='</div>';
     });
+    h+='</div>';
   });
   if(!any)h+='<div style="text-align:center;color:var(--text3);padding:24px 0;font-size:13px">'+fcLbl('no_activities')+'</div>';
   return h;
