@@ -6282,7 +6282,7 @@ const DRIVE_FILE_NAME='ZDA_Urenregistratie_'+new Date().getFullYear()+'.json';
 // Keep entries short and in plain language (what changed / where to find
 // it), not commit messages.
 const CHANGELOG=[
-  {date:'2026-10-25',items:[{type:'new',nl:'Volledige agenda: knop "Herhalen" naast "Activiteit plannen" op elke dag, zodat je een eerdere activiteit snel kunt herhalen',en:'Full calendar: "Repeat" button next to "Plan an activity" on every day, to quickly repeat an earlier activity',es:'Calendario completo: botón "Repetir" junto a "Planificar actividad" en cada día'},{type:'new',nl:'Volledige agenda: sleep een activiteit naar een andere dag (maandweergave) of dag + tijd (weekweergave). Op de telefoon: even ingedrukt houden',en:'Full calendar: drag an activity to another day (month view) or day + time (week view). On phone: press and hold',es:'Calendario completo: arrastra una actividad a otro día (vista mensual) o día y hora (vista semanal). En el móvil: mantén pulsado'},{type:'new',nl:'Volledige agenda: knop "Activiteit plannen" op elke dag (ook lege dagen), zonder de volledige weergave te verlaten',en:'Full calendar: "Plan an activity" button on every day (including empty ones), without leaving full view',es:'Calendario completo: botón "Planificar actividad" en cada día, sin salir de la vista completa'},
+  {date:'2026-10-25',items:[{type:'new',nl:'Volledige agenda: snel plannen zoals in Apple Agenda. Typ wat je gaat doen (en eventueel een tijd); categorie, contact, onderwerp, uren en km worden ingevuld op basis van eerdere activiteiten',en:'Full calendar: quick plan like Apple Calendar. Type what you are doing (and optionally a time); category, contact, topic, hours and km are filled in from earlier activities',es:'Calendario completo: planificación rápida como en Apple Calendar. Escribe qué vas a hacer; el resto se completa según actividades anteriores'},{type:'new',nl:'Volledige agenda: knop "Herhalen" naast "Activiteit plannen" op elke dag, zodat je een eerdere activiteit snel kunt herhalen',en:'Full calendar: "Repeat" button next to "Plan an activity" on every day, to quickly repeat an earlier activity',es:'Calendario completo: botón "Repetir" junto a "Planificar actividad" en cada día'},{type:'new',nl:'Volledige agenda: sleep een activiteit naar een andere dag (maandweergave) of dag + tijd (weekweergave). Op de telefoon: even ingedrukt houden',en:'Full calendar: drag an activity to another day (month view) or day + time (week view). On phone: press and hold',es:'Calendario completo: arrastra una actividad a otro día (vista mensual) o día y hora (vista semanal). En el móvil: mantén pulsado'},{type:'new',nl:'Volledige agenda: knop "Activiteit plannen" op elke dag (ook lege dagen), zonder de volledige weergave te verlaten',en:'Full calendar: "Plan an activity" button on every day (including empty ones), without leaving full view',es:'Calendario completo: botón "Planificar actividad" en cada día, sin salir de la vista completa'},
     {type:'fix',nl:"Herhalen-popup (snelle herhaling): kilometers worden niet meer automatisch ingevuld met de waarde van de vorige keer. Die waarde staat nu alleen als grijze hint in het veld, en wordt pas opgeslagen als je zelf een getal intypt.",en:"Quick repeat popup: kilometers are no longer prefilled with the previous value. It now only shows as a grey hint in the field and is only saved if you type a number yourself.",es:"Repetición rápida: los kilómetros ya no se rellenan con el valor anterior. Ahora solo aparece como pista gris y solo se guarda si escribes un número."},
     {type:'new',nl:"Invoer bewerken: bovenaan staan nu groot de datum en omschrijving, met klein de categorie, zodat je meteen ziet welke invoer je bewerkt.",en:"Edit entry: the date and description now appear large at the top, with the category in small letters, so you instantly see which entry you are editing.",es:"Editar registro: arriba aparecen en grande la fecha y la descripción, y en pequeño la categoría, para ver enseguida qué registro editas."},
     {type:'new',nl:"Soort onkosten: nieuwe optie Bus (bijv. Flixbus). Zodra je kilometers invult, wordt het soort automatisch Interstedelijk; zonder km kies je zelf (lokaal, bus, trein, vlucht, overig).",en:"Expense type: new Coach option (e.g. Flixbus). As soon as you enter kilometers the type is set to Intercity automatically; without km you choose yourself (local, coach, train, flight, other).",es:"Tipo de gasto: nueva opción Autobús (p. ej. Flixbus). Al introducir kilómetros el tipo pasa automáticamente a Interurbano; sin km eliges tú (local, autobús, tren, vuelo, otros)."},
@@ -33675,6 +33675,88 @@ function renderFcDayDetail(ds){
   return h;
 }
 function fcPlanBtnLbl(){return {nl:'Activiteit plannen',en:'Plan an activity',es:'Planificar actividad',fr:'Planifier une activité',de:'Aktivität planen',pt:'Planear atividade',it:'Pianifica attività',ro:'Planifică o activitate'}[LANG]||'Plan an activity';}
+// ── Full calendar quick-add (Apple Calendar style): type what you're going to
+// do, optionally a time, and the rest (category, contact, topic, hours, km) is
+// filled in from the best-matching earlier activity.
+var fcQA=null;
+function fcFold(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
+function fcQAMatches(text){
+  var toks=fcFold(text).split(/[^a-z0-9]+/).filter(function(w){return w.length>=2;});
+  if(!toks.length)return [];
+  var seen={},res=[];
+  db.entries.slice().sort(function(a,b){return (b.datum||'')>(a.datum||'')?1:-1;}).forEach(function(e){
+    if(!e.categorie)return;
+    var hay=fcFold((e.omschrijving||'')+' '+(e.cursistNaam||'')+' '+getCatLabel(e.categorie)+' '+(e.thema||''));
+    var sc=0;toks.forEach(function(w){if(hay.indexOf(w)>=0)sc++;});
+    if(!sc)return;
+    var key=e.categorie+'|'+(e.cursistId||'')+'|'+fcFold(e.omschrijving);
+    if(seen[key])return;seen[key]=1;
+    res.push({e:e,sc:sc});
+  });
+  res.sort(function(a,b){return b.sc-a.sc;});
+  return res.slice(0,4).map(function(r){return r.e;});
+}
+function openFcQuickAdd(ds){
+  var pop=document.getElementById('fc-yd-popover');if(pop&&typeof closeFcYdPopup==='function')closeFcYdPopup();
+  fcQA={ds:ds,sel:0,matches:[]};
+  var dl=parseLocalDate(ds).toLocaleDateString(getLocale(),{weekday:'long',day:'numeric',month:'long'});
+  var inp='width:100%;box-sizing:border-box;padding:10px 12px;border:none;outline:none;border-radius:10px;background:var(--surface2);font:inherit;font-weight:600';
+  var catOpts='<option value="">'+tMap({nl:'Kies categorie…',en:'Choose category…',es:'Elige categoría…',fr:'Choisir une catégorie…',de:'Kategorie wählen…',ro:'Alege categoria…',it:'Scegli categoria…',pt:'Escolha a categoria…'})+'</option>'+getCATEGORIES().filter(function(c){return !c.isTravel;}).map(function(c){return '<option value="'+escapeHtml(c.label)+'">'+escapeHtml(getCatLabel(c.label))+'</option>';}).join('');
+  var h='<div style="padding:16px">';
+  h+='<div style="font-size:15px;font-weight:800;margin-bottom:12px;text-transform:capitalize;color:var(--brand)">'+dl+'</div>';
+  h+='<input type="text" id="fc-qa-text" placeholder="'+tMap({nl:'Wat ga je doen? (bv. studie Maria)',en:'What are you doing? (e.g. study Maria)',es:'¿Qué vas a hacer? (p. ej. estudio María)',fr:'Que faites-vous ?',de:'Was machst du?',ro:'Ce faci?',it:'Cosa farai?',pt:'O que vai fazer?'})+'" oninput="fcQAUpdate()" style="'+inp+';margin-bottom:8px" autocomplete="off">';
+  h+='<input type="time" id="fc-qa-time" style="'+inp+';margin-bottom:10px">';
+  h+='<div id="fc-qa-sugg" style="margin-bottom:10px"></div>';
+  h+='<select id="fc-qa-cat" style="'+inp+';margin-bottom:10px;display:none">'+catOpts+'</select>';
+  h+='<div style="display:flex;gap:8px"><button class="btn" onclick="closeModals()" style="flex:1">'+t('cancel_btn')+'</button><button class="btn primary" onclick="fcQASave()" style="flex:1">'+tMap({nl:'Plannen',en:'Plan',es:'Planificar',fr:'Planifier',de:'Planen',ro:'Planifică',it:'Pianifica',pt:'Planejar'})+'</button></div>';
+  h+='<div style="text-align:center;margin-top:10px"><a href="#" onclick="closeModals();openPlanModal(null,\''+ds+'\');return false" style="font-size:12px;color:var(--text3)">'+tMap({nl:'Alle opties…',en:'All options…',es:'Todas las opciones…',fr:'Toutes les options…',de:'Alle Optionen…',ro:'Toate opțiunile…',it:'Tutte le opzioni…',pt:'Todas as opções…'})+'</a></div>';
+  h+='</div>';
+  showModal(h);
+  setTimeout(function(){var i=document.getElementById('fc-qa-text');if(i)i.focus();},50);
+}
+function fcQAUpdate(){
+  if(!fcQA)return;
+  var txt=document.getElementById('fc-qa-text').value;
+  fcQA.matches=fcQAMatches(txt);fcQA.sel=0;fcQARender(txt);
+}
+function fcQAPick(i){if(!fcQA)return;fcQA.sel=i;fcQARender(document.getElementById('fc-qa-text').value);}
+function fcQARender(txt){
+  var box=document.getElementById('fc-qa-sugg'),cs=document.getElementById('fc-qa-cat');
+  if(!box)return;
+  var m=fcQA.matches,h='';
+  m.forEach(function(e,i){
+    var on=i===fcQA.sel;
+    var line=getCatLabel(e.categorie)+(e.cursistNaam?' · '+e.cursistNaam:'')+(e.uren?' · '+e.uren+'u':'')+(e.km?' · '+e.km+' km':'');
+    h+='<div onclick="fcQAPick('+i+')" style="padding:8px 10px;border-radius:10px;margin-bottom:4px;cursor:pointer;font-size:13px;'+(on?'background:var(--brand-light);outline:2px solid var(--brand);outline-offset:-2px':'background:var(--surface2)')+'">'+escapeHtml(line)+(e.omschrijving?'<div style="font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escapeHtml(e.omschrijving)+'</div>':'')+'</div>';
+  });
+  box.innerHTML=h;
+  cs.style.display=(!m.length&&txt.trim())?'block':'none';
+}
+function fcQASave(){
+  if(!fcQA)return;
+  var txt=document.getElementById('fc-qa-text').value.trim();
+  var time=document.getElementById('fc-qa-time').value;
+  var m=fcQA.matches[fcQA.sel];
+  var cat=m?m.categorie:document.getElementById('fc-qa-cat').value;
+  if(!txt&&!m){return;}
+  if(!cat){document.getElementById('fc-qa-cat').style.display='block';return;}
+  ensurePlanned();
+  var p={id:Date.now(),datum:fcQA.ds,time:time||'',categorie:cat,
+    cursistId:m&&m.cursistId?m.cursistId:'',cursistNaam:m&&m.cursistNaam?m.cursistNaam:'',
+    omschrijving:txt,thema:m?(m.thema||''):'',themacode:m?(m.themacode||''):'',themaCompleted:true,
+    uren:m?(parseFloat(m.uren)||0):0,
+    km:m?(parseFloat(m.km)||0):0,kmHeen:m&&m.kmHeen!=null?m.kmHeen:null,kmRetour:m&&m.kmRetour!=null?m.kmRetour:null,vehicle:m?(m.vehicle||''):'',
+    opmerking:'',completed:false,skipped:false,reminded:false};
+  touch(p);
+  db.planned.push(p);
+  savePlanned();
+  fcQA=null;closeModals();
+  var body=document.getElementById('fc-body');var st=body?body.scrollTop:0;
+  fcRefreshFull();
+  var b2=document.getElementById('fc-body');if(b2)b2.scrollTop=st;
+  if(typeof renderHomeAgenda==='function')renderHomeAgenda();
+  if(typeof renderHomeUpcoming==='function')renderHomeUpcoming();
+}
 function fcRepeatBtnLbl(){return {nl:'Herhalen',en:'Repeat',es:'Repetir',fr:'Répéter',de:'Wiederholen',pt:'Repetir',it:'Ripeti',ro:'Repetă'}[LANG]||'Repeat';}
 function fcRepeatOnDay(ds){var pop=document.getElementById('fc-yd-popover');if(pop&&typeof closeFcYdPopup==='function')closeFcYdPopup();openReminderRepeatList(ds);}
 function fcDayBtnsHtml(ds,pad){
@@ -33684,7 +33766,7 @@ function fcDayBtnsHtml(ds,pad){
   h+='<button class="btn sm primary" onclick="fcPlanOnDay(\''+ds+'\')" style="'+st+'"><svg width="14" height="14"><use href="#ico-plus"/></svg>'+fcPlanBtnLbl()+'</button></div>';
   return h;
 }
-function fcPlanOnDay(ds){var pop=document.getElementById('fc-yd-popover');if(pop&&typeof closeFcYdPopup==='function')closeFcYdPopup();openPlanModal(null,ds);}
+function fcPlanOnDay(ds){openFcQuickAdd(ds);}
 function renderFullCalWeek(){
   var now=new Date();
   var dayNames=fcDayNames();
