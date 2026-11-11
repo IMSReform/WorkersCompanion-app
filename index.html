@@ -34218,10 +34218,11 @@ function vcLocalParse(text){
     if(hit&&(!best||hit>best.hit))best={c:c,hit:hit};
   });
   if(best)r.contact=String(best.c.id);
-  var m=fcQAMatches(text)[0];
+  var m=best?fcQAMatches(text)[0]:null;
   if(m){r.category=m.categorie;if(!r.contact&&m.cursistId)r.contact=String(m.cursistId);if(!r.uren&&m.uren)r.uren=parseFloat(m.uren)||0;if(!r.km&&m.km&&best)r.km=parseFloat(m.km)||0;r._thema=m.thema||'';r._themacode=m.themacode||'';}
   else{getCATEGORIES().forEach(function(c){if(!r.category&&f.indexOf(fcFold(getCatLabel(c.label)))>=0)r.category=c.label;});}
   var _syn=vcCatFromWords(f);if(_syn)r.category=_syn;
+  if(r.category)r.omschrijving='';
   return r;
 }
 async function vcProcess(){
