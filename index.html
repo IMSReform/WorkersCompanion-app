@@ -9465,8 +9465,8 @@ function renderUiModeSettings(){
 function maybeAskUiMode(){
   var s=db.settings;
   if(!s||s.uiModeChosen||(s.uiModeAsked||0)>=2)return;
-  if(document.getElementById('plan-modal-overlay')||document.getElementById('full-cal-overlay'))return;
-  if(currentScreen!=='home'&&currentScreen!=='log')return;
+  if(document.getElementById('plan-modal-overlay')||document.getElementById('full-cal-overlay'))return false;
+  if(currentScreen==='settings'||currentScreen==='bijbelstudies')return false;
   s.uiModeAsked=(s.uiModeAsked||0)+1;save();
   var b=function(m,lbl,sub,prim){return '<button class="btn'+(prim?' primary':'')+' full" onclick="uiPick(\''+m+'\')" style="text-align:left;margin-bottom:8px;padding:12px 14px"><div style="font-weight:700">'+lbl+'</div><div style="font-size:12px;font-weight:400;opacity:.8;margin-top:2px">'+sub+'</div></button>';};
   var h='<div style="padding:16px">';
@@ -43689,7 +43689,7 @@ try {
     renderHome();
   }
   startReminderTimer();
-  setTimeout(function(){try{maybeAskUiMode();}catch(e){}},1500);
+  setTimeout(function(){(function(){var n=0;(function tryAsk(){n++;var r;try{r=maybeAskUiMode();}catch(e){}if(r===false&&n<6)setTimeout(tryAsk,3000);})();})();},1500);
 } catch(e) {
   console.error('renderHome error:', e);
   const dash = document.getElementById('home-dashboard');
