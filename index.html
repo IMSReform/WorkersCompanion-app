@@ -42944,10 +42944,10 @@ function openEditEntryModal(entryId,skipSummary){
   // form (unchanged field IDs, so saveEditEntry/duplicateEditEntry keep
   // working) for the gray/empty fields that still need completing.
   var eeSumRows='';
-  var eeSumRow=function(label,val){eeSumRows+='<div'+(String(val).indexOf('ee-q-uren')>=0?' class="hrs"':'')+' style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:13px"><span style="color:var(--text3)">'+label+'</span><span style="font-weight:600;text-align:right">'+val+'</span></div>';};
+  var eeSumRow=function(label,val){eeSumRows+='<div'+(String(val).indexOf('ee-q-uren')>=0?' class="hrs"':'')+' style="display:flex;justify-content:space-between;align-items:center;gap:10px 16px;padding:7px 0;font-size:13px"><span style="color:var(--text3);flex:0 0 auto;max-width:38%">'+label+'</span><span style="font-weight:600;text-align:right;flex:1 1 0;min-width:0;max-width:640px;margin-left:auto;overflow-wrap:anywhere">'+val+'</span></div>';};
   // Quick-edit: date + hours are editable right in the summary (Save below),
   // so a small change like "2h -> 2.5h" doesn't need the full form.
-  var eeQIn='style="width:220px;max-width:62%;box-sizing:border-box;text-align:left;padding:10px 12px;border:none;outline:none;border-radius:10px;background:var(--surface2);font:inherit;font-weight:600"';
+  var eeQIn='style="width:100%;min-width:0;box-sizing:border-box;text-align:left;padding:10px 12px;border:none;outline:none;border-radius:10px;background:var(--surface2);font:inherit;font-weight:600"';
   eeSumRow(t('wizard_date'), '<input type="date" id="ee-q-datum" value="'+(e.datum||'')+'" '+eeQIn+'>');
   eeSumRow(t('wizard_time'), '<input type="time" id="ee-q-tijd" value="'+(e.tijd||'')+'" '+eeQIn+'>');
   eeSumRow(t('wizard_hours'), '<input type="number" id="ee-q-uren" min="0" step="0.25" value="'+(parseFloat(e.uren)||0)+'" '+eeQIn+'>');
