@@ -170,7 +170,7 @@ body{font-family:'Roboto','Segoe UI',system-ui,sans-serif;background:var(--bg);c
    which corrects this to the exact pixel value and keeps it in sync via a
    ResizeObserver on #g-header, now that the header is position:fixed and
    no longer pushes .app down on its own via normal document flow. */
-.app{width:100%;min-height:100vh;padding-top:76px;padding-bottom:calc(130px + env(safe-area-inset-bottom));box-sizing:border-box}
+.app{width:100%;min-height:100vh;padding-top:76px;padding-bottom:calc(130px + var(--safe));box-sizing:border-box}
 
 /* ═══ GLOBAL HEADER (edge-to-edge, sticky) ═══ */
 .g-header{
@@ -199,7 +199,7 @@ body{font-family:'Roboto','Segoe UI',system-ui,sans-serif;background:var(--bg);c
      content should never appear above) sits *above* where the notch ends,
      and the header ends up visually shorter than its safe on-screen area.
      Padding the header down by the inset - same pattern as .bottom-nav's
-     existing env(safe-area-inset-bottom) - grows #g-header's own box (and
+     existing var(--safe) - grows #g-header's own box (and
      therefore its gradient background, so no visual gap appears) to
      include the notch, and since .app's padding-top is kept in sync with
      #g-header's *measured* offsetHeight (syncAppHeaderPadding(), via
@@ -219,7 +219,7 @@ body{font-family:'Roboto','Segoe UI',system-ui,sans-serif;background:var(--bg);c
   .g-org-sub{display:none!important}
   .g-brand-row{display:none!important}
   .g-subbar{padding:4px 12px 4px}
-  .bottom-nav{padding:3px;bottom:calc(8px + env(safe-area-inset-bottom))}
+  .bottom-nav{padding:3px;bottom:calc(8px + var(--safe))}
   .bn-btn{padding:4px 2px 3px;font-size:8px}
   .bn-btn svg{width:17px;height:17px}
 }
@@ -282,7 +282,7 @@ body{font-family:'Roboto','Segoe UI',system-ui,sans-serif;background:var(--bg);c
    screen shows through, stronger blur/saturate to keep it readable, and a
    brighter top-edge highlight border so it still reads as a distinct glass
    surface rather than just fading into the background. */
-.bottom-nav{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:calc(100% - 28px);max-width:440px;background:rgba(255,255,255,.32);backdrop-filter:blur(10px) saturate(1.5);-webkit-backdrop-filter:blur(10px) saturate(1.5);border-radius:26px;border:1px solid rgba(40,40,40,.18);display:flex;gap:2px;z-index:50;padding:5px;box-shadow:0 12px 32px rgba(51,87,129,.2),0 2px 8px rgba(51,87,129,.1)}
+.bottom-nav{position:fixed;bottom:calc(14px + var(--safe));left:50%;transform:translateX(-50%);width:calc(100% - 28px);max-width:440px;background:rgba(255,255,255,.32);backdrop-filter:blur(10px) saturate(1.5);-webkit-backdrop-filter:blur(10px) saturate(1.5);border-radius:26px;border:1px solid rgba(40,40,40,.18);display:flex;gap:2px;z-index:50;padding:5px;box-shadow:0 12px 32px rgba(51,87,129,.2),0 2px 8px rgba(51,87,129,.1)}
 .bn-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 2px 7px;border:none;border-radius:20px;background:transparent;color:var(--text3);cursor:pointer;font-family:inherit;font-size:9.5px;font-weight:600;transition:background .2s,color .2s}
 .vc-bigmic{width:170px;height:170px;border-radius:50%;border:none;background:#16a34a;color:#fff;box-shadow:0 0 0 10px rgba(22,163,74,.16),0 10px 28px rgba(0,0,0,.25);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;margin:18px 0 10px;transition:transform .15s}
 .vc-bigmic:active{transform:scale(.96)}
@@ -700,7 +700,7 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
 .action-fab-sub{font-size:12px;color:rgba(255,255,255,.7);margin-top:2px}
 
 /* ═══ FAB ═══ */
-.fab{position:fixed;bottom:calc(90px + env(safe-area-inset-bottom));right:max(14px,calc(50% - 246px));width:50px;height:50px;border-radius:50%;background:var(--brand);color:#fff;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(51,87,129,.4);transition:transform .15s,box-shadow .15s;display:flex;align-items:center;justify-content:center;z-index:40}
+.fab{position:fixed;bottom:calc(90px + var(--safe));right:max(14px,calc(50% - 246px));width:50px;height:50px;border-radius:50%;background:var(--brand);color:#fff;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(51,87,129,.4);transition:transform .15s,box-shadow .15s;display:flex;align-items:center;justify-content:center;z-index:40}
 .fab:hover{transform:scale(1.06);box-shadow:0 6px 20px rgba(51,87,129,.5)}
 
 /* ═══ SPREADSHEET FLOATING TOOLBAR OVERLAY ═══ The undo/redo/top/bottom
@@ -1381,6 +1381,32 @@ input[type="radio"]:checked::after{content:'';position:absolute;inset:3px;border
    regardless of which element ends up being the page's scroll container. */
 .g-header{transform:translateZ(0)!important;-webkit-transform:translateZ(0)!important;will-change:transform}
 </style>
+<style>:root{--safe:env(safe-area-inset-bottom,0px)}
+html{background:var(--brand-dark,#264567)}body{background:var(--bg)}</style>
+<script>
+/* iOS standalone: when the layout viewport ends above the physical screen bottom, env(safe-area-inset-bottom) still reports the
+   home-indicator inset, so the floating nav was lifted twice. Measure the gap and subtract it from the inset. */
+(function(){
+ function calib(){
+ try{
+ var root=document.documentElement;
+ var st=(navigator.standalone===true)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+ if(!st||!document.body){root.style.removeProperty('--safe');return;}
+ var p=document.createElement('div');
+ p.style.cssText='position:fixed;left:0;bottom:0;width:1px;height:0;pointer-events:none;visibility:hidden';
+ document.body.appendChild(p);var b=p.getBoundingClientRect().bottom;document.body.removeChild(p);
+ var land=window.innerWidth>window.innerHeight;
+ var H=land?Math.min(screen.width,screen.height):Math.max(screen.width,screen.height);
+ var gap=Math.round(H-b);
+ if(gap>8)root.style.setProperty('--safe','max(0px, calc(env(safe-area-inset-bottom, 0px) - '+gap+'px))');
+ else root.style.removeProperty('--safe');
+ }catch(e){}
+ }
+ window.addEventListener('load',function(){calib();setTimeout(calib,800);});
+ window.addEventListener('resize',calib);
+ window.addEventListener('orientationchange',function(){setTimeout(calib,400);});
+})();
+</script>
 </head>
 <body>
 
@@ -34079,7 +34105,7 @@ function applyVoiceFab(){
   if(!el){
     el=document.createElement('button');el.id='vc-fab';el.type='button';
     el.setAttribute('aria-label','Voice');
-    el.style.cssText='position:fixed;right:16px;bottom:calc(90px + env(safe-area-inset-bottom,0px));width:60px;height:60px;border-radius:50%;border:none;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.28);z-index:900;cursor:pointer';
+    el.style.cssText='position:fixed;right:16px;bottom:calc(90px + var(--safe));width:60px;height:60px;border-radius:50%;border:none;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.28);z-index:900;cursor:pointer';
     el.innerHTML=vcMicSvg().replace('width="22" height="22"','width="28" height="28"');
     el.onclick=function(){openVoiceEntry(null,true);};
     document.body.appendChild(el);
